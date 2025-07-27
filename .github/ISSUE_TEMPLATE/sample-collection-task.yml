@@ -1,0 +1,88 @@
+name: Sample Collection Task
+description: Create a new sample collection task for the agent
+title: "[SAMPLES] "
+labels: ["agent-task", "samples", "collection"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Sample Collection Request
+        Use this template to create a new sample collection task for the AI agent.
+  
+  - type: input
+    id: source
+    attributes:
+      label: Source URL/Channel
+      description: YouTube channel, playlist, or website to collect samples from
+      placeholder: ex. https://youtube.com/playlist?list=...
+    validations:
+      required: true
+  
+  - type: dropdown
+    id: style
+    attributes:
+      label: Music Style
+      description: What style of samples are you looking for?
+      options:
+        - Lo-fi Hip Hop
+        - Boom Bap
+        - Jazz
+        - Soul/Funk
+        - World Music
+        - Electronic
+        - Vintage/Library Music
+        - Other
+    validations:
+      required: true
+  
+  - type: input
+    id: bpm_range
+    attributes:
+      label: BPM Range
+      description: Preferred tempo range for samples
+      placeholder: ex. 80-95
+      value: "70-110"
+  
+  - type: input
+    id: sample_count
+    attributes:
+      label: Target Sample Count
+      description: How many samples to collect
+      placeholder: ex. 20
+      value: "10"
+  
+  - type: dropdown
+    id: sample_type
+    attributes:
+      label: Sample Type
+      description: What type of samples to prioritize?
+      multiple: true
+      options:
+        - Drum Breaks
+        - Melodic Loops
+        - One-shots
+        - Vocals/Chops
+        - Textures/Atmosphere
+        - Full Songs
+  
+  - type: textarea
+    id: notes
+    attributes:
+      label: Additional Notes
+      description: Any specific requirements or preferences
+      placeholder: Looking for dusty, vintage sounding drums with minimal processing...
+  
+  - type: checkboxes
+    id: processing
+    attributes:
+      label: Processing Options
+      description: How should the agent process these samples?
+      options:
+        - label: Auto-detect BPM
+          required: true
+        - label: Organize by tempo
+          required: true
+        - label: Create review queue entry
+          required: true
+        - label: Download highest quality available
+          required: false

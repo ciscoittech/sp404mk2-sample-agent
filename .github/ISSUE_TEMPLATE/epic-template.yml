@@ -1,0 +1,83 @@
+name: Epic
+description: Create a new epic for major feature development
+title: "[EPIC] "
+labels: ["epic"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Epic Template
+        Use this for major features that will be broken down into smaller tasks.
+  
+  - type: input
+    id: title
+    attributes:
+      label: Epic Title
+      description: A clear, concise title for this epic
+      placeholder: ex. Implement Core Agent Infrastructure
+    validations:
+      required: true
+  
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Detailed description of what this epic encompasses
+      placeholder: |
+        This epic covers the implementation of...
+        
+        Goals:
+        - 
+        - 
+        
+        Success Criteria:
+        - 
+        - 
+    validations:
+      required: true
+  
+  - type: textarea
+    id: tasks
+    attributes:
+      label: Tasks Breakdown
+      description: List of tasks that make up this epic
+      placeholder: |
+        - [ ] Task 1: Setup base infrastructure
+        - [ ] Task 2: Implement core functionality
+        - [ ] Task 3: Add tests
+        - [ ] Task 4: Documentation
+      value: |
+        - [ ] 
+        - [ ] 
+        - [ ] 
+        - [ ] 
+    validations:
+      required: true
+  
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How important is this epic?
+      options:
+        - P0 - Critical
+        - P1 - High
+        - P2 - Medium
+        - P3 - Low
+      default: 1
+    validations:
+      required: true
+  
+  - type: input
+    id: estimated_time
+    attributes:
+      label: Estimated Time
+      description: Rough estimate for completion
+      placeholder: ex. 2 weeks
+  
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies
+      description: What needs to be completed before this epic?
+      placeholder: List any blocking epics or external dependencies

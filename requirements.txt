@@ -1,0 +1,34 @@
+# Core dependencies
+pydantic-ai>=0.0.1
+pydantic>=2.5.0
+pydantic-settings>=2.1.0
+
+# Database
+libsql-client>=0.3.0  # Turso Python client
+sqlalchemy>=2.0.0
+
+# AI/ML
+openai>=1.0.0  # For OpenRouter API
+httpx>=0.25.0
+
+# Audio processing
+yt-dlp>=2024.1.0
+librosa>=0.10.0
+soundfile>=0.12.0
+numpy>=1.24.0
+
+# CLI & Utilities
+typer>=0.9.0
+rich>=13.0.0
+python-dotenv>=1.0.0
+
+# Development (optional, install with pip install -e ".[dev]")
+# pytest>=7.4.0
+# pytest-asyncio>=0.21.0
+# pytest-cov>=4.1.0
+# pytest-mock>=3.12.0
+# black>=23.0.0
+# ruff>=0.1.0
+# mypy>=1.7.0
+# pre-commit>=3.5.0
+# ipython>=8.17.0

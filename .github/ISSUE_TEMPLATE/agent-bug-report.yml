@@ -1,0 +1,92 @@
+name: Agent Bug Report
+description: Report a bug with an agent's behavior
+title: "[BUG] "
+labels: ["bug", "agent"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Agent Bug Report
+        Help us fix issues with the sample collection agents.
+  
+  - type: dropdown
+    id: agent
+    attributes:
+      label: Which agent is affected?
+      description: Select the agent experiencing issues
+      options:
+        - Architect Agent
+        - Coder Agent
+        - Collector Agent
+        - Downloader Agent
+        - Analyzer Agent
+        - Reporter Agent
+        - All Agents
+        - Not Sure
+    validations:
+      required: true
+  
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: What happened? What did you expect to happen?
+      placeholder: |
+        The Downloader Agent failed when trying to...
+        
+        Expected: Samples should be downloaded and organized
+        Actual: Agent crashed with error...
+    validations:
+      required: true
+  
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: How can we reproduce this issue?
+      placeholder: |
+        1. Create issue with YouTube playlist URL
+        2. Agent picks up task
+        3. Downloads first 3 samples
+        4. Crashes on 4th sample
+    validations:
+      required: true
+  
+  - type: textarea
+    id: error_logs
+    attributes:
+      label: Error Logs
+      description: Include any error messages or logs
+      render: shell
+      placeholder: |
+        Paste error logs here...
+  
+  - type: input
+    id: github_issue
+    attributes:
+      label: Related GitHub Issue
+      description: If this happened during a task, link the issue
+      placeholder: ex. #123
+  
+  - type: dropdown
+    id: frequency
+    attributes:
+      label: How often does this occur?
+      options:
+        - Every time
+        - Most of the time
+        - Sometimes
+        - Rarely
+        - Just once
+    validations:
+      required: true
+  
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Any relevant environment details
+      value: |
+        - Python version:
+        - OS:
+        - Agent version:
