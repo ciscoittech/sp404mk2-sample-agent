@@ -65,7 +65,7 @@ dev = [
 ]
 
 [project.scripts]
-sp404agent = "sp404mk2_agent.cli:app"
+sp404agent = "src.cli:app"
 
 [project.urls]
 Homepage = "https://github.com/ciscoittech/sp404mk2-sample-agent"
