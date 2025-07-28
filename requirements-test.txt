@@ -1,0 +1,24 @@
+# Testing dependencies for SP404MK2 Sample Agent
+
+# Core testing framework
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+pytest-mock>=3.11.0
+pytest-cov>=4.1.0
+pytest-timeout>=2.1.0
+pytest-xdist>=3.3.0  # For parallel test execution
+
+# Mocking and fixtures
+responses>=0.23.0  # For mocking HTTP requests
+aioresponses>=0.7.4  # For mocking aiohttp requests
+
+# Test data generation
+factory-boy>=3.3.0
+faker>=19.0.0
+
+# Audio file mocking
+pydub>=0.25.1  # For creating test audio files
+
+# Additional testing utilities
+freezegun>=1.2.0  # For mocking time
+testfixtures>=7.1.0  # Additional test fixtures

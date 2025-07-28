@@ -2,7 +2,7 @@
 
 import asyncio
 from abc import ABC, abstractmethod
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, TypeVar
 from uuid import uuid4
@@ -85,7 +85,7 @@ class Agent(ABC):
         """
         self.current_task_id = task_id
         self.status = AgentStatus.RUNNING
-        started_at = datetime.utcnow()
+        started_at = datetime.now(timezone.utc)
         
         for attempt in range(self.max_retries + 1):
             try:
@@ -97,7 +97,7 @@ class Agent(ABC):
                 
                 # Success
                 self.status = AgentStatus.SUCCESS
-                result.completed_at = datetime.utcnow()
+                result.completed_at = datetime.now(timezone.utc)
                 return result
                 
             except asyncio.TimeoutError:
@@ -116,7 +116,7 @@ class Agent(ABC):
                     status=AgentStatus.FAILED,
                     error=error_msg,
                     started_at=started_at,
-                    completed_at=datetime.utcnow(),
+                    completed_at=datetime.now(timezone.utc),
                     metadata={"retry_count": self.retry_count}
                 )
                 
@@ -136,7 +136,7 @@ class Agent(ABC):
                     status=AgentStatus.FAILED,
                     error=error_msg,
                     started_at=started_at,
-                    completed_at=datetime.utcnow(),
+                    completed_at=datetime.now(timezone.utc),
                     metadata={"retry_count": self.retry_count}
                 )
         
@@ -147,7 +147,7 @@ class Agent(ABC):
             status=AgentStatus.FAILED,
             error="Max retries exceeded",
             started_at=started_at,
-            completed_at=datetime.utcnow(),
+            completed_at=datetime.now(timezone.utc),
             metadata={"retry_count": self.retry_count}
         )
     

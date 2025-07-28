@@ -1,0 +1,88 @@
+{
+  "reorganization": {
+    "instrument_mapping": {
+      "comment": "Override default instrument assignments",
+      "custom_rules": {
+        "808": "drums",
+        "909": "drums",
+        "mpc": "drums",
+        "sp404": "drums",
+        "moog": "bass",
+        "juno": "keys",
+        "dx7": "keys"
+      }
+    },
+    
+    "bank_assignments": {
+      "comment": "Customize how instruments are assigned to banks",
+      "BANK_A": ["drums", "percussion"],
+      "BANK_B": ["bass"],
+      "BANK_C": ["keys", "strings"],
+      "BANK_D": ["vocals", "brass", "atmosphere", "unknown"]
+    },
+    
+    "output_formats": {
+      "human_readable": {
+        "folder_structure": "by_instrument",
+        "filename_pattern": "{subcategory}_{number:02d}.wav",
+        "include_bpm_in_folder": true,
+        "include_genre_in_folder": true
+      },
+      
+      "sp404": {
+        "maintain_empty_pads": true,
+        "bank_name_pattern": "BANK_{letter}_{instrument}",
+        "pad_filename_pattern": "{pad:04d}_0000.wav"
+      }
+    },
+    
+    "detection": {
+      "use_ai_fallback": true,
+      "ai_model": "google/gemini-flash-1.5-8b",
+      "ai_confidence_threshold": 0.7,
+      "flag_unknown_instruments": true,
+      "additional_patterns": {
+        "comment": "Add custom regex patterns for instrument detection",
+        "patterns": [
+          {
+            "pattern": "(trap|drill)",
+            "instrument": "drums",
+            "subcategory": "trap"
+          },
+          {
+            "pattern": "(lofi|lo-fi)",
+            "instrument": "atmosphere",
+            "subcategory": "lofi"
+          }
+        ]
+      }
+    },
+    
+    "quality_checks": {
+      "validate_wav_format": true,
+      "check_sample_rate": true,
+      "acceptable_sample_rates": [44100, 48000],
+      "max_filename_length": 255,
+      "warn_on_clipping": true
+    },
+    
+    "processing": {
+      "parallel_processing": false,
+      "batch_size": 50,
+      "preserve_metadata": true,
+      "create_backups": false,
+      "verbose_logging": true
+    },
+    
+    "genre_keywords": {
+      "comment": "Keywords to identify genres from source descriptions",
+      "boom_bap": ["boom bap", "boom_bap", "90s hip hop"],
+      "jazz": ["jazz", "bebop", "swing", "blue note"],
+      "soul": ["soul", "motown", "funk", "groove"],
+      "lofi": ["lofi", "lo-fi", "chill", "dusty"],
+      "trap": ["trap", "drill", "808", "hi-hat roll"],
+      "house": ["house", "4x4", "dance", "club"],
+      "ambient": ["ambient", "atmosphere", "pad", "texture"]
+    }
+  }
+}

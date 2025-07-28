@@ -13,26 +13,37 @@ This project uses Pydantic AI to create specialized agents that:
 
 ## 🚀 Features
 
+### Core Features
+- **Conversational CLI Interface**: Natural language interaction for sample discovery
 - **Multi-Agent Architecture**: Specialized agents for different tasks
-- **AI-Powered Decisions**: Uses DeepSeek R1, DeepSeek V3, Qwen3, and Google Flash models
+- **Intelligent YouTube Discovery**: Enhanced search with quality scoring
+- **Timestamp-Based Extraction**: Extract specific segments from longer videos
 - **Automated BPM Detection**: Analyzes and organizes samples by tempo
-- **GitHub Integration**: All tasks tracked as GitHub issues
-- **Review Queue System**: Human-in-the-loop approval process
 - **Database Tracking**: Turso database for sample metadata
-- **Cost Optimization**: Uses cheapest appropriate AI model for each task
+
+### Specialized Agents
+- **Groove Analyst**: Deep rhythm analysis with swing detection and artist similarity
+- **Era Expert**: Musical production history and era-specific knowledge
+- **Sample Relationship**: Compatibility analysis between samples
+- **Intelligent Organizer**: Smart sample library management with multiple strategies
+
+### Organization Features
+- **SP-404 Bank Templates**: Pre-configured layouts for different performance styles
+- **Compatibility Grouping**: Automatically groups samples that work well together
+- **Genre/Era Organization**: Historical and stylistic categorization
+- **Project-Specific Layouts**: Tailored organization for different workflows
 
 ## 🛠️ Tech Stack
 
 - **Framework**: [Pydantic AI](https://github.com/pydantic/pydantic-ai)
 - **Database**: [Turso](https://turso.tech/) (SQLite at the edge)
 - **AI Models**: Via [OpenRouter](https://openrouter.ai/)
-  - DeepSeek R1 (Architecture)
-  - DeepSeek V3 / Qwen3 Coder (Implementation)
-  - Google Flash 2.0 (Quick tasks)
+  - Gemma-2-27B (Conversational interface)
+  - Google Flash 2.0 (Quick analysis tasks)
 - **Audio Processing**: 
   - [yt-dlp](https://github.com/yt-dlp/yt-dlp) (YouTube downloads)
   - [librosa](https://librosa.org/) (Audio analysis)
-- **CLI**: [Typer](https://typer.tiangolo.com/)
+- **CLI**: Natural language interface with Rich formatting
 - **Language**: Python 3.11+
 
 ## 📁 Project Structure
@@ -93,80 +104,87 @@ gh auth login
 
 ## 📋 Usage
 
-### Creating a Sample Collection Task
+### Conversational Sample Discovery
 
 ```bash
-# Using GitHub CLI
-gh issue create \
-  --title "[SAMPLES] Jazz drum breaks from 1970s" \
-  --label "agent-task,samples" \
-  --body "Source: YouTube\nStyle: Jazz\nBPM: 80-100\nCount: 20"
+# Start the conversational CLI
+python sp404_chat.py
 
-# Using the agent CLI
-python -m sp404agent collect \
-  --source "https://youtube.com/playlist?..." \
-  --style "jazz" \
-  --bpm "80-100" \
-  --count 20
+# Example conversations:
+> Find me some 90s boom bap drums like DJ Premier
+> Show me jazzy piano loops around 85 BPM
+> I need that Dilla swing drums
+> Looking for 70s soul bass lines with that Motown vibe
 ```
 
-### Reviewing Samples
+### Intelligent Organization
 
 ```bash
-# Check review queue
-python -m sp404agent review --list
+# Organize by musical properties (BPM, key, type)
+python -m sp404agent organize --strategy musical --dir "my_samples"
 
-# Approve samples
-python -m sp404agent review --approve 1,3,5,7
+# Create SP-404 banks
+python -m sp404agent organize --strategy sp404 --template hip_hop_kit
 
-# Reject samples
-python -m sp404agent review --reject 2,4,6
+# Group compatible samples
+python -m sp404agent organize --strategy compatibility --threshold 7.0
+
+# Organize by genre and era
+python -m sp404agent organize --strategy genre
 ```
 
-### Agent Management
+### Agent Analysis
 
 ```bash
-# Check agent status
-python -m sp404agent status
+# Analyze groove characteristics
+python test_groove_analyst.py
 
-# Run specific agent
-python -m sp404agent run --agent downloader --issue 123
+# Check era information
+python test_era_expert.py
 
-# View agent logs
-python -m sp404agent logs --agent analyzer --tail 50
+# Test sample compatibility
+python test_sample_relationship.py
+
+# Test organization system
+python test_intelligent_organizer.py
 ```
 
 ## 🤖 Agent Types
 
-1. **Architect Agent** (DeepSeek R1)
-   - Designs system improvements
-   - Plans complex workflows
-   - Optimizes agent interactions
+### Discovery & Collection
+1. **Collector Agent**
+   - Enhanced YouTube search with quality scoring
+   - Era-specific and producer-style searches
+   - Filters out non-sample content
 
-2. **Coder Agent** (DeepSeek V3/Qwen3)
-   - Implements new features
-   - Fixes bugs
-   - Writes tests
-
-3. **Collector Agent** (Flash 2.0)
-   - Discovers sample sources
-   - Validates URLs
-   - Categorizes content
-
-4. **Downloader Agent**
+2. **Downloader Agent**
    - Downloads from YouTube/direct links
+   - Timestamp-based extraction
    - Handles retries and errors
-   - Converts to proper format
 
-5. **Analyzer Agent**
-   - Detects BPM
-   - Analyzes audio characteristics
-   - Organizes by tempo
+### Analysis Agents
+3. **Groove Analyst Agent**
+   - Deep rhythm analysis with swing percentage
+   - Artist similarity matching (Dilla, Questlove, etc.)
+   - Groove type classification
 
-6. **Reporter Agent**
-   - Creates GitHub issues
-   - Updates task status
-   - Generates review queues
+4. **Era Expert Agent**
+   - Detects production era from audio
+   - Provides equipment and technique knowledge
+   - Generates era-specific search queries
+
+5. **Sample Relationship Agent**
+   - Analyzes harmonic compatibility
+   - Checks rhythmic alignment
+   - Evaluates frequency overlap
+   - Suggests optimal arrangements
+
+### Organization
+6. **Intelligent Organizer**
+   - Multiple organization strategies
+   - SP-404 bank templates
+   - Compatibility grouping
+   - Project-specific layouts
 
 ## 📊 Database Schema
 
@@ -184,6 +202,28 @@ This project uses GitHub issues for all task tracking:
 2. Create an issue using appropriate template
 3. Fork and create a feature branch
 4. Submit PR referencing the issue
+
+## 🧪 Testing
+
+The project includes a comprehensive test suite using pytest:
+
+```bash
+# Run all tests
+make test
+
+# Run with coverage report
+make coverage
+
+# Run specific test suites
+make test-unit        # Unit tests only
+make test-integration # Integration tests
+make test-e2e        # End-to-end tests
+
+# Run tests with the test runner
+python run_tests.py
+```
+
+For detailed testing information, see [TESTING.md](docs/TESTING.md)
 
 ## 📄 License
 

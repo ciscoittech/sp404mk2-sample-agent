@@ -1,15 +1,22 @@
 """Command-line interface for SP404MK2 Sample Agent."""
 
+import asyncio
 from pathlib import Path
-from typing import Optional
+from typing import Optional, List
+from datetime import datetime
 
 import typer
 from rich import print
 from rich.console import Console
 from rich.table import Table
+from rich.progress import Progress, SpinnerColumn, TextColumn
 
 from .config import settings
 from .logging_config import setup_logging
+from .agents.collector import CollectorAgent
+from .agents.downloader import DownloaderAgent
+from .agents.analyzer import AnalyzerAgent
+from .agents.reporter import ReporterAgent
 
 # Create CLI app
 app = typer.Typer(
@@ -23,236 +30,453 @@ console = Console()
 
 @app.command()
 def collect(
-    source: str = typer.Argument(..., help="Source URL or channel to collect from"),
-    style: str = typer.Option("lo-fi", "--style", "-s", help="Music style to collect"),
-    bpm: str = typer.Option("70-110", "--bpm", "-b", help="BPM range (e.g., '80-95')"),
+    genre: str = typer.Argument(..., help="Musical genre (e.g., jazz, hip-hop)"),
+    style: Optional[str] = typer.Option(None, "--style", "-s", help="Specific style within genre"),
+    bpm_min: Optional[int] = typer.Option(None, "--bpm-min", help="Minimum BPM"),
+    bpm_max: Optional[int] = typer.Option(None, "--bpm-max", help="Maximum BPM"),
     count: int = typer.Option(10, "--count", "-c", help="Number of samples to collect"),
-    create_issue: bool = typer.Option(True, "--issue/--no-issue", help="Create GitHub issue"),
+    download: bool = typer.Option(False, "--download", "-d", help="Download immediately"),
 ) -> None:
     """
-    Start a sample collection task.
+    Collect samples based on criteria.
     
-    Example:
-        sp404agent collect "https://youtube.com/playlist?..." --style jazz --bpm 90-100
+    Examples:
+        sp404agent collect jazz --style bebop --bpm-min 120 --bpm-max 140
+        sp404agent collect hip-hop --count 20 --download
     """
-    console.print(f"[bold green]Starting sample collection task[/bold green]")
-    console.print(f"Source: {source}")
-    console.print(f"Style: {style}")
-    console.print(f"BPM Range: {bpm}")
-    console.print(f"Target Count: {count}")
+    async def run_collection():
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            console=console,
+        ) as progress:
+            # Discover samples
+            task = progress.add_task("[cyan]Discovering samples...", total=None)
+            
+            collector = CollectorAgent()
+            result = await collector.execute(
+                task_id=f"cli_collect_{genre}_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
+                genre=genre,
+                style=style,
+                bpm_range=(bpm_min, bpm_max) if bpm_min and bpm_max else None,
+                max_results=count
+            )
+            
+            progress.update(task, completed=True)
+            
+            if result.status.value == "success":
+                sources = result.result.get("sources", [])
+                console.print(f"\n[green]✓ Found {len(sources)} samples[/green]")
+                
+                # Display results
+                if sources:
+                    table = Table(title="Discovered Samples")
+                    table.add_column("#", style="dim", width=4)
+                    table.add_column("Title", style="cyan")
+                    table.add_column("Platform", style="magenta")
+                    table.add_column("Duration", style="yellow")
+                    
+                    for i, source in enumerate(sources[:10], 1):  # Show first 10
+                        table.add_row(
+                            str(i),
+                            source.get("title", "Unknown")[:50],
+                            source.get("platform", "unknown"),
+                            f"{source.get('duration', 0)}s"
+                        )
+                    
+                    if len(sources) > 10:
+                        table.add_row("...", f"({len(sources)-10} more)", "...", "...")
+                    
+                    console.print(table)
+                
+                # Download if requested
+                if download and sources:
+                    console.print()
+                    task = progress.add_task("[cyan]Downloading samples...", total=len(sources))
+                    
+                    downloader = DownloaderAgent()
+                    dl_result = await downloader.execute(
+                        task_id=f"cli_download_{genre}_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
+                        source_urls=[s["url"] for s in sources],
+                        output_dir=str(settings.download_path),
+                        max_count=count
+                    )
+                    
+                    progress.update(task, completed=True)
+                    
+                    if dl_result.status.value == "success":
+                        count = dl_result.result.get("downloaded_count", 0)
+                        console.print(f"\n[green]✓ Downloaded {count} files to {settings.download_path}[/green]")
+                    else:
+                        console.print(f"\n[red]✗ Download failed: {dl_result.error}[/red]")
+            else:
+                console.print(f"\n[red]✗ Collection failed: {result.error}[/red]")
     
-    if create_issue:
-        console.print("\n[yellow]Creating GitHub issue for tracking...[/yellow]")
-        # TODO: Implement GitHub issue creation
-        
-    # TODO: Implement collection logic
-    console.print("\n[red]Collection not yet implemented[/red]")
+    asyncio.run(run_collection())
+
+
+@app.command()
+def analyze(
+    input_dir: str = typer.Argument(..., help="Directory containing audio files"),
+    organize: bool = typer.Option(False, "--organize", "-o", help="Organize files by BPM"),
+    detect_key: bool = typer.Option(False, "--key", "-k", help="Detect musical key"),
+    report: bool = typer.Option(False, "--report", "-r", help="Generate analysis report"),
+) -> None:
+    """
+    Analyze audio files for BPM, key, and other characteristics.
+    
+    Examples:
+        sp404agent analyze ./downloads
+        sp404agent analyze ./samples --organize --key --report
+    """
+    async def run_analysis():
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            console=console,
+        ) as progress:
+            task = progress.add_task("[cyan]Analyzing audio files...", total=None)
+            
+            analyzer = AnalyzerAgent()
+            result = await analyzer.execute(
+                task_id=f"cli_analyze_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
+                input_dir=input_dir,
+                organize_by_bpm=organize,
+                detect_key=detect_key,
+                create_report=report,
+                report_path=f"analysis_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json" if report else None
+            )
+            
+            progress.update(task, completed=True)
+            
+            if result.status.value == "success":
+                count = result.result.get("analyzed_count", 0)
+                console.print(f"\n[green]✓ Analyzed {count} files[/green]")
+                
+                # Show summary
+                if count > 0:
+                    files = result.result.get("files", [])
+                    
+                    # BPM summary
+                    bpms = [f.get("bpm", 0) for f in files if f.get("bpm")]
+                    if bpms:
+                        avg_bpm = sum(bpms) / len(bpms)
+                        console.print(f"\n[bold]Analysis Summary:[/bold]")
+                        console.print(f"  Average BPM: {avg_bpm:.1f}")
+                        console.print(f"  BPM Range: {min(bpms):.0f} - {max(bpms):.0f}")
+                    
+                    # Key distribution
+                    if detect_key:
+                        key_groups = result.result.get("key_groups", {})
+                        if key_groups:
+                            console.print(f"\n  Key Distribution:")
+                            for key, files in key_groups.items():
+                                console.print(f"    {key}: {len(files)} files")
+                    
+                    console.print(f"\n  Files organized by BPM: {'Yes' if organize else 'No'}")
+                    
+                    if report:
+                        console.print(f"  Report saved: {result.result.get('report_path')}")
+            else:
+                console.print(f"\n[red]✗ Analysis failed: {result.error}[/red]")
+    
+    asyncio.run(run_analysis())
 
 
 @app.command()
 def review(
-    list_pending: bool = typer.Option(False, "--list", "-l", help="List pending reviews"),
-    approve: Optional[str] = typer.Option(None, "--approve", "-a", help="Approve samples (comma-separated IDs)"),
-    reject: Optional[str] = typer.Option(None, "--reject", "-r", help="Reject samples (comma-separated IDs)"),
+    action: str = typer.Argument("list", help="Action: list, create"),
+    batch_id: Optional[int] = typer.Option(None, "--batch", "-b", help="Batch ID"),
 ) -> None:
     """
-    Review pending samples in the queue.
+    Manage review queues for sample approval.
     
     Examples:
-        sp404agent review --list
-        sp404agent review --approve 1,3,5 --reject 2,4
+        sp404agent review list
+        sp404agent review create --batch 1
     """
-    if list_pending:
-        # TODO: Load and display pending reviews
-        console.print("[bold]Pending Sample Reviews[/bold]\n")
+    async def run_review():
+        reporter = ReporterAgent()
         
-        table = Table(show_header=True, header_style="bold magenta")
-        table.add_column("ID", style="dim", width=6)
-        table.add_column("Batch", width=20)
-        table.add_column("Source", width=30)
-        table.add_column("Count", justify="right")
-        table.add_column("Date", width=12)
-        
-        # TODO: Add actual data
-        table.add_row("1", "JAZZ-DRUMS-001", "YouTube - Vintage Jazz", "15", "2025-01-27")
-        
-        console.print(table)
-        return
-        
-    if approve:
-        approved_ids = [id.strip() for id in approve.split(",")]
-        console.print(f"[green]Approving samples: {approved_ids}[/green]")
-        # TODO: Implement approval logic
-        
-    if reject:
-        rejected_ids = [id.strip() for id in reject.split(",")]
-        console.print(f"[red]Rejecting samples: {rejected_ids}[/red]")
-        # TODO: Implement rejection logic
+        if action == "create":
+            # Mock getting samples - in production, get from database
+            samples = [
+                {
+                    "filename": f"sample_{i}.wav",
+                    "bpm": 90 + i,
+                    "key": ["C major", "F minor", "G major"][i % 3],
+                    "source_url": f"https://example.com/{i}"
+                }
+                for i in range(5)
+            ]
+            
+            result = await reporter.execute(
+                task_id=f"cli_review_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
+                action="create_review_queue",
+                batch_data={
+                    "batch_name": f"Review Batch {batch_id or datetime.now().strftime('%Y%m%d')}",
+                    "samples": samples
+                },
+                output_dir=str(settings.review_queue_path)
+            )
+            
+            if result.status.value == "success":
+                console.print(f"\n[green]✓ Review queue created: {result.result['review_file']}[/green]")
+                console.print(f"  Samples: {result.result['samples_count']}")
+            else:
+                console.print(f"\n[red]✗ Failed to create review queue[/red]")
+                
+        elif action == "list":
+            # List review files
+            import glob
+            pattern = f"{settings.review_queue_path}/*.md"
+            files = glob.glob(pattern)
+            
+            if files:
+                console.print("\n[bold]Review Queues:[/bold]")
+                
+                table = Table()
+                table.add_column("File", style="cyan")
+                table.add_column("Created", style="yellow")
+                table.add_column("Size", style="green")
+                
+                for f in sorted(files)[-10:]:  # Show last 10
+                    path = Path(f)
+                    created = datetime.fromtimestamp(path.stat().st_mtime)
+                    size = path.stat().st_size / 1024  # KB
+                    
+                    table.add_row(
+                        path.name,
+                        created.strftime("%Y-%m-%d %H:%M"),
+                        f"{size:.1f} KB"
+                    )
+                
+                console.print(table)
+            else:
+                console.print("\n[yellow]No review queues found[/yellow]")
+                console.print(f"  Looked in: {settings.review_queue_path}")
+    
+    asyncio.run(run_review())
 
 
 @app.command()
 def status(
-    agent: Optional[str] = typer.Option(None, "--agent", "-a", help="Show status for specific agent"),
-    tasks: bool = typer.Option(False, "--tasks", "-t", help="Show active tasks"),
+    tasks: bool = typer.Option(False, "--tasks", "-t", help="Show task statistics"),
 ) -> None:
     """
-    Check agent and system status.
-    
-    Examples:
-        sp404agent status
-        sp404agent status --agent downloader
-        sp404agent status --tasks
-    """
-    console.print("[bold]SP404MK2 Sample Agent Status[/bold]\n")
-    
-    if agent:
-        # TODO: Show specific agent status
-        console.print(f"Agent: {agent}")
-        console.print("Status: [green]Ready[/green]")
-    else:
-        # Show all agents status
-        table = Table(show_header=True, header_style="bold magenta")
-        table.add_column("Agent", style="cyan", width=20)
-        table.add_column("Status", width=12)
-        table.add_column("Last Active", width=20)
-        table.add_column("Tasks Completed", justify="right")
-        
-        # TODO: Get actual agent statuses
-        agents = [
-            ("Architect", "[green]Idle[/green]", "Never", "0"),
-            ("Coder", "[green]Idle[/green]", "Never", "0"),
-            ("Collector", "[green]Idle[/green]", "Never", "0"),
-            ("Downloader", "[green]Idle[/green]", "Never", "0"),
-            ("Analyzer", "[green]Idle[/green]", "Never", "0"),
-            ("Reporter", "[green]Idle[/green]", "Never", "0"),
-        ]
-        
-        for agent_data in agents:
-            table.add_row(*agent_data)
-            
-        console.print(table)
-    
-    if tasks:
-        console.print("\n[bold]Active Tasks[/bold]")
-        # TODO: Show active tasks
-        console.print("[dim]No active tasks[/dim]")
-
-
-@app.command()
-def run(
-    agent: str = typer.Argument(..., help="Agent name to run"),
-    issue: int = typer.Argument(..., help="GitHub issue number"),
-    dry_run: bool = typer.Option(False, "--dry-run", help="Simulate without executing"),
-) -> None:
-    """
-    Manually run a specific agent on a GitHub issue.
+    Check system status and configuration.
     
     Example:
-        sp404agent run downloader 123
+        sp404agent status
+        sp404agent status --tasks
     """
-    console.print(f"[bold]Running {agent} agent on issue #{issue}[/bold]")
+    console.print("[bold green]SP404MK2 Sample Agent Status[/bold green]\n")
     
-    if dry_run:
-        console.print("[yellow]DRY RUN MODE - No actions will be performed[/yellow]")
+    # Configuration status
+    console.print("[bold]Configuration:[/bold]")
+    console.print(f"  Version: 0.1.0")
+    console.print(f"  Log Level: {settings.agent_log_level}")
     
-    # TODO: Implement agent execution
-    console.print(f"\n[red]Agent execution not yet implemented[/red]")
+    # Check critical components
+    console.print("\n[bold]Components:[/bold]")
+    
+    # Database
+    if settings.turso_url and settings.turso_token:
+        console.print("  ✅ Database: Configured")
+    else:
+        console.print("  ❌ Database: Not configured")
+    
+    # API Keys
+    if settings.openrouter_api_key:
+        console.print("  ✅ OpenRouter API: Configured")
+    else:
+        console.print("  ❌ OpenRouter API: Not configured")
+    
+    # Directories
+    console.print("\n[bold]Directories:[/bold]")
+    for name, path in [
+        ("Downloads", settings.download_path),
+        ("Samples", settings.sample_path),
+        ("Review Queue", settings.review_queue_path)
+    ]:
+        if Path(path).exists():
+            console.print(f"  ✅ {name}: {path}")
+        else:
+            console.print(f"  ⚠️  {name}: {path} (not created)")
+    
+    if tasks:
+        console.print("\n[bold]Task Statistics:[/bold]")
+        # In production, query database for stats
+        console.print("  [dim]Database statistics not available in demo mode[/dim]")
 
 
 @app.command()
-def logs(
-    agent: Optional[str] = typer.Option(None, "--agent", "-a", help="Filter logs by agent"),
-    tail: int = typer.Option(20, "--tail", "-n", help="Number of recent logs to show"),
-    follow: bool = typer.Option(False, "--follow", "-f", help="Follow log output"),
+def workflow(
+    genre: str = typer.Argument(..., help="Musical genre"),
+    count: int = typer.Option(5, "--count", "-c", help="Number of samples"),
+    skip_download: bool = typer.Option(False, "--skip-download", help="Skip download phase"),
 ) -> None:
     """
-    View agent logs.
+    Run complete workflow: collect → download → analyze → review.
     
-    Examples:
-        sp404agent logs --tail 50
-        sp404agent logs --agent analyzer --follow
+    Example:
+        sp404agent workflow jazz --count 10
+        sp404agent workflow "lo-fi hip hop" --skip-download
     """
-    console.print(f"[bold]Agent Logs[/bold]")
+    async def run_workflow():
+        console.print(f"\n[bold cyan]🎵 Starting complete workflow for '{genre}'[/bold cyan]\n")
+        
+        # Track timing
+        start_time = datetime.now()
+        
+        # 1. Collect
+        console.print("[bold]1️⃣  Collecting samples...[/bold]")
+        collector = CollectorAgent()
+        collect_result = await collector.execute(
+            task_id=f"workflow_{genre.replace(' ', '_')}_collect",
+            genre=genre,
+            max_results=count
+        )
+        
+        if collect_result.status.value != "success":
+            console.print("[red]✗ Collection failed[/red]")
+            return
+        
+        sources = collect_result.result.get("sources", [])
+        console.print(f"[green]✓ Found {len(sources)} samples[/green]")
+        
+        # 2. Download (optional)
+        if not skip_download and sources:
+            console.print("\n[bold]2️⃣  Downloading samples...[/bold]")
+            downloader = DownloaderAgent()
+            download_result = await downloader.execute(
+                task_id=f"workflow_{genre.replace(' ', '_')}_download",
+                source_urls=[s["url"] for s in sources],
+                output_dir=str(settings.download_path)
+            )
+            
+            if download_result.status.value != "success":
+                console.print("[red]✗ Download failed[/red]")
+                return
+            
+            console.print(f"[green]✓ Downloaded {download_result.result['downloaded_count']} files[/green]")
+        else:
+            console.print("\n[bold]2️⃣  Skipping download phase[/bold]")
+        
+        # 3. Analyze
+        console.print("\n[bold]3️⃣  Analyzing samples...[/bold]")
+        analyzer = AnalyzerAgent()
+        analyze_result = await analyzer.execute(
+            task_id=f"workflow_{genre.replace(' ', '_')}_analyze",
+            input_dir=str(settings.download_path),
+            organize_by_bpm=True,
+            detect_key=True
+        )
+        
+        if analyze_result.status.value != "success":
+            console.print("[red]✗ Analysis failed[/red]")
+            return
+        
+        console.print(f"[green]✓ Analyzed {analyze_result.result['analyzed_count']} files[/green]")
+        
+        # 4. Create review queue
+        console.print("\n[bold]4️⃣  Creating review queue...[/bold]")
+        reporter = ReporterAgent()
+        review_result = await reporter.execute(
+            task_id=f"workflow_{genre.replace(' ', '_')}_review",
+            action="create_review_queue",
+            batch_data={
+                "batch_name": f"{genre.title()} Collection - {datetime.now().strftime('%Y%m%d')}",
+                "samples": analyze_result.result["files"]
+            },
+            output_dir=str(settings.review_queue_path)
+        )
+        
+        if review_result.status.value == "success":
+            console.print(f"[green]✓ Review queue created: {review_result.result['review_file']}[/green]")
+            
+            # Summary
+            elapsed = datetime.now() - start_time
+            console.print(f"\n[bold green]✨ Workflow complete![/bold green]")
+            console.print(f"  Total time: {elapsed.seconds}s")
+            console.print(f"  Samples ready for review: {len(analyze_result.result['files'])}")
+            console.print(f"  Review file: {review_result.result['review_file']}")
+        else:
+            console.print("[red]✗ Review queue creation failed[/red]")
     
-    if agent:
-        console.print(f"Filtering for agent: {agent}")
-    
-    console.print(f"Showing last {tail} entries")
-    
-    if follow:
-        console.print("[yellow]Following logs... (Ctrl+C to stop)[/yellow]")
-    
-    # TODO: Implement log viewing
-    console.print("\n[red]Log viewing not yet implemented[/red]")
+    asyncio.run(run_workflow())
 
 
 @app.command()
 def config(
-    show: bool = typer.Option(False, "--show", "-s", help="Show current configuration"),
+    show: bool = typer.Option(True, "--show/--no-show", help="Show current configuration"),
     validate: bool = typer.Option(False, "--validate", "-v", help="Validate configuration"),
 ) -> None:
     """
-    Manage agent configuration.
+    Display and validate configuration.
     
     Examples:
-        sp404agent config --show
+        sp404agent config
         sp404agent config --validate
     """
     if show:
-        console.print("[bold]Current Configuration[/bold]\n")
+        table = Table(title="SP404MK2 Agent Configuration")
+        table.add_column("Setting", style="cyan", no_wrap=True)
+        table.add_column("Value", style="magenta")
+        table.add_column("Status", style="green")
         
-        # Group settings by category
-        categories = {
-            "API Keys": ["openrouter_api_key", "turso_url", "github_token"],
-            "Agent Settings": ["agent_log_level", "agent_max_retries", "agent_timeout_seconds"],
-            "File Paths": ["download_path", "sample_path", "review_queue_path"],
-            "Audio Settings": ["default_sample_rate", "default_bit_depth", "max_download_size_mb"],
-            "Cost Limits": ["daily_token_limit", "cost_alert_threshold_usd"],
-            "Models": ["architect_model", "coder_models", "collector_model"],
-        }
+        # Check each setting
+        configs = [
+            ("Download Path", str(settings.download_path), "✅" if Path(settings.download_path).exists() else "⚠️"),
+            ("Sample Path", str(settings.sample_path), "✅" if Path(settings.sample_path).exists() else "⚠️"),
+            ("Review Queue Path", str(settings.review_queue_path), "✅" if Path(settings.review_queue_path).exists() else "⚠️"),
+            ("Sample Rate", f"{settings.default_sample_rate} Hz", "✅"),
+            ("Bit Depth", f"{settings.default_bit_depth} bit", "✅"),
+            ("Max Download Size", f"{settings.max_download_size_mb} MB", "✅"),
+            ("Daily Token Limit", f"{settings.daily_token_limit:,}", "✅"),
+            ("Cost Alert Threshold", f"${settings.cost_alert_threshold_usd}", "✅"),
+        ]
         
-        for category, fields in categories.items():
-            console.print(f"[cyan]{category}:[/cyan]")
-            for field in fields:
-                value = getattr(settings, field, "Not set")
-                # Mask sensitive values
-                if "key" in field.lower() or "token" in field.lower():
-                    if value and value != "Not set":
-                        value = value[:8] + "..." if len(str(value)) > 8 else "***"
-                console.print(f"  {field}: {value}")
-            console.print()
+        for setting, value, status in configs:
+            table.add_row(setting, value, status)
+        
+        console.print(table)
     
     if validate:
-        console.print("[bold]Validating configuration...[/bold]\n")
+        console.print("\n[bold]Validating configuration...[/bold]\n")
         
         errors = []
         warnings = []
         
-        # Check required fields
+        # Check required settings
         if not settings.openrouter_api_key:
-            errors.append("OPENROUTER_API_KEY is not set")
-        if not settings.turso_url:
-            warnings.append("TURSO_URL is not set (database features disabled)")
-        if not settings.turso_token:
-            warnings.append("TURSO_TOKEN is not set (database features disabled)")
-            
+            errors.append("OPENROUTER_API_KEY not set - AI features will not work")
+        
+        if not settings.turso_url or not settings.turso_token:
+            warnings.append("Turso database not configured - using local mode")
+        
+        # Check directories
+        for name, path in [
+            ("Download", settings.download_path),
+            ("Sample", settings.sample_path),
+            ("Review Queue", settings.review_queue_path)
+        ]:
+            if not Path(path).exists():
+                warnings.append(f"{name} directory does not exist: {path}")
+        
         # Display results
         if errors:
-            console.print("[red]Errors:[/red]")
+            console.print("[red]❌ Errors found:[/red]")
             for error in errors:
-                console.print(f"  ❌ {error}")
+                console.print(f"   {error}")
         
         if warnings:
-            console.print("\n[yellow]Warnings:[/yellow]")
+            console.print("\n[yellow]⚠️  Warnings:[/yellow]")
             for warning in warnings:
-                console.print(f"  ⚠️  {warning}")
-                
-        if not errors and not warnings:
-            console.print("[green]✅ Configuration is valid![/green]")
-        elif not errors:
-            console.print("\n[green]Configuration is valid with warnings[/green]")
-        else:
-            console.print("\n[red]Configuration has errors that must be fixed[/red]")
+                console.print(f"   {warning}")
+        
+        if not errors:
+            console.print("\n[green]✅ Configuration is valid![/green]")
 
 
 @app.callback()

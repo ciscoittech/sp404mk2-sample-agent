@@ -66,6 +66,10 @@ class Settings(BaseSettings):
         default=Path("./review_queue"),
         description="Path for review queue files"
     )
+    download_metadata_path: Path = Field(
+        default=Path("./downloads/metadata"),
+        description="Path for download metadata and analysis"
+    )
     
     # Audio Processing
     default_sample_rate: int = Field(
@@ -101,8 +105,12 @@ class Settings(BaseSettings):
         description="Models for Coder Agent (in priority order)"
     )
     collector_model: str = Field(
-        default="google/gemini-flash-2.0",
+        default="qwen/qwen3-235b-a22b-2507:free",
         description="Model for Collector Agent"
+    )
+    chat_model: str = Field(
+        default="google/gemma-3-27b-it",
+        description="Model for Chat Agent"
     )
     
     # Model Parameters
@@ -113,8 +121,16 @@ class Settings(BaseSettings):
         description="Default temperature for AI models"
     )
     model_max_tokens: int = Field(
-        default=4000,
+        default=8000,
         description="Default max tokens for AI responses"
+    )
+    chat_max_tokens: int = Field(
+        default=4000,
+        description="Max tokens for chat responses"
+    )
+    collector_max_tokens: int = Field(
+        default=2000,
+        description="Max tokens for collector responses"
     )
     
     @field_validator("turso_url")
@@ -136,7 +152,7 @@ class Settings(BaseSettings):
     
     def create_directories(self) -> None:
         """Create necessary directories if they don't exist."""
-        for path in [self.download_path, self.sample_path, self.review_queue_path]:
+        for path in [self.download_path, self.sample_path, self.review_queue_path, self.download_metadata_path]:
             path.mkdir(parents=True, exist_ok=True)
     
     def get_bpm_folder(self, bpm: int) -> Path:
