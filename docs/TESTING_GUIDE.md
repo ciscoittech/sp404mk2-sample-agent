@@ -1,14 +1,39 @@
 # SP404MK2 Sample Agent Testing Guide
 
-This guide covers testing strategies, test scripts, and quality assurance for the SP404MK2 Sample Agent system.
+This guide covers testing strategies, test scripts, and quality assurance for the SP404MK2 Sample Agent system, including the new Web UI with TDD/E2E testing.
 
 ## Table of Contents
-1. [Test Scripts Overview](#test-scripts-overview)
-2. [Running Tests](#running-tests)
-3. [Testing Individual Components](#testing-individual-components)
-4. [Integration Testing](#integration-testing)
-5. [Performance Testing](#performance-testing)
-6. [Test Data](#test-data)
+1. [Testing Infrastructure](#testing-infrastructure)
+2. [Test Scripts Overview](#test-scripts-overview)
+3. [Running Tests](#running-tests)
+4. [Testing Individual Components](#testing-individual-components)
+5. [Integration Testing](#integration-testing)
+6. [Performance Testing](#performance-testing)
+7. [Test Data](#test-data)
+8. [Web UI Testing](#web-ui-testing)
+
+---
+
+## Testing Infrastructure
+
+### Backend Testing Stack
+- **Framework**: pytest with pytest-asyncio
+- **Coverage**: pytest-cov (minimum 80% requirement)
+- **Mocking**: pytest-mock, factory-boy, faker
+- **Linting**: ruff, black, mypy
+- **Database**: SQLite in-memory for tests
+
+### Frontend Testing Stack
+- **E2E Framework**: Playwright
+- **Build Tool**: Vite
+- **Test Browsers**: Chrome, Firefox, Safari, Mobile
+- **Visual Testing**: Screenshot comparisons
+
+### CI/CD Pipeline
+- **Platform**: GitHub Actions
+- **Parallel Execution**: Backend and Frontend tests run concurrently
+- **Coverage Reporting**: Codecov integration
+- **Automated Checks**: Linting, type checking, security scanning
 
 ---
 
@@ -487,6 +512,245 @@ async def test_with_mock_youtube(mock_search):
 6. **Clean up test files** after tests complete
 7. **Use async properly** in test functions
 8. **Test in isolation** before integration tests
+
+---
+
+## Web UI Testing
+
+### TDD Workflow for Backend API
+
+#### 1. Write Test First (Red Phase)
+```python
+# backend/tests/unit/test_sample_endpoints.py
+@pytest.mark.unit
+async def test_create_sample_endpoint(client, authenticated_user, sample_file):
+    """Test sample creation endpoint - written BEFORE implementation."""
+    response = await client.post(
+        "/api/v1/samples",
+        files={"file": ("test.wav", sample_file, "audio/wav")},
+        data={"title": "TDD Test Sample", "genre": "hip-hop"},
+        headers=authenticated_user["headers"]
+    )
+    
+    assert response.status_code == 201
+    data = response.json()
+    assert data["title"] == "TDD Test Sample"
+    assert data["genre"] == "hip-hop"
+    assert "id" in data
+    assert "file_url" in data
+```
+
+#### 2. Implement Minimum Code (Green Phase)
+```python
+# backend/app/api/v1/endpoints/samples.py
+@router.post("/", response_model=SampleResponse, status_code=201)
+async def create_sample(
+    title: str = Form(...),
+    genre: str = Form(None),
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Minimal implementation to pass the test."""
+    # Just enough code to make test pass
+    return SampleResponse(
+        id=1,
+        title=title,
+        genre=genre,
+        file_url=f"/uploads/{file.filename}"
+    )
+```
+
+#### 3. Refactor
+- Add proper file storage
+- Implement database persistence
+- Add validation and error handling
+- Keep tests passing!
+
+### E2E Testing for Frontend
+
+#### Setting Up E2E Tests
+```bash
+cd frontend
+npm install
+npx playwright install
+```
+
+#### Writing E2E Tests
+```javascript
+// frontend/tests/e2e/sample-upload.spec.js
+const { test, expect, helpers } = require('./fixtures');
+
+test.describe('Sample Upload', () => {
+  test('user can upload a sample', async ({ authenticatedPage }) => {
+    // Navigate to upload page
+    await authenticatedPage.goto('/pages/samples.html');
+    await authenticatedPage.click('[data-testid="upload-button"]');
+    
+    // Fill form
+    await authenticatedPage.fill('[name="title"]', 'E2E Test Beat');
+    await authenticatedPage.setInputFiles(
+      'input[type="file"]',
+      'tests/fixtures/test-beat.wav'
+    );
+    
+    // Submit
+    await authenticatedPage.click('[data-testid="submit-upload"]');
+    
+    // Wait for HTMX response
+    await helpers.waitForHTMX(authenticatedPage);
+    
+    // Verify success
+    await expect(authenticatedPage.locator('.toast-success'))
+      .toContainText('Sample uploaded successfully');
+    
+    // Verify sample appears in list
+    await expect(authenticatedPage.locator('[data-testid="sample-card"]'))
+      .toContainText('E2E Test Beat');
+  });
+});
+```
+
+### Running Web UI Tests
+
+#### Backend Tests
+```bash
+cd backend
+
+# Install dependencies
+pip install -r requirements.txt
+pip install -r requirements-test.txt
+
+# Run all tests
+pytest
+
+# Run with coverage
+pytest --cov=app --cov-report=html
+
+# Run specific markers
+pytest -m unit          # Unit tests only
+pytest -m integration   # Integration tests only
+
+# Watch mode (install pytest-watch first)
+ptw
+```
+
+#### Frontend E2E Tests
+```bash
+cd frontend
+
+# Install dependencies
+npm install
+
+# Run all E2E tests
+npm run test:e2e
+
+# Run with UI mode (interactive)
+npm run test:e2e:ui
+
+# Run specific test file
+npm run test:e2e sample-upload.spec.js
+
+# Debug mode with inspector
+npm run test:e2e:debug
+```
+
+### CI/CD Integration
+
+The project includes GitHub Actions workflow that:
+
+1. **Runs on every push/PR**
+2. **Parallel execution** of backend and frontend tests
+3. **Multiple browser testing** for E2E
+4. **Coverage requirements** (80% minimum)
+5. **Security scanning** with Trivy
+
+### Test Data Factories
+
+#### Backend Test Data
+```python
+# backend/tests/conftest.py
+from factory import Factory, Faker
+
+class SampleFactory(Factory):
+    class Meta:
+        model = dict
+    
+    title = Faker('sentence', nb_words=3)
+    bpm = Faker('random_int', min=60, max=180)
+    genre = Faker('random_element', 
+                  elements=['hip-hop', 'jazz', 'electronic'])
+
+# Usage in tests
+sample = SampleFactory()
+samples = SampleFactory.create_batch(10)
+```
+
+#### Frontend Test Fixtures
+```javascript
+// frontend/tests/e2e/fixtures.js
+exports.testSamples = [
+  {
+    id: 1,
+    title: 'Test Jazz Drums',
+    bpm: 93,
+    genre: 'jazz',
+    duration: 4200
+  },
+  // ... more test data
+];
+```
+
+### Best Practices for Web UI Testing
+
+1. **Use data-testid attributes** for reliable element selection
+2. **Mock external services** in integration tests
+3. **Use page objects** for complex E2E tests
+4. **Run tests in parallel** where possible
+5. **Keep tests independent** - each test should be able to run alone
+6. **Use fixtures** for consistent test data
+7. **Screenshot on failure** for debugging
+8. **Test accessibility** alongside functionality
+
+### Visual Regression Testing
+
+```javascript
+// Visual comparison tests
+test('sample card appearance', async ({ page }) => {
+  await page.goto('/pages/samples.html');
+  await helpers.waitForHTMX(page);
+  
+  // Take screenshot for comparison
+  await expect(page.locator('[data-testid="sample-card"]').first())
+    .toHaveScreenshot('sample-card.png');
+});
+```
+
+### Performance Testing for Web UI
+
+```javascript
+// Measure page load performance
+test('sample library loads quickly', async ({ page }) => {
+  const startTime = Date.now();
+  
+  await page.goto('/pages/samples.html');
+  await page.waitForLoadState('networkidle');
+  
+  const loadTime = Date.now() - startTime;
+  expect(loadTime).toBeLessThan(3000); // Under 3 seconds
+  
+  // Check Core Web Vitals
+  const metrics = await page.evaluate(() => ({
+    lcp: performance.getEntriesByType('largest-contentful-paint')[0]?.startTime,
+    fid: performance.getEntriesByType('first-input')[0]?.processingStart,
+    cls: performance.getEntriesByType('layout-shift')
+      .reduce((sum, entry) => sum + entry.value, 0)
+  }));
+  
+  expect(metrics.lcp).toBeLessThan(2500); // LCP under 2.5s
+  expect(metrics.cls).toBeLessThan(0.1);  // CLS under 0.1
+});
+```
 
 ---
 

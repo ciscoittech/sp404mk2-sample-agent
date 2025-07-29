@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Samples - SP404MK2 Sample Manager</title>
+    
+    <!-- DaisyUI + Tailwind -->
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.6.0/dist/full.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="https://unpkg.com/htmx.org/dist/ext/ws.js"></script>
+    
+    <!-- Alpine.js -->
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/main.css">
+    
+    <!-- Custom JS will be loaded after body -->
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar bg-base-200">
+        <div class="flex-1">
+            <a class="btn btn-ghost text-xl" href="/">SP404MK2</a>
+        </div>
+        <div class="flex-none">
+            <ul class="menu menu-horizontal px-1">
+                <li><a href="/pages/samples.html" class="active" hx-boost="true">Samples</a></li>
+                <li><a href="/pages/kits.html" hx-boost="true">Kits</a></li>
+                <li><a href="/pages/batch.html" hx-boost="true">Batch</a></li>
+            </ul>
+        </div>
+    </nav>
+    
+    <!-- Main Content -->
+    <main id="main-content" class="container mx-auto p-4">
+        <div class="samples-page">
+            <!-- Page Header -->
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold mb-2">Sample Library</h1>
+                <p class="text-base-content/70">Browse and manage your sample collection</p>
+            </div>
+            
+            <!-- Search and Filters -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <!-- Clear Filters Button -->
+                <div class="col-span-full mb-2">
+                    <button class="btn btn-sm btn-ghost" 
+                            onclick="document.querySelector('[name=search]').value=''; document.querySelector('[name=genre]').value=''; document.querySelector('[name=bpm-min]').value=''; document.querySelector('[name=bpm-max]').value=''; htmx.trigger('#sample-grid', 'load')">
+                        Clear Filters
+                    </button>
+                </div>
+                <!-- Search -->
+                <div class="form-control w-full">
+                    <input type="search" 
+                           name="search"
+                           placeholder="Search samples..."
+                           aria-label="Search samples"
+                           class="input input-bordered"
+                           hx-get="/api/v1/public/samples/"
+                           hx-trigger="keyup changed delay:300ms, search"
+                           hx-target="#sample-grid"
+                           hx-indicator="#search-indicator"
+                           hx-push-url="true">
+                    <span id="search-indicator" class="htmx-indicator loading loading-spinner loading-sm absolute right-3 top-3"></span>
+                </div>
+                
+                <!-- Genre Filter -->
+                <div class="form-control w-full">
+                    <select class="select select-bordered"
+                            name="genre"
+                            aria-label="Filter by genre"
+                            hx-get="/api/v1/public/samples/"
+                            hx-trigger="change"
+                            hx-target="#sample-grid"
+                            hx-include="[name='search'], [name='bpm-min'], [name='bpm-max']"
+                            hx-push-url="true">
+                        <option value="">All Genres</option>
+                        <option value="hip-hop">Hip-Hop</option>
+                        <option value="jazz">Jazz</option>
+                        <option value="electronic">Electronic</option>
+                        <option value="soul">Soul</option>
+                        <option value="trap">Trap</option>
+                    </select>
+                </div>
+                
+                <!-- BPM Range -->
+                <div class="form-control w-full">
+                    <div class="flex items-center gap-2">
+                        <input type="number" 
+                               name="bpm-min"
+                               min="40" max="200"
+                               placeholder="Min"
+                               aria-label="Minimum BPM"
+                               class="input input-bordered input-sm w-20"
+                               hx-get="/api/v1/public/samples/"
+                               hx-trigger="change delay:500ms from:closest input"
+                               hx-target="#sample-grid"
+                               hx-include="[name='search'], [name='genre'], [name='bpm-max']"
+                               hx-push-url="true">
+                        <span>-</span>
+                        <input type="number" 
+                               name="bpm-max"
+                               min="40" max="200"
+                               placeholder="Max"
+                               aria-label="Maximum BPM"
+                               class="input input-bordered input-sm w-20"
+                               hx-get="/api/v1/public/samples/"
+                               hx-trigger="change delay:500ms from:closest input"
+                               hx-target="#sample-grid"
+                               hx-include="[name='search'], [name='genre'], [name='bpm-min']"
+                               hx-push-url="true">
+                        <span class="text-sm">BPM</span>
+                    </div>
+                </div>
+                
+                <!-- Upload Button -->
+                <div class="form-control w-full">
+                    <button class="btn btn-primary" onclick="uploadModal.showModal()" aria-label="Upload new sample">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                        </svg>
+                        Upload Sample
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Sample Grid -->
+            <div id="sample-grid" 
+                 class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
+                 hx-get="/api/v1/public/samples/"
+                 hx-trigger="load delay:100ms"
+                 hx-include="[name='search'], [name='genre'], [name='bpm-min'], [name='bpm-max']">
+                <!-- Sample cards will be loaded here -->
+                <div class="loading loading-spinner loading-lg mx-auto col-span-full"></div>
+            </div>
+            
+            <!-- Load More is handled dynamically by sample-grid template -->
+        </div>
+    </main>
+    
+    <!-- Upload Modal -->
+    <dialog id="uploadModal" class="modal">
+        <div class="modal-box">
+            <h3 class="font-bold text-lg mb-4">Upload Sample</h3>
+            <form hx-post="/api/v1/samples"
+                  hx-encoding="multipart/form-data"
+                  hx-target="#sample-grid"
+                  hx-swap="afterbegin"
+                  hx-on="htmx:afterRequest: uploadModal.close()">
+                
+                <div class="form-control w-full mb-4">
+                    <label class="label">
+                        <span class="label-text">Sample File</span>
+                    </label>
+                    <input type="file" 
+                           name="file" 
+                           accept="audio/*"
+                           class="file-input file-input-bordered w-full" 
+                           required>
+                </div>
+                
+                <div class="form-control w-full mb-4">
+                    <label class="label">
+                        <span class="label-text">Title</span>
+                    </label>
+                    <input type="text" 
+                           name="title" 
+                           placeholder="Sample title..."
+                           class="input input-bordered w-full" 
+                           required>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">Genre</span>
+                        </label>
+                        <select name="genre" class="select select-bordered w-full">
+                            <option value="">Select genre</option>
+                            <option value="hip-hop">Hip-Hop</option>
+                            <option value="jazz">Jazz</option>
+                            <option value="electronic">Electronic</option>
+                            <option value="soul">Soul</option>
+                            <option value="trap">Trap</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">BPM</span>
+                        </label>
+                        <input type="number" 
+                               name="bpm" 
+                               min="40" max="200"
+                               placeholder="120"
+                               class="input input-bordered w-full">
+                    </div>
+                </div>
+                
+                <div class="form-control w-full mb-4">
+                    <label class="label">
+                        <span class="label-text">Tags (comma separated)</span>
+                    </label>
+                    <input type="text" 
+                           name="tags" 
+                           placeholder="drums, vintage, lofi"
+                           class="input input-bordered w-full">
+                </div>
+                
+                <div class="modal-action">
+                    <button type="button" class="btn" onclick="uploadModal.close()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        Upload
+                        <span class="htmx-indicator loading loading-spinner loading-sm"></span>
+                    </button>
+                </div>
+            </form>
+        </div>
+        <form method="dialog" class="modal-backdrop">
+            <button>close</button>
+        </form>
+    </dialog>
+    
+    <!-- Global Alpine.js Components -->
+    <script>
+        // Alpine.js filter component
+        function sampleFilters() {
+            return {
+                genre: '',
+                bpmMin: 60,
+                bpmMax: 200,
+                
+                applyFilters() {
+                    // Trigger HTMX request with filters
+                    htmx.trigger('#sample-grid', 'htmx:trigger', {
+                        detail: {
+                            verb: 'get',
+                            path: `/api/v1/samples?genre=${this.genre}&bpm_min=${this.bpmMin}&bpm_max=${this.bpmMax}`
+                        }
+                    })
+                }
+            }
+        }
+        
+        // Alpine.js audio player component
+        function samplePlayer(audioUrl) {
+            return {
+                audio: null,
+                playing: false,
+                currentTime: 0,
+                duration: 0,
+                
+                init() {
+                    this.audio = new Audio(audioUrl);
+                    this.audio.addEventListener('timeupdate', () => {
+                        this.currentTime = this.audio.currentTime;
+                    });
+                    this.audio.addEventListener('loadedmetadata', () => {
+                        this.duration = this.audio.duration;
+                    });
+                    this.audio.addEventListener('ended', () => {
+                        this.playing = false;
+                    });
+                },
+                
+                togglePlay() {
+                    if (this.playing) {
+                        this.audio.pause();
+                    } else {
+                        this.audio.play();
+                    }
+                    this.playing = !this.playing;
+                },
+                
+                formatTime(seconds) {
+                    if (!seconds || isNaN(seconds)) return '0:00';
+                    const mins = Math.floor(seconds / 60);
+                    const secs = Math.floor(seconds % 60);
+                    return `${mins}:${secs.toString().padStart(2, '0')}`;
+                }
+            }
+        }
+    </script>
+    
+    <!-- Load filters JS after everything else -->
+    <script src="/static/js/filters.js"></script>
+</body>
+</html>

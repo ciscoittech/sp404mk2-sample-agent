@@ -22,13 +22,17 @@ You are the SP404MK2 Sample Agent system architect. This command provides a comp
 │  │  Agent  │       │ Analyst │       │  Agent  │          │
 │  └─────────┘       └─────────┘       └─────────┘          │
 │  ┌─────────┐       ┌─────────┐       ┌─────────┐          │
-│  │Downloader│      │   Era   │       │   SP404 │          │
-│  │  Agent  │       │ Expert  │       │Templates│          │
+│  │Downloader│      │   Era   │       │   Kit   │          │
+│  │  Agent  │       │ Expert  │       │ Builder │          │
 │  └─────────┘       └─────────┘       └─────────┘          │
-│                    ┌─────────┐                              │
-│                    │Relation │                              │
-│                    │  Agent  │                              │
-│                    └─────────┘                              │
+│                    ┌─────────┐       ┌─────────┐          │
+│                    │  Vibe   │       │ Batch   │          │
+│                    │ Analyst │       │Processor│          │
+│                    └─────────┘       └─────────┘          │
+│                    ┌─────────┐       ┌─────────┐          │
+│                    │Relation │       │Reporter │          │
+│                    │  Agent  │       │  Agent  │          │
+│                    └─────────┘       └─────────┘          │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -123,7 +127,52 @@ You are the SP404MK2 Sample Agent system architect. This command provides a comp
 - 4-6: Moderate - careful arrangement
 - 0-4: Poor - consider alternatives
 
-### 7. Intelligent Organizer
+### 7. Vibe Analysis Agent
+**Purpose**: Mood, texture, and emotional analysis
+**Capabilities**:
+- Emotional quality detection (happy, dark, energetic)
+- Texture analysis (warm, cold, organic, digital)
+- Energy level scoring (1-10 scale)
+- Genre-specific vibe characteristics
+- Compatibility based on mood
+
+**Analysis Output**:
+- Primary/secondary moods
+- Best use context (intro, verse, chorus)
+- Time of day association
+- Seasonal feel
+
+### 8. Batch Processor
+**Purpose**: Large-scale collection processing
+**Features**:
+- Handles 10-10,000+ samples efficiently
+- Rate limiting for API calls (5 RPM free tier)
+- Smart caching and resume capability
+- Progress tracking and ETA estimation
+- Local pre-filtering to reduce API calls
+
+**Processing Strategies**:
+- Small (10-100): Simple sequential
+- Medium (100-500): Batched with cache
+- Large (500-5000): Distributed processing
+- Massive (5000+): Staged with priorities
+
+### 9. Reporter Agent
+**Purpose**: GitHub integration and progress tracking
+**Capabilities**:
+- Create GitHub issues with specialist assignment
+- Update issue status and progress
+- Generate review queues with metadata
+- Daily summary reports
+- Error tracking and auto-issue creation
+
+**Issue Features**:
+- AI-enhanced descriptions
+- Automatic label assignment
+- Specialist recommendations
+- Complexity estimation
+
+### 10. Intelligent Organizer
 **Purpose**: Smart sample library management
 **Organization Strategies**:
 
@@ -172,20 +221,41 @@ You are the SP404MK2 Sample Agent system architect. This command provides a comp
 4. Downloader extracts samples (with timestamps if provided)
 5. Groove Analyst examines rhythm characteristics
 6. Era Expert identifies production period
-7. Sample Relationship checks compatibility
-8. Intelligent Organizer files samples appropriately
+7. Vibe Analyst determines mood and texture
+8. Sample Relationship checks compatibility
+9. Intelligent Organizer files samples appropriately
+10. Reporter creates review queue
+
+### Large Collection Processing (e.g., Wanns Wavs)
+1. Point Batch Processor at collection folder
+2. Local analysis extracts basic features (BPM, duration)
+3. Vibe Analyst processes in batches of 5 (rate limited)
+4. Results cached for resume capability
+5. Compatibility scoring finds matching samples
+6. Kit Builder assembles coherent banks
+7. Export results for SP-404 import
+
+### GitHub Issue-Driven Workflow
+1. Create issue with `/create-sample-issue` command
+2. AI analyzes task and assigns specialists
+3. Reporter Agent creates GitHub issue
+4. Specialists automatically engaged
+5. Progress tracked and reported
+6. Results attached to issue on completion
 
 ### Kit Building Workflow
 1. Analyze existing samples for compatibility
-2. Group highly compatible samples (7+ score)
-3. Organize into SP-404 banks
-4. Generate kit documentation
+2. Vibe Analyst groups by mood/energy
+3. Sample Relationship scores combinations
+4. Kit Builder creates optimal pad layouts
+5. Export in SP-404 format with documentation
 
 ### Genre Research Workflow
 1. Use Era Expert to identify target era
-2. Generate era-specific search queries
-3. Collect period-appropriate samples
-4. Organize by genre/era structure
+2. Musical Search generates enhanced queries
+3. Download Manager handles acquisition
+4. Batch process with all analysis agents
+5. Organize by genre/era/vibe structure
 
 ## Integration Points
 
@@ -217,13 +287,43 @@ python test_intelligent_organizer.py
 python -m sp404agent organize --strategy [strategy] --dir [path]
 ```
 
+## Specialist System
+
+### Available Specialists
+The system includes specialized command modules that provide deep expertise:
+
+1. **Groove Analyst** (`/groove-analyst`) - Rhythm and timing expert
+2. **Era Expert** (`/era-expert`) - Musical history and production
+3. **Vibe Analyst** (`/vibe-analyst`) - Mood and texture analysis
+4. **Sample Compatibility** (`/sample-compatibility`) - Musical matching
+5. **Batch Processor** (`/batch-processor`) - Large-scale operations
+6. **Kit Builder** (`/kit-builder`) - SP-404 bank assembly
+7. **Download Manager** (`/download-manager`) - Source acquisition
+8. **Musical Search** (`/musical-search-specialist`) - Query optimization
+
+### Smart Assignment
+When creating issues with `/create-sample-issue`, specialists are automatically assigned based on:
+- Task type detection (collection, analysis, organization)
+- Keyword matching (e.g., "vibe" → Vibe Analyst)
+- Complexity assessment
+- Required expertise
+
+### Coordination
+Specialists work together in chains:
+- **Discovery Chain**: Search → Download → Analysis
+- **Processing Chain**: Batch → Vibe → Compatibility
+- **Organization Chain**: Analysis → Kit Build → Export
+
 ## Best Practices
 
 1. **Start Simple**: Use conversational interface for discovery
-2. **Batch Process**: Analyze multiple samples together
+2. **Batch Process**: Analyze multiple samples together  
 3. **Trust Scores**: High compatibility scores are reliable
 4. **Use Templates**: SP-404 templates save time
 5. **Regular Organization**: Re-organize as library grows
+6. **Cache Results**: Avoid re-processing with caching
+7. **Issue Tracking**: Use GitHub issues for complex tasks
+8. **Specialist Chains**: Let specialists coordinate
 
 ## Future Enhancements
 - Real-time collaboration features
