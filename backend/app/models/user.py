@@ -26,3 +26,4 @@ class User(Base):
     # Relationships
     samples = relationship("Sample", back_populates="user", cascade="all, delete-orphan")
     kits = relationship("Kit", back_populates="user", cascade="all, delete-orphan")
+    batches = relationship("Batch", back_populates="user", cascade="all, delete-orphan")

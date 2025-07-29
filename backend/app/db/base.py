@@ -13,7 +13,7 @@ AsyncSessionLocal = sessionmaker(engine, class_=AsyncSession, expire_on_commit=F
 Base = declarative_base()
 
 # Import all models to ensure they are registered with SQLAlchemy
-from app.models import User, Sample, VibeAnalysis, Kit, KitSample  # noqa
+from app.models import User, Sample, VibeAnalysis, Kit, KitSample, Batch  # noqa
 
 async def get_db():
     async with AsyncSessionLocal() as session:
