@@ -71,6 +71,27 @@ sp404mk2-sample-agent/
 
 ### Installation
 
+#### Option 1: Docker (Recommended)
+
+```bash
+# Clone the repository
+git clone https://github.com/YOUR_USERNAME/sp404mk2-sample-agent
+cd sp404mk2-sample-agent
+
+# Copy environment variables
+cp .env.example .env
+# Edit .env with your API keys
+
+# Build and start with Docker
+make docker-build
+make docker-up
+make docker-db-init
+
+# Access at http://localhost:8000
+```
+
+#### Option 2: Local Installation
+
 ```bash
 # Clone the repository
 git clone https://github.com/YOUR_USERNAME/sp404mk2-sample-agent
@@ -221,9 +242,36 @@ make test-e2e        # End-to-end tests
 
 # Run tests with the test runner
 python run_tests.py
+
+# Run tests in Docker
+make docker-test
+make docker-e2e
 ```
 
 For detailed testing information, see [TESTING.md](docs/TESTING.md)
+
+## 🐳 Docker Support
+
+The project includes full Docker support for easy deployment:
+
+```bash
+# Quick start
+make docker-up
+
+# Development with hot reload
+make docker-dev
+
+# Production deployment
+make docker-prod
+
+# View logs
+make docker-logs
+
+# Clean up
+make docker-clean
+```
+
+For detailed Docker information, see [DOCKER.md](docs/DOCKER.md)
 
 ## 📄 License
 

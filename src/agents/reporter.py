@@ -3,6 +3,8 @@
 import os
 import json
 import subprocess
+import asyncio
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Optional, Any
@@ -104,6 +106,8 @@ class ReporterAgent(Agent):
                 result = await self._create_review_queue(**kwargs)
             elif action == "progress_report":
                 result = await self._generate_progress_report(**kwargs)
+            elif action == "create_sample_issue":
+                result = await self._create_sample_issue(**kwargs)
             elif action == "create_error_issue":
                 result = await self._create_error_issue(**kwargs)
             elif action == "batch_completion":
@@ -262,6 +266,69 @@ _________________________________
         
         return {"report": report}
     
+    async def _create_sample_issue(self, **kwargs) -> Dict[str, Any]:
+        """Create GitHub issue for sample-related tasks with specialist assignment."""
+        title = kwargs.get("title", "")
+        description = kwargs.get("description", "")
+        task_type = kwargs.get("task_type", "general")
+        specialists = kwargs.get("specialists", [])
+        labels = kwargs.get("labels", [])
+        complexity = kwargs.get("complexity", 5)
+        
+        # Build issue body with specialist assignments
+        specialist_section = "\n".join([f"- **{s['name']}**: {s['role']}" for s in specialists])
+        
+        body = f"""## Description
+{description}
+
+## Task Type
+**Primary**: {task_type}
+
+## Technical Analysis
+**Complexity**: {complexity}/10
+**Estimated Time**: {kwargs.get('time_estimate', 'TBD')}
+
+## Specialist Assignment
+{specialist_section}
+
+## Implementation Plan
+{kwargs.get('implementation_plan', 'TBD')}
+
+## Labels
+{', '.join(labels)}
+
+---
+*Created by SP404 Sample Agent System*
+"""
+        
+        # Create issue with labels
+        label_string = ",".join(labels) if labels else "sample-task"
+        
+        result = await run_gh_command([
+            "issue", "create",
+            "--title", title,
+            "--body", body,
+            "--label", label_string
+        ])
+        
+        # Parse issue number from output
+        import re
+        match = re.search(r'/issues/(\d+)', result.get('output', ''))
+        issue_number = int(match.group(1)) if match else None
+        
+        if not issue_number:
+            self.logger.error(f"Failed to parse issue number from: {result.get('output', '')}")
+            return {"issue_created": False, "error": "Could not parse issue number"}
+        
+        self.logger.info(f"Created sample issue #{issue_number}: {title}")
+        
+        return {
+            "issue_created": True, 
+            "issue_number": issue_number, 
+            "url": result.get('output', '').strip(),
+            "specialists": specialists
+        }
+    
     async def _create_error_issue(self, **kwargs) -> Dict[str, Any]:
         """Create GitHub issue for errors."""
         error_data = kwargs.get("error_data", {})
@@ -302,9 +369,15 @@ _________________________________
         ])
         
         # Parse issue number from output
-        issue_number = 456  # Mock for testing
+        # gh CLI returns URL like: https://github.com/owner/repo/issues/123
+        match = re.search(r'/issues/(\d+)', result.get('output', ''))
+        issue_number = int(match.group(1)) if match else None
         
-        return {"issue_created": True, "issue_number": issue_number}
+        if not issue_number:
+            self.logger.error(f"Failed to parse issue number from: {result.get('output', '')}")
+            return {"issue_created": False, "error": "Could not parse issue number"}
+        
+        return {"issue_created": True, "issue_number": issue_number, "url": result.get('output', '').strip()}
     
     async def _handle_batch_completion(self, **kwargs) -> Dict[str, Any]:
         """Handle batch completion reporting."""

@@ -1,0 +1,103 @@
+{% for sample in samples %}
+<div class="card bg-base-100 shadow-xl sample-card" 
+     hx-target="this" 
+     hx-swap="outerHTML"
+     role="article"
+     aria-label="Sample: {{ sample.title }}">
+    
+    <div class="card-body">
+        <h2 class="card-title">{{ sample.title }}</h2>
+        
+        <!-- Alpine.js player -->
+        <div x-data="samplePlayer('{{ sample.file_url }}')" class="my-2">
+            <div class="flex items-center gap-2">
+                <button @click="togglePlay()" 
+                        class="btn btn-circle btn-sm"
+                        :class="{ 'btn-primary': !playing, 'btn-secondary': playing }"
+                        :aria-label="playing ? 'Pause sample' : 'Play sample'">
+                    <svg x-show="!playing" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/>
+                    </svg>
+                    <svg x-show="playing" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                    </svg>
+                </button>
+                
+                <span class="text-sm" x-text="formatTime(currentTime) + ' / ' + formatTime(duration)">0:00 / 0:00</span>
+            </div>
+            
+            <!-- Waveform visualization -->
+            <div class="waveform-container relative h-12 bg-base-200 rounded mt-2 overflow-hidden">
+                <div class="waveform-progress absolute inset-y-0 left-0 bg-primary/20 transition-all duration-300"
+                     :style="`width: ${(currentTime / duration) * 100 || 0}%`"
+                     style="width: 0%; height: 100%;"></div>
+                <div class="flex items-end justify-center h-full gap-px">
+                    <!-- Simple waveform bars -->
+                    {% for i in range(30) %}
+                    <div class="w-1 bg-base-content/30" style="height: {{ [20, 40, 60, 80, 100, 80, 60, 40] | random }}%"></div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Metadata -->
+        <div class="grid grid-cols-3 gap-2 text-center my-2">
+            <div class="stat p-2">
+                <div class="stat-title text-xs">BPM</div>
+                <div class="stat-value text-lg">{{ sample.bpm or "--" }}</div>
+            </div>
+            <div class="stat p-2">
+                <div class="stat-title text-xs">Key</div>
+                <div class="stat-value text-lg">{{ sample.musical_key or "--" }}</div>
+            </div>
+            <div class="stat p-2">
+                <div class="stat-title text-xs">Genre</div>
+                <div class="stat-value text-xs">{{ sample.genre or "--" }}</div>
+            </div>
+        </div>
+        
+        <!-- Tags -->
+        {% if sample.tags %}
+        <div class="flex flex-wrap gap-1 my-2">
+            {% for tag in sample.tags %}
+            <span class="badge badge-sm">{{ tag }}</span>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        <!-- Actions -->
+        <div class="card-actions justify-end mt-4">
+            {% if not sample.vibe_analysis %}
+            <button class="btn btn-sm"
+                    hx-post="/api/v1/samples/{{ sample.id }}/analyze"
+                    hx-indicator="#spinner-{{ sample.id }}"
+                    aria-label="Analyze sample with AI">
+                Analyze
+                <span id="spinner-{{ sample.id }}" class="htmx-indicator loading loading-spinner loading-xs"></span>
+            </button>
+            {% endif %}
+            
+            <button class="btn btn-sm btn-primary"
+                    hx-post="/api/v1/kits/current/add"
+                    hx-vals='{"sample_id": "{{ sample.id }}"}'
+                    aria-label="Add sample to current kit">
+                Add to Kit
+            </button>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<!-- Load more if there are more pages -->
+{% if has_more %}
+<div id="load-more"
+     hx-get="/api/v1/samples?page={{ next_page }}"
+     hx-trigger="revealed"
+     hx-swap="outerHTML"
+     hx-target="#load-more"
+     hx-include="[name='search'], [name='genre'], [name='bpm-min'], [name='bpm-max']"
+     class="text-center mt-8 col-span-full"
+     aria-label="Loading more samples">
+    <span class="loading loading-dots loading-lg" aria-hidden="true"></span>
+</div>
+{% endif %}
