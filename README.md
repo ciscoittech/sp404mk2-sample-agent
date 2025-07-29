@@ -14,12 +14,15 @@ This project uses Pydantic AI to create specialized agents that:
 ## 🚀 Features
 
 ### Core Features
+- **Web UI Dashboard**: Full-featured web interface with HTMX + DaisyUI
+- **Batch Processing**: Process multiple samples at once with AI analysis
 - **Conversational CLI Interface**: Natural language interaction for sample discovery
 - **Multi-Agent Architecture**: Specialized agents for different tasks
 - **Intelligent YouTube Discovery**: Enhanced search with quality scoring
 - **Timestamp-Based Extraction**: Extract specific segments from longer videos
 - **Automated BPM Detection**: Analyzes and organizes samples by tempo
 - **Database Tracking**: Turso database for sample metadata
+- **Real-time Updates**: WebSocket support for live progress tracking
 
 ### Specialized Agents
 - **Groove Analyst**: Deep rhythm analysis with swing detection and artist similarity
@@ -124,6 +127,18 @@ gh auth login
 ```
 
 ## 📋 Usage
+
+### Web Interface
+
+```bash
+# Access the web UI (Docker must be running)
+open http://localhost:8000
+
+# Available pages:
+- /pages/samples.html    # Browse and analyze samples
+- /pages/batch.html      # Batch process audio files
+- /pages/kits.html       # Build SP-404 kits
+```
 
 ### Conversational Sample Discovery
 
