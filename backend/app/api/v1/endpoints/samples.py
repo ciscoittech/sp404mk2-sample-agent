@@ -20,6 +20,7 @@ templates = Jinja2Templates(directory="templates")
 
 
 router = APIRouter()
+public_router = APIRouter()
 
 # Allowed audio file extensions
 ALLOWED_EXTENSIONS = {".wav", ".mp3", ".flac", ".aiff", ".m4a", ".ogg"}
@@ -314,6 +315,114 @@ async def download_sample(
     sample = await sample_service.get_sample_by_id(
         sample_id=sample_id,
         user_id=current_user.id
+    )
+    
+    if not sample:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Sample not found"
+        )
+    
+    # Check if file exists
+    if not os.path.exists(sample.file_path):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Sample file not found"
+        )
+    
+    # Return file
+    return FileResponse(
+        path=sample.file_path,
+        filename=f"{sample.title}{os.path.splitext(sample.file_path)[1]}",
+        media_type="audio/*"
+    )
+
+
+# Public endpoints (no authentication required)
+@public_router.get("/")
+async def list_samples_public(
+    request: Request,
+    page: int = 1,
+    limit: int = 20,
+    search: Optional[str] = None,
+    genre: Optional[str] = None,
+    bpm_min: Optional[float] = None,
+    bpm_max: Optional[float] = None,
+    db: AsyncSession = Depends(get_db),
+    hx_request: Optional[str] = Header(None)
+):
+    """List all samples without authentication (public endpoint)."""
+    if page < 1:
+        page = 1
+    if limit < 1 or limit > 100:
+        limit = 20
+    
+    skip = (page - 1) * limit
+    
+    sample_service = SampleService(db)
+    
+    # Get samples with filters (all users)
+    if search or genre or bpm_min or bpm_max:
+        samples = await sample_service.search_samples(
+            user_id=None,  # No user filter for public endpoint
+            search=search,
+            genre=genre,
+            bpm_min=bpm_min,
+            bpm_max=bpm_max,
+            skip=skip,
+            limit=limit
+        )
+    else:
+        samples = await sample_service.get_samples(
+            user_id=None,  # No user filter for public endpoint
+            skip=skip,
+            limit=limit
+        )
+    
+    total = await sample_service.count_all_samples()
+    
+    # Add file URLs
+    for sample in samples:
+        sample.file_url = f"/api/v1/public/samples/{sample.id}/download"
+    
+    # Calculate pages
+    pages = (total + limit - 1) // limit
+    has_more = page < pages
+    
+    # Return HTML for HTMX requests
+    if hx_request:
+        return templates.TemplateResponse("partials/sample-grid.html", {
+            "request": request,
+            "samples": samples,
+            "has_more": has_more,
+            "next_page": page + 1
+        })
+    
+    # Return JSON for API requests
+    return {
+        "items": samples,
+        "total": total,
+        "page": page,
+        "pages": pages,
+        "limit": limit
+    }
+
+
+@public_router.get("/{sample_id}/download")
+async def download_sample_public(
+    sample_id: int,
+    db: AsyncSession = Depends(get_db)
+):
+    """Download sample file without authentication (public endpoint)."""
+    from fastapi.responses import FileResponse
+    import os
+    
+    sample_service = SampleService(db)
+    
+    # Get sample (no user filter)
+    sample = await sample_service.get_sample_by_id(
+        sample_id=sample_id,
+        user_id=None  # No user filter for public endpoint
     )
     
     if not sample:

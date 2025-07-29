@@ -31,7 +31,7 @@ class BatchCreate(BaseModel):
     collection_path: str
     name: Optional[str] = None
     batch_size: int = Field(5, ge=1, le=10)
-    options: ProcessingOptions = Field(default_factory=ProcessingOptions)
+    options: Dict[str, Any] = Field(default_factory=dict)
 
 
 class BatchProgress(BaseModel):

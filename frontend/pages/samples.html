@@ -147,11 +147,11 @@
     <dialog id="uploadModal" class="modal">
         <div class="modal-box">
             <h3 class="font-bold text-lg mb-4">Upload Sample</h3>
-            <form hx-post="/api/v1/samples"
+            <form hx-post="/api/v1/public/samples/"
                   hx-encoding="multipart/form-data"
-                  hx-target="#sample-grid"
-                  hx-swap="afterbegin"
-                  hx-on="htmx:afterRequest: uploadModal.close()">
+                  hx-target="#upload-result"
+                  hx-swap="innerHTML"
+                  hx-on::after-request="uploadModal.close(); htmx.trigger('#sample-grid', 'load')">
                 
                 <div class="form-control w-full mb-4">
                     <label class="label">
@@ -209,8 +209,11 @@
                     <input type="text" 
                            name="tags" 
                            placeholder="drums, vintage, lofi"
+                           value=""
                            class="input input-bordered w-full">
                 </div>
+                
+                <div id="upload-result" class="mt-4"></div>
                 
                 <div class="modal-action">
                     <button type="button" class="btn" onclick="uploadModal.close()">Cancel</button>
@@ -240,7 +243,7 @@
                     htmx.trigger('#sample-grid', 'htmx:trigger', {
                         detail: {
                             verb: 'get',
-                            path: `/api/v1/samples?genre=${this.genre}&bpm_min=${this.bpmMin}&bpm_max=${this.bpmMax}`
+                            path: `/api/v1/public/samples/?genre=${this.genre}&bpm_min=${this.bpmMin}&bpm_max=${this.bpmMax}`
                         }
                     })
                 }

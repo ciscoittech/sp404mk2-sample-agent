@@ -11,6 +11,7 @@ import os
 from app.core.config import settings
 from app.api.v1.api import api_router
 from app.api.v1.websocket import websocket_endpoint
+from app.db import init_models  # Import all models
 
 
 @asynccontextmanager

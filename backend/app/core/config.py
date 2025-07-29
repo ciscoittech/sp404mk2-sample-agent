@@ -58,9 +58,18 @@ class Settings(BaseSettings):
     # Environment
     ENVIRONMENT: str = "development"
     
+    # Additional settings from .env
+    LOG_LEVEL: str = "INFO"
+    MAX_UPLOAD_SIZE_MB: int = 100
+    ALLOWED_AUDIO_EXTENSIONS: str = ".wav,.mp3,.flac,.ogg,.m4a,.aiff"
+    CHAT_MODEL: str = "google/gemma-3-27b-it"
+    COLLECTOR_MODEL: str = "qwen/qwen3-235b-a22b-2507"
+    DEBUG: bool = False
+    
     class Config:
         env_file = ".env"
         case_sensitive = True
+        extra = "allow"  # Allow extra fields from .env
 
 
 settings = Settings()
