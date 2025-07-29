@@ -15,30 +15,69 @@ Creates a organized workspace for sample collection, curation, and review for a 
 
 You are a Music Production specialist helping create organized sample collection environments. When this command is executed:
 
-### Phase 1: Preparation
-1. **Fetch latest collection requirements from GitHub issue**
-2. **Verify issue exists and extract genre/style info**
-3. **Check for existing workspace for this collection**
-4. **Analyze requirements to determine folder structure**
+### Phase 1: Git & Issue Preparation
+1. **Fetch issue details from GitHub using gh CLI:**
+   ```bash
+   gh issue view {issue-number} --json title,body,labels,assignees
+   ```
+2. **Create feature branch for this collection:**
+   ```bash
+   git checkout -b feature/samples-issue-{number}-{slugified-title}
+   git push -u origin feature/samples-issue-{number}-{slugified-title}
+   ```
+3. **Link branch to issue:**
+   ```bash
+   gh issue develop {issue-number} --branch feature/samples-issue-{number}-{slugified-title}
+   ```
 
 ### Phase 2: Workspace Creation
 1. **Generate workspace name**: `samples/task-{number}-{slugified-title}/`
 2. **Create organized directory structure based on sample type**
 3. **Initialize metadata tracking files**
 4. **Set up review queue directories**
+5. **Configure .gitignore for audio files:**
+   ```bash
+   echo "*.wav" >> samples/task-{number}/.gitignore
+   echo "*.mp3" >> samples/task-{number}/.gitignore
+   echo "raw/" >> samples/task-{number}/.gitignore
+   ```
 
 ### Phase 3: Environment Setup
 1. **Create workspace configuration file**
 2. **Initialize sample database entries**
 3. **Set up preview generation scripts**
 4. **Create initial collection scratchpad**
-5. **Verify audio tools are available**
+5. **Initial commit:**
+   ```bash
+   git add samples/task-{number}/
+   git commit -m "feat(samples): Initialize workspace for issue #{number}
+   
+   - Create folder structure for {genre} sample collection
+   - Add metadata tracking and configuration files
+   - Set up review queue and specialist templates"
+   ```
 
-### Phase 4: Documentation
+### Phase 4: Documentation & GitHub Integration
 1. **Create README with collection guidelines**
 2. **Document folder structure and naming conventions**
-3. **Set up specialist review templates**
-4. **Initialize quality tracking metrics**
+3. **Update GitHub issue with progress tracking:**
+   ```bash
+   gh issue comment {issue-number} --body "$(cat <<EOF
+   ## 🎵 Sample Collection Workspace Created
+   
+   Branch: \`feature/samples-issue-{number}-{title}\`
+   Workspace: \`samples/task-{number}-{title}/\`
+   
+   ### Progress Tracking
+   - [ ] Workspace initialized
+   - [ ] Sources identified: 0/{target}
+   - [ ] Samples collected: 0/{target}
+   - [ ] Samples analyzed: 0/{target}
+   - [ ] Review complete: 0/{target}
+   - [ ] SP-404 kit ready: No
+   EOF
+   )"
+   ```
 
 ## Expected Directory Structure
 
@@ -406,10 +445,61 @@ The command is successful when:
 9. ✅ Preview generation configured
 10. ✅ Ready for sample collection
 
+## Git Workflow Integration
+
+### Commit Standards
+Use conventional commits for all workspace operations:
+```bash
+# Workspace creation
+git commit -m "feat(samples): Initialize workspace for issue #{number}"
+
+# Adding samples
+git commit -m "feat(samples): Add {n} {genre} samples from {source}"
+
+# Analysis results
+git commit -m "analyze(samples): Process {n} samples with {specialist}"
+
+# Curation decisions
+git commit -m "curate(samples): Approve {n} samples, reject {n}"
+
+# Final kit
+git commit -m "build(samples): Create SP-404 kit with {n} samples"
+```
+
+### Pull Request Template
+When collection is complete:
+```bash
+gh pr create --title "Samples: {issue-title}" --body "$(cat <<EOF
+## Sample Collection for Issue #{issue-number}
+
+### Summary
+- **Genre**: {genre}
+- **Collected**: {total} samples
+- **Approved**: {approved} samples
+- **Final Kit**: {kit-size}
+
+### Quality Metrics
+- Average Score: {score}/10
+- BPM Range: {min}-{max}
+- Key Distribution: {keys}
+
+### Deliverables
+- [ ] Curated samples in \`approved/\` directory
+- [ ] Complete metadata for all samples
+- [ ] SP-404MK2 kit configuration
+- [ ] Collection documentation
+
+Closes #{issue-number}
+EOF
+)"
+```
+
 ## Next Steps
 
 After successful workspace creation:
 1. **Begin collection**: `/process-sample-task {number}`
 2. **Monitor progress**: Check scratchpad for updates
-3. **Review samples**: Use review queue interface
-4. **Export to SP404MK2**: When collection complete
+3. **Commit regularly**: Keep git history clean
+4. **Review samples**: Use review queue interface
+5. **Export to SP404MK2**: When collection complete
+6. **Create PR**: Submit for review when done
