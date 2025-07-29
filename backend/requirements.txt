@@ -16,3 +16,16 @@ celery>=5.3.0
 httpx>=0.25.0
 python-dotenv>=1.0.0
 jinja2>=3.1.0
+
+# Audio processing dependencies (for batch processing)
+numpy>=1.24.0
+librosa>=0.10.0
+soundfile>=0.12.0
+yt-dlp>=2024.1.0
+
+# CLI dependencies (for batch processor)
+typer>=0.9.0
+rich>=13.0.0
+
+# AI dependencies (for OpenRouter)
+openai>=1.0.0

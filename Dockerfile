@@ -5,10 +5,13 @@ FROM python:3.11-slim as backend-builder
 
 WORKDIR /app/backend
 
-# Install system dependencies
+# Install system dependencies for audio processing
 RUN apt-get update && apt-get install -y \
     gcc \
     g++ \
+    libsndfile1 \
+    libsndfile1-dev \
+    ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy backend requirements
@@ -32,10 +35,11 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install runtime dependencies
+# Install runtime dependencies for audio processing
 RUN apt-get update && apt-get install -y \
     ffmpeg \
     curl \
+    libsndfile1 \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy Python dependencies from builder

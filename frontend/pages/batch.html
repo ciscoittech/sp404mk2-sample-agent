@@ -11,6 +11,7 @@
     
     <!-- HTMX -->
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="https://unpkg.com/htmx.org/dist/ext/ws.js"></script>
     
     <!-- Alpine.js -->
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -19,25 +20,194 @@
     <link rel="stylesheet" href="/static/css/main.css">
 </head>
 <body>
-    <div class="container mx-auto p-4">
-        <h1 class="text-4xl font-bold mb-8">Batch Processor</h1>
-        
-        <div class="alert alert-info">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-            <span>Batch Processor feature is coming soon!</span>
+    <div class="container mx-auto p-4 max-w-6xl">
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-4xl font-bold">Batch Processor</h1>
+            <button class="btn btn-primary" onclick="new_batch_modal.showModal()">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+                New Batch
+            </button>
         </div>
-        
-        <p class="mt-4">This feature will allow you to:</p>
-        <ul class="list-disc list-inside mt-2 space-y-2">
-            <li>Process multiple samples at once</li>
-            <li>Apply batch effects and transformations</li>
-            <li>Analyze entire sample libraries</li>
-            <li>Export processed samples in bulk</li>
-        </ul>
-        
-        <div class="mt-8">
-            <a href="/pages/samples.html" class="btn btn-primary">Back to Samples</a>
+
+        <!-- Active Batches -->
+        <div class="card bg-base-200 shadow-xl mb-8">
+            <div class="card-body">
+                <h2 class="card-title">Active Processing</h2>
+                <div id="active-batches">
+                    <div class="text-center py-8">
+                        <span class="loading loading-spinner loading-lg"></span>
+                        <p class="mt-2">Loading active batches...</p>
+                    </div>
+                </div>
+            </div>
         </div>
+
+        <!-- Batch History -->
+        <div class="card bg-base-200 shadow-xl">
+            <div class="card-body">
+                <h2 class="card-title">Processing History</h2>
+                <div id="batch-history">
+                    <div class="text-center py-8">
+                        <span class="loading loading-spinner loading-lg"></span>
+                        <p class="mt-2">Loading batch history...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- New Batch Modal -->
+        <dialog id="new_batch_modal" class="modal">
+            <form method="dialog" class="modal-box max-w-2xl">
+                <h3 class="font-bold text-lg mb-4">Create New Batch Process</h3>
+                
+                <div class="alert alert-warning mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                    <span>Note: Batch processing requires the backend service to be running with access to your sample files.</span>
+                </div>
+                
+                <div class="form-control w-full mb-4">
+                    <label class="label">
+                        <span class="label-text">Collection Path</span>
+                    </label>
+                    <input type="text" name="collection_path" placeholder="/path/to/samples" class="input input-bordered w-full" required>
+                    <label class="label">
+                        <span class="label-text-alt">Enter the full path to your sample collection folder</span>
+                    </label>
+                </div>
+
+                <div class="form-control w-full mb-4">
+                    <label class="label">
+                        <span class="label-text">Processing Options</span>
+                    </label>
+                    <div class="space-y-2">
+                        <label class="label cursor-pointer">
+                            <span class="label-text">Vibe Analysis (Mood, Genre, Energy)</span>
+                            <input type="checkbox" name="vibe_analysis" checked class="checkbox checkbox-primary">
+                        </label>
+                        <label class="label cursor-pointer">
+                            <span class="label-text">Groove Analysis (For Drum Samples)</span>
+                            <input type="checkbox" name="groove_analysis" class="checkbox checkbox-primary">
+                        </label>
+                        <label class="label cursor-pointer">
+                            <span class="label-text">Era Detection (Vintage/Modern)</span>
+                            <input type="checkbox" name="era_detection" class="checkbox checkbox-primary">
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-control w-full mb-4">
+                    <label class="label">
+                        <span class="label-text">Batch Size</span>
+                    </label>
+                    <input type="number" name="batch_size" value="5" min="1" max="10" class="input input-bordered w-full">
+                    <label class="label">
+                        <span class="label-text-alt">Number of samples per API call (5 recommended for free tier)</span>
+                    </label>
+                </div>
+
+                <div class="modal-action">
+                    <button type="button" class="btn" onclick="new_batch_modal.close()">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="startBatchProcess()">
+                        Start Processing
+                    </button>
+                </div>
+            </form>
+        </dialog>
     </div>
+
+    <script>
+        // Mock data for demonstration
+        const mockActiveBatches = [];
+        const mockBatchHistory = [
+            {
+                id: "batch_demo1",
+                name: "Demo Collection",
+                status: "completed",
+                total_samples: 50,
+                processed_samples: 50,
+                success_count: 48,
+                error_count: 2,
+                progress_percentage: 100,
+                created_at: new Date().toISOString()
+            }
+        ];
+
+        // Load mock data on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Show demo active batches
+            updateActiveBatches();
+            
+            // Show demo history
+            updateBatchHistory();
+        });
+
+        function updateActiveBatches() {
+            const container = document.getElementById('active-batches');
+            
+            if (mockActiveBatches.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8 text-gray-500">
+                        <p>No active batch processes</p>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = mockActiveBatches.map(batch => `
+                    <div class="card bg-base-300 mb-4">
+                        <div class="card-body">
+                            <h3 class="card-title">${batch.name}</h3>
+                            <div class="flex justify-between items-center mb-2">
+                                <span>${batch.processed_samples}/${batch.total_samples} samples</span>
+                                <span>${batch.progress_percentage.toFixed(1)}%</span>
+                            </div>
+                            <progress class="progress progress-primary w-full" value="${batch.progress_percentage}" max="100"></progress>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function updateBatchHistory() {
+            const container = document.getElementById('batch-history');
+            
+            container.innerHTML = `
+                <div class="overflow-x-auto">
+                    <table class="table table-zebra">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Status</th>
+                                <th>Samples</th>
+                                <th>Success Rate</th>
+                                <th>Created</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${mockBatchHistory.map(batch => `
+                                <tr>
+                                    <td>${batch.name}</td>
+                                    <td>
+                                        <span class="badge ${batch.status === 'completed' ? 'badge-success' : 'badge-warning'}">
+                                            ${batch.status}
+                                        </span>
+                                    </td>
+                                    <td>${batch.processed_samples}/${batch.total_samples}</td>
+                                    <td>${((batch.success_count / batch.processed_samples) * 100).toFixed(1)}%</td>
+                                    <td>${new Date(batch.created_at).toLocaleDateString()}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        function startBatchProcess() {
+            // In a real implementation, this would call the API
+            alert('Batch processing would start here. This requires the backend API to be running.');
+            new_batch_modal.close();
+        }
+    </script>
 </body>
 </html>
