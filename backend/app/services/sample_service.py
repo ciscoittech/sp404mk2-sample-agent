@@ -74,13 +74,17 @@ class SampleService:
         
         return file_path
     
-    async def get_sample_by_id(self, sample_id: int, user_id: int) -> Optional[Sample]:
-        """Get a sample by ID for a specific user."""
-        result = await self.db.execute(
-            select(Sample)
-            .where(and_(Sample.id == sample_id, Sample.user_id == user_id))
-            .options(selectinload(Sample.vibe_analysis))
-        )
+    async def get_sample_by_id(self, sample_id: int, user_id: Optional[int] = None) -> Optional[Sample]:
+        """Get a sample by ID, optionally filtered by user."""
+        query = select(Sample).where(Sample.id == sample_id)
+        
+        # Only filter by user if user_id provided
+        if user_id is not None:
+            query = query.where(Sample.user_id == user_id)
+        
+        query = query.options(selectinload(Sample.vibe_analysis))
+        
+        result = await self.db.execute(query)
         return result.scalar_one_or_none()
     
     async def get_samples(
@@ -110,6 +114,13 @@ class SampleService:
             query = query.where(Sample.user_id == user_id)
         
         result = await self.db.execute(query)
+        return result.scalar() or 0
+    
+    async def count_all_samples(self) -> int:
+        """Count total samples across all users."""
+        result = await self.db.execute(
+            select(func.count(Sample.id))
+        )
         return result.scalar() or 0
     
     async def search_samples(
@@ -192,11 +203,86 @@ class SampleService:
     
     async def analyze_sample(self, sample_id: int, queue = None) -> str:
         """Queue a sample for analysis."""
-        if queue:
-            await queue.enqueue("analyze_sample", sample_id=sample_id, priority="normal")
+        job_id = f"job_{sample_id}_{uuid.uuid4().hex[:8]}"
         
-        # For now, just return a job ID
-        return f"job_{sample_id}_{uuid.uuid4().hex[:8]}"
+        # Get the sample
+        sample = await self.get_sample_by_id(sample_id, user_id=None)
+        if not sample:
+            raise ValueError(f"Sample {sample_id} not found")
+        
+        # Start background analysis task
+        import asyncio
+        asyncio.create_task(self._perform_analysis(sample, job_id))
+        
+        return job_id
+    
+    async def _perform_analysis(self, sample, job_id: str):
+        """Perform the actual AI analysis in background."""
+        try:
+            # Import vibe analysis agent
+            import sys
+            import os
+            sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
+            
+            from src.agents.vibe_analysis import VibeAnalysisAgent
+            
+            # Create agent instance
+            agent = VibeAnalysisAgent()
+            
+            # Check if API key is configured
+            if not agent.api_key or agent.api_key == "your-openrouter-api-key-here":
+                raise ValueError("OpenRouter API key not configured. Please set OPENROUTER_API_KEY in .env file")
+            
+            # Prepare sample data for analysis
+            sample_data = {
+                'filename': os.path.basename(sample.file_path),
+                'bpm': sample.bpm or 120,  # Default BPM if not set
+                'key': sample.musical_key or 'C',  # Default key if not set
+                'spectral_centroid': 'unknown'  # Could add audio analysis later
+            }
+            
+            # Perform vibe analysis
+            vibe_result = await agent.analyze_vibe(sample_data)
+            
+            # Update the sample with analysis results
+            await self._save_vibe_analysis(sample.id, vibe_result, job_id)
+            
+        except Exception as e:
+            print(f"Analysis failed for sample {sample.id}: {str(e)}")
+            # Could update sample with error status here
+    
+    async def _save_vibe_analysis(self, sample_id: int, vibe_result, job_id: str):
+        """Save vibe analysis results to database."""
+        from sqlalchemy import update
+        from datetime import datetime
+        import json
+        
+        # Convert vibe result to JSON for storage
+        vibe_data = {
+            'mood_primary': vibe_result.vibe.mood[0] if vibe_result.vibe.mood else 'unknown',
+            'mood_tags': vibe_result.vibe.mood,
+            'era': vibe_result.vibe.era,
+            'genre': vibe_result.vibe.genre,
+            'energy_level': vibe_result.vibe.energy_level,
+            'descriptors': vibe_result.vibe.descriptors,
+            'compatibility_tags': vibe_result.compatibility_tags,
+            'best_use': vibe_result.best_use,
+            'confidence': vibe_result.confidence,
+            'job_id': job_id
+        }
+        
+        # Update sample with analysis
+        await self.db.execute(
+            update(Sample)
+            .where(Sample.id == sample_id)
+            .values(
+                analyzed_at=datetime.utcnow(),
+                extra_metadata={'vibe_analysis': vibe_data}
+            )
+        )
+        await self.db.commit()
+        
+        print(f"✅ Analysis complete for sample {sample_id}: {vibe_data['mood_primary']} {vibe_data['genre']}")
     
     async def get_sample_with_analysis(self, sample_id: int) -> Optional[Sample]:
         """Get a sample with its vibe analysis."""

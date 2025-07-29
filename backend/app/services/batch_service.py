@@ -85,8 +85,12 @@ class BatchService:
         
         # Verify collection path exists
         path = Path(collection_path)
+        if not path.is_absolute():
+            # Make relative paths relative to the project root
+            path = Path(__file__).parent.parent.parent.parent / collection_path
+        
         if not path.exists() or not path.is_dir():
-            raise ValueError(f"Collection path does not exist: {collection_path}")
+            raise ValueError(f"Collection path does not exist: {collection_path} (resolved to: {path})")
         
         # Create batch record
         batch = Batch(
@@ -212,6 +216,68 @@ class BatchService:
                 del self._active_processors[batch_id]
             if batch_id in self._progress_queues:
                 del self._progress_queues[batch_id]
+    
+    async def import_results_to_samples(self, batch_id: str) -> int:
+        """Import batch processing results into samples table"""
+        from app.models.sample import Sample
+        import json
+        
+        # Get batch
+        batch = await self.get_batch_by_id(batch_id)
+        if not batch or batch.status != "completed":
+            raise ValueError("Batch not found or not completed")
+        
+        # Check if export file exists
+        export_path = Path(batch.export_path) if batch.export_path else None
+        if not export_path or not export_path.exists():
+            # Try to reconstruct the path
+            export_path = Path(f"cache/{batch_id}/export.json")
+            if not export_path.exists():
+                raise ValueError("Export file not found")
+        
+        # Load export data
+        with open(export_path, 'r') as f:
+            export_data = json.load(f)
+        
+        imported_count = 0
+        
+        # Import each sample
+        for sample_data in export_data.get('samples', []):
+            # Create sample record
+            sample = Sample(
+                user_id=batch.user_id,
+                title=sample_data.get('filename', 'Unknown'),
+                file_path=sample_data.get('file_path', ''),
+                file_size=sample_data.get('file_size', 0),
+                duration=sample_data.get('duration', 0),
+                bpm=sample_data.get('bpm'),
+                musical_key=sample_data.get('key'),
+                genre=sample_data.get('vibe', {}).get('genre'),
+                tags=sample_data.get('tags', []),
+                analyzed_at=datetime.utcnow(),
+                extra_metadata={
+                    'vibe_analysis': {
+                        'mood_primary': sample_data.get('vibe', {}).get('mood', ['unknown'])[0],
+                        'mood_tags': sample_data.get('vibe', {}).get('mood', []),
+                        'era': sample_data.get('vibe', {}).get('era'),
+                        'genre': sample_data.get('vibe', {}).get('genre'),
+                        'energy_level': sample_data.get('vibe', {}).get('energy_level'),
+                        'descriptors': sample_data.get('vibe', {}).get('descriptors', []),
+                        'compatibility_tags': sample_data.get('compatibility_tags', []),
+                        'best_use': sample_data.get('best_use'),
+                        'confidence': sample_data.get('confidence', 0.8),
+                        'batch_id': batch_id
+                    }
+                }
+            )
+            
+            self.db.add(sample)
+            imported_count += 1
+        
+        # Commit all samples
+        await self.db.commit()
+        
+        return imported_count
     
     async def get_batch(self, batch_id: str, user_id: int) -> Optional[Batch]:
         """Get batch by ID for specific user"""
