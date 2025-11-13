@@ -1,0 +1,276 @@
+{% extends "components/base.html" %}
+
+{% block title %}Dashboard - SP404MK2{% endblock %}
+
+{% block content %}
+<div class="dashboard-page">
+    <!-- Page Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl md:text-4xl font-bold mb-2">Dashboard</h1>
+        <p class="text-base-content/70">Overview of your sample collection and recent activity</p>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <!-- Total Samples -->
+        <div class="stats shadow">
+            <div class="stat">
+                <div class="stat-figure text-primary">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
+                    </svg>
+                </div>
+                <div class="stat-title">Total Samples</div>
+                <div class="stat-value text-primary">342</div>
+                <div class="stat-desc">+12 this week</div>
+            </div>
+        </div>
+
+        <!-- Total Kits -->
+        <div class="stats shadow">
+            <div class="stat">
+                <div class="stat-figure text-secondary">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/>
+                    </svg>
+                </div>
+                <div class="stat-title">Kits Created</div>
+                <div class="stat-value text-secondary">23</div>
+                <div class="stat-desc">+3 this week</div>
+            </div>
+        </div>
+
+        <!-- Storage Used -->
+        <div class="stats shadow">
+            <div class="stat">
+                <div class="stat-figure text-accent">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/>
+                    </svg>
+                </div>
+                <div class="stat-title">Storage Used</div>
+                <div class="stat-value text-accent">2.4 GB</div>
+                <div class="stat-desc">of 10 GB</div>
+            </div>
+        </div>
+
+        <!-- AI Analyzed -->
+        <div class="stats shadow">
+            <div class="stat">
+                <div class="stat-figure text-info">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                    </svg>
+                </div>
+                <div class="stat-title">AI Analyzed</div>
+                <div class="stat-value text-info">89%</div>
+                <div class="stat-desc">304 of 342 samples</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Recent Samples -->
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <h2 class="card-title">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    Recent Samples
+                </h2>
+
+                <div class="space-y-4">
+                    <!-- Sample Item -->
+                    <div class="flex items-center gap-3 p-3 bg-base-200 rounded-lg hover:bg-base-300 transition-colors">
+                        <div class="avatar placeholder">
+                            <div class="bg-primary text-primary-content rounded-lg w-12">
+                                <span class="text-lg">🎵</span>
+                            </div>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-semibold">Jazz Piano Loop</h3>
+                            <p class="text-sm text-base-content/60">120 BPM • C Minor • Jazz</p>
+                        </div>
+                        <div class="text-xs text-base-content/50">2h ago</div>
+                    </div>
+
+                    <div class="flex items-center gap-3 p-3 bg-base-200 rounded-lg hover:bg-base-300 transition-colors">
+                        <div class="avatar placeholder">
+                            <div class="bg-secondary text-secondary-content rounded-lg w-12">
+                                <span class="text-lg">🥁</span>
+                            </div>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-semibold">Drum Break 808</h3>
+                            <p class="text-sm text-base-content/60">90 BPM • Hip-Hop</p>
+                        </div>
+                        <div class="text-xs text-base-content/50">5h ago</div>
+                    </div>
+
+                    <div class="flex items-center gap-3 p-3 bg-base-200 rounded-lg hover:bg-base-300 transition-colors">
+                        <div class="avatar placeholder">
+                            <div class="bg-accent text-accent-content rounded-lg w-12">
+                                <span class="text-lg">🎹</span>
+                            </div>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-semibold">Synth Bass</h3>
+                            <p class="text-sm text-base-content/60">128 BPM • G Major • Electronic</p>
+                        </div>
+                        <div class="text-xs text-base-content/50">1d ago</div>
+                    </div>
+                </div>
+
+                <div class="card-actions justify-end mt-4">
+                    <a href="/pages/samples.html" class="btn btn-ghost btn-sm">
+                        View All
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <h2 class="card-title">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
+                    Quick Actions
+                </h2>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <button class="btn btn-outline btn-primary h-24 flex-col gap-2">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                        </svg>
+                        <span class="text-sm">Upload Sample</span>
+                    </button>
+
+                    <button class="btn btn-outline btn-secondary h-24 flex-col gap-2">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                        </svg>
+                        <span class="text-sm">New Kit</span>
+                    </button>
+
+                    <button class="btn btn-outline btn-accent h-24 flex-col gap-2">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
+                        </svg>
+                        <span class="text-sm">Vibe Analysis</span>
+                    </button>
+
+                    <button class="btn btn-outline btn-info h-24 flex-col gap-2">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        </svg>
+                        <span class="text-sm">Batch Process</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Genre Distribution -->
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <h2 class="card-title">Genre Distribution</h2>
+
+                <div class="space-y-3">
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span>Hip-Hop</span>
+                            <span class="text-base-content/60">35%</span>
+                        </div>
+                        <progress class="progress progress-primary" value="35" max="100"></progress>
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span>Jazz</span>
+                            <span class="text-base-content/60">25%</span>
+                        </div>
+                        <progress class="progress progress-secondary" value="25" max="100"></progress>
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span>Electronic</span>
+                            <span class="text-base-content/60">20%</span>
+                        </div>
+                        <progress class="progress progress-accent" value="20" max="100"></progress>
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span>Soul</span>
+                            <span class="text-base-content/60">12%</span>
+                        </div>
+                        <progress class="progress progress-info" value="12" max="100"></progress>
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span>Other</span>
+                            <span class="text-base-content/60">8%</span>
+                        </div>
+                        <progress class="progress" value="8" max="100"></progress>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Status -->
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <h2 class="card-title">System Status</h2>
+
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <div class="badge badge-success badge-sm"></div>
+                            <span class="text-sm">API Server</span>
+                        </div>
+                        <span class="text-xs text-success font-semibold">Online</span>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <div class="badge badge-success badge-sm"></div>
+                            <span class="text-sm">AI Analysis</span>
+                        </div>
+                        <span class="text-xs text-success font-semibold">Ready</span>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <div class="badge badge-warning badge-sm"></div>
+                            <span class="text-sm">Batch Queue</span>
+                        </div>
+                        <span class="text-xs text-warning font-semibold">3 Pending</span>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <div class="badge badge-info badge-sm"></div>
+                            <span class="text-sm">Storage</span>
+                        </div>
+                        <span class="text-xs text-info font-semibold">24% Used</span>
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="text-sm text-base-content/60 text-center">
+                    Last sync: 2 minutes ago
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

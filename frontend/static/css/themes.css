@@ -1,0 +1,336 @@
+/**
+ * Theme-Specific Customizations for SP404MK2 Sample Manager
+ * Adds custom styling and enhancements for each theme
+ */
+
+/* ============================================
+   SP-404MK2 Custom Color Variables
+   ============================================ */
+:root {
+    --sp404-orange: #FF6B00;
+    --sp404-cyan: #00D9FF;
+    --sp404-red: #FF0033;
+    --sp404-green: #00FF66;
+    --sp404-gold: #FFD700;
+}
+
+/* ============================================
+   SYNTHWAVE Theme Enhancements
+   ============================================ */
+[data-theme="synthwave"] {
+    --waveform-glow: 0 0 10px #FF00FF;
+    --pad-glow: 0 0 15px currentColor;
+}
+
+[data-theme="synthwave"] .sample-card {
+    border: 1px solid rgba(255, 0, 255, 0.2);
+}
+
+[data-theme="synthwave"] .sample-card:hover {
+    box-shadow: 0 0 20px rgba(255, 0, 255, 0.5);
+    border-color: rgba(255, 0, 255, 0.6);
+    transform: translateY(-4px);
+}
+
+[data-theme="synthwave"] .waveform-progress {
+    background: linear-gradient(90deg, #FF00FF 0%, #00FFFF 100%);
+    box-shadow: var(--waveform-glow);
+}
+
+[data-theme="synthwave"] .btn-primary {
+    background: linear-gradient(135deg, #FF00FF 0%, #00FFFF 100%);
+    border: none;
+    box-shadow: 0 0 20px rgba(255, 0, 255, 0.3);
+}
+
+[data-theme="synthwave"] .navbar {
+    border-bottom: 2px solid rgba(255, 0, 255, 0.3);
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.9) 0%, rgba(20, 0, 40, 0.8) 100%);
+}
+
+/* ============================================
+   CYBERPUNK Theme Enhancements
+   ============================================ */
+[data-theme="cyberpunk"] {
+    --grid-color: #00FFFF;
+    --accent-glow: 0 0 10px #00FFFF;
+}
+
+[data-theme="cyberpunk"] .sample-card {
+    border: 1px solid rgba(0, 255, 255, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+[data-theme="cyberpunk"] .sample-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #00FFFF, transparent);
+    animation: scan 3s linear infinite;
+}
+
+@keyframes scan {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+[data-theme="cyberpunk"] .pad-button:active {
+    box-shadow: var(--accent-glow);
+    transform: scale(0.95);
+}
+
+[data-theme="cyberpunk"] .waveform-progress {
+    background: linear-gradient(90deg, #FF0066 0%, #00FFFF 100%);
+}
+
+[data-theme="cyberpunk"] .navbar {
+    border-bottom: 1px solid rgba(0, 255, 255, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 255, 255, 0.1);
+}
+
+/* ============================================
+   DRACULA Theme Enhancements
+   ============================================ */
+[data-theme="dracula"] .sample-card:hover {
+    border-color: #bd93f9;
+    box-shadow: 0 8px 30px rgba(189, 147, 249, 0.3);
+}
+
+[data-theme="dracula"] .waveform-progress {
+    background: linear-gradient(90deg, #bd93f9 0%, #ff79c6 100%);
+}
+
+[data-theme="dracula"] .btn-primary {
+    background-color: #bd93f9;
+    border-color: #bd93f9;
+}
+
+[data-theme="dracula"] .btn-primary:hover {
+    background-color: #a87fe8;
+    box-shadow: 0 0 20px rgba(189, 147, 249, 0.4);
+}
+
+/* ============================================
+   FOREST Theme Enhancements
+   ============================================ */
+[data-theme="forest"] .waveform-progress {
+    background: linear-gradient(90deg, #22c55e 0%, #16a34a 100%);
+}
+
+[data-theme="forest"] .sample-card:hover {
+    border-color: #22c55e;
+    box-shadow: 0 8px 30px rgba(34, 197, 94, 0.2);
+}
+
+[data-theme="forest"] .btn-primary {
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+}
+
+/* ============================================
+   BUSINESS Theme Enhancements
+   ============================================ */
+[data-theme="business"] .navbar {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+[data-theme="business"] .sample-card {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="business"] .sample-card:hover {
+    border-color: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="business"] .footer {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ============================================
+   LOFI Theme Enhancements
+   ============================================ */
+[data-theme="lofi"] .sample-card {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="lofi"] .sample-card:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="lofi"] .waveform-progress {
+    background: linear-gradient(90deg, #fbbf24 0%, #f59e0b 100%);
+}
+
+/* ============================================
+   LIGHT Theme Enhancements
+   ============================================ */
+[data-theme="light"] .sample-card {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .sample-card:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+[data-theme="light"] .navbar {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* ============================================
+   DARK Theme Enhancements (Default)
+   ============================================ */
+[data-theme="dark"] .sample-card {
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .sample-card:hover {
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ============================================
+   Universal Theme Enhancements
+   ============================================ */
+
+/* Smooth theme transitions */
+html {
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.card, .btn, .navbar, .footer {
+    transition: all 0.3s ease;
+}
+
+/* Theme-aware focus states */
+:focus-visible {
+    outline: 2px solid;
+    outline-color: hsl(var(--p));
+    outline-offset: 2px;
+}
+
+/* Theme-aware scrollbar (for Webkit browsers) */
+::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+}
+
+::-webkit-scrollbar-track {
+    background: hsl(var(--b1));
+}
+
+::-webkit-scrollbar-thumb {
+    background: hsl(var(--b3));
+    border-radius: 6px;
+    border: 3px solid hsl(var(--b1));
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--bc) / 0.3);
+}
+
+/* Dark themes get darker scrollbar */
+[data-theme="dark"] ::-webkit-scrollbar-thumb,
+[data-theme="synthwave"] ::-webkit-scrollbar-thumb,
+[data-theme="cyberpunk"] ::-webkit-scrollbar-thumb,
+[data-theme="dracula"] ::-webkit-scrollbar-thumb,
+[data-theme="business"] ::-webkit-scrollbar-thumb,
+[data-theme="forest"] ::-webkit-scrollbar-thumb {
+    background: hsl(var(--b3) / 0.5);
+}
+
+/* Theme-aware selection */
+::selection {
+    background: hsl(var(--p) / 0.3);
+    color: hsl(var(--pc));
+}
+
+/* Enhance pad grid for all themes */
+.pad-button {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+.pad-button:active {
+    transform: scale(0.95);
+}
+
+.pad-button::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    opacity: 0;
+    background: radial-gradient(circle at center, hsl(var(--p) / 0.3) 0%, transparent 70%);
+    transition: opacity 0.2s;
+    pointer-events: none;
+}
+
+.pad-button:active::after {
+    opacity: 1;
+}
+
+/* Theme-aware loading states */
+.loading {
+    color: hsl(var(--p));
+}
+
+/* Enhance waveform container for all themes */
+.waveform-container {
+    border: 1px solid hsl(var(--b3));
+    background: hsl(var(--b2));
+}
+
+/* Theme-aware toast positioning */
+.toast {
+    z-index: 9999 !important;
+}
+
+/* Responsive theme adjustments */
+@media (max-width: 768px) {
+    [data-theme="synthwave"] .sample-card:hover,
+    [data-theme="cyberpunk"] .sample-card:hover {
+        /* Reduce glow effects on mobile for performance */
+        box-shadow: 0 4px 12px rgba(255, 0, 255, 0.3);
+    }
+}
+
+/* Print styles (theme-independent) */
+@media print {
+    html {
+        data-theme: light !important;
+    }
+
+    .navbar, .footer, .theme-switcher, .btn {
+        display: none !important;
+    }
+}
+
+/* Accessibility: Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+
+    [data-theme="cyberpunk"] .sample-card::before {
+        animation: none;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .sample-card {
+        border-width: 2px;
+    }
+
+    .btn {
+        border-width: 2px;
+    }
+}
