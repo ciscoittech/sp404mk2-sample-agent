@@ -30,6 +30,7 @@ from src.agents.collector import CollectorAgent
 from src.agents.base import AgentStatus
 from src.config import settings
 from src.context import IntelligentContextManager
+from src.agents.patterns import PatternSelector, PatternMetrics, PatternType
 
 # Load environment
 load_dotenv()
@@ -63,6 +64,10 @@ class SP404ChatAgent:
         # Initialize intelligent context manager
         self.context = IntelligentContextManager()
         self.specialists = self._load_specialists()
+
+        # Initialize pattern selection
+        self.pattern_selector = PatternSelector()
+        self.pattern_metrics = PatternMetrics()
 
         # Initialize musical understanding
         self.musical_understanding = MusicalUnderstanding()
@@ -371,8 +376,9 @@ You have access to the following specialist knowledge:
         welcome = Panel.fit(
             "[bold cyan]🎵 SP404MK2 Musical Intelligence Agent[/bold cyan]\n\n" +
             "I understand musical vibes, production styles, and can help you find the perfect samples.\n\n" +
+            "[dim]✨ Features: Intelligent context management + Smart pattern selection[/dim]\n\n" +
             "[dim]Try: 'I need that Dilla bounce' or 'Find me some 70s soul breaks'[/dim]\n" +
-            "[dim]Commands: /help, /clear, /history, /exit[/dim]",
+            "[dim]Commands: /help, /metrics, /patterns, /exit[/dim]",
             border_style="cyan"
         )
         console.print(welcome)
@@ -399,6 +405,7 @@ You have access to the following specialist knowledge:
 • /clear - Clear the screen
 • /history - Show conversation history
 • /metrics - Show context manager metrics
+• /patterns - Show pattern selection metrics
 • /exit - Exit the chat
 
 [bold]Example Requests:[/bold]
@@ -406,6 +413,7 @@ You have access to the following specialist knowledge:
 • "Find me some Madlib-style loops"
 • "Show me boom bap drums around 90 BPM"
 • "I want that lo-fi bedroom producer sound"
+• Paste any YouTube URL to analyze
                     """
                     console.print(Panel(help_text, title="Help", border_style="green"))
                     continue
@@ -456,7 +464,57 @@ You have access to the following specialist knowledge:
 
                     console.print(metrics_table)
                     continue
+
+                elif user_input.lower() == '/patterns':
+                    # Display pattern metrics
+                    pattern_summary = self.pattern_metrics.get_summary()
+
+                    pattern_table = Table(title="Pattern Selection Metrics")
+                    pattern_table.add_column("Pattern", style="cyan")
+                    pattern_table.add_column("Usage", style="green")
+                    pattern_table.add_column("Success Rate", style="yellow")
+                    pattern_table.add_column("Avg Latency", style="magenta")
+
+                    # Show stats for each pattern
+                    for pattern_name, stats in pattern_summary["pattern_stats"].items():
+                        if stats["usage_count"] > 0:
+                            pattern_table.add_row(
+                                pattern_name,
+                                str(stats["usage_count"]),
+                                f"{stats['success_rate']:.1f}%",
+                                f"{stats['avg_latency_ms']:.2f}ms"
+                            )
+
+                    console.print(pattern_table)
+
+                    # Show most used/fastest patterns
+                    most_used = self.pattern_metrics.get_most_used_pattern()
+                    fastest = self.pattern_metrics.get_fastest_pattern()
+                    most_reliable = self.pattern_metrics.get_most_reliable_pattern()
+
+                    if most_used:
+                        console.print(f"\n[dim]Most used: {most_used}[/dim]")
+                    if fastest:
+                        console.print(f"[dim]Fastest: {fastest}[/dim]")
+                    if most_reliable:
+                        console.print(f"[dim]Most reliable: {most_reliable}[/dim]")
+
+                    continue
                 
+                # Use pattern selector to determine execution strategy
+                import time
+                pattern_start_time = time.time()
+
+                # Select pattern
+                decision = self.pattern_selector.select_pattern(user_input)
+                self.pattern_metrics.record_pattern_selection(
+                    decision.pattern.value,
+                    decision.pattern.value  # Use pattern as task type for now
+                )
+
+                console.print(f"[dim]Pattern: {decision.pattern.value}[/dim]")
+
+                # Execute based on pattern
                 # Check if user provided a YouTube URL
                 if self.is_youtube_url(user_input):
                     console.print("\n[bold green]Agent:[/bold green] I'll analyze this YouTube video for sample opportunities...\n")
@@ -558,9 +616,28 @@ You have access to the following specialist knowledge:
                                 console.print("[dim]   and use the SP-404MK2 to chop it into individual samples.[/dim]")
                             else:
                                 console.print("\n[dim]Tip: You can download specific segments using the timestamp extractor[/dim]")
+
+                            # Record successful execution
+                            pattern_latency = (time.time() - pattern_start_time) * 1000
+                            self.pattern_metrics.record_execution(
+                                decision.pattern.value,
+                                "youtube_analysis",
+                                pattern_latency,
+                                True
+                            )
                         else:
                             console.print(f"[red]Failed to analyze video: {analysis_result['error']}[/red]")
                             self.context.add_exchange(user_input, f"Failed to analyze video: {analysis_result['error']}")
+
+                            # Record failed execution
+                            pattern_latency = (time.time() - pattern_start_time) * 1000
+                            self.pattern_metrics.record_execution(
+                                decision.pattern.value,
+                                "youtube_analysis",
+                                pattern_latency,
+                                False,
+                                error=analysis_result['error']
+                            )
                     else:
                         console.print("[red]Could not extract YouTube URL from input[/red]")
                 
@@ -624,10 +701,29 @@ You have access to the following specialist knowledge:
                         # Ask if user wants to download
                         console.print("\n[dim]Type 'download 1-3' to download samples 1, 2, and 3[/dim]")
                         console.print("[dim]Or continue chatting to refine your search[/dim]")
+
+                        # Record successful execution
+                        pattern_latency = (time.time() - pattern_start_time) * 1000
+                        self.pattern_metrics.record_execution(
+                            decision.pattern.value,
+                            "sample_search",
+                            pattern_latency,
+                            True
+                        )
                     else:
                         console.print(f"[red]Search failed: {collector_result.error}[/red]")
                         response = "Sorry, I encountered an error while searching."
                         self.context.add_exchange(user_input, response)
+
+                        # Record failed execution
+                        pattern_latency = (time.time() - pattern_start_time) * 1000
+                        self.pattern_metrics.record_execution(
+                            decision.pattern.value,
+                            "sample_search",
+                            pattern_latency,
+                            False,
+                            error=collector_result.error
+                        )
                     
                 else:
                     # Regular conversational response
@@ -657,6 +753,15 @@ You have access to the following specialist knowledge:
                         console.print("\n[dim]Generated search queries:[/dim]")
                         for i, query in enumerate(queries, 1):
                             console.print(f"  {i}. {query}")
+
+                    # Record successful execution
+                    pattern_latency = (time.time() - pattern_start_time) * 1000
+                    self.pattern_metrics.record_execution(
+                        decision.pattern.value,
+                        "general_conversation",
+                        pattern_latency,
+                        True
+                    )
                 
             except KeyboardInterrupt:
                 console.print("\n\n[yellow]Interrupted. Type /exit to quit.[/yellow]")
