@@ -195,55 +195,96 @@ class VibeAnalysisAgent(Agent):
         return results
     
     def create_single_prompt(self, sample_data: Dict[str, Any]) -> str:
-        """Create prompt for single sample analysis."""
+        """Create prompt for single sample analysis with thinking protocol."""
         return f"""
-        Analyze this audio sample for vibe and mood:
-        
+        Analyze this audio sample for vibe and mood using the 5-step thinking protocol.
+
+        SAMPLE DATA:
         Filename: {sample_data['filename']}
         BPM: {sample_data.get('bpm', 'unknown')}
         Key: {sample_data.get('key', 'unknown')}
         Spectral Centroid: {sample_data.get('spectral_centroid', 'unknown')}
-        
-        Return ONLY a JSON object with these fields:
-        - mood: array of 3 mood descriptors
-        - era: time period (e.g., "1970s", "modern")
-        - genre: musical genre
-        - energy_level: "low", "medium", or "high"
-        - descriptors: array of 3-5 additional descriptive terms
-        - compatibility_tags: array of tags for finding compatible samples
-        - best_use: suggested use (drums, bass, melody, pad, texture, etc.)
-        
-        Example: {{"mood": ["dark", "mysterious", "tense"], "era": "1980s", "genre": "synthwave", "energy_level": "medium", "descriptors": ["analog", "retro", "atmospheric"], "compatibility_tags": ["night", "cyberpunk", "noir"], "best_use": "bassline"}}
+
+        THINKING PROTOCOL - Work through each step:
+
+        STEP 1: Analyze Musical Characteristics
+        - What does the BPM suggest about energy level and use case?
+        - What does the key signature tell us about emotional quality?
+        - What does the spectral centroid indicate about tonal character?
+        - What instrumentation can be inferred?
+
+        STEP 2: Consider Era and Production Context
+        - What era does this BPM/spectrum combination suggest?
+        - What production techniques were common in that period?
+        - What genre movements align with these characteristics?
+
+        STEP 3: Identify Mood and Emotional Qualities
+        - Energy level (low/medium/high) based on BPM and character
+        - Emotional valence (dark/neutral/bright) from key and texture
+        - Overall mood synthesis from all factors
+
+        STEP 4: Determine Best Use Case
+        - How should a producer use this sample?
+        - Foundation/drums, bass, melody, harmony, texture, or transition?
+
+        STEP 5: Identify Compatibility
+        - What BPM range works with this?
+        - What keys are compatible?
+        - What other samples complement this?
+
+        EXAMPLE REASONING:
+        "The BPM of 90 suggests mid-tempo, typical of boom bap (85-100 BPM range).
+        The warm spectral centroid (1200 Hz) indicates analog character.
+        Combined with D minor key, this creates a reflective, grounded mood.
+        Best used as drum foundation for boom bap/lo-fi production."
+
+        After working through all steps, return ONLY a JSON object:
+        {{
+          "mood": ["descriptor1", "descriptor2", "descriptor3"],
+          "era": "time_period",
+          "genre": "primary_genre",
+          "energy_level": "low|medium|high",
+          "descriptors": ["adj1", "adj2", "adj3", "adj4", "adj5"],
+          "compatibility_tags": ["tag1", "tag2", "tag3"],
+          "best_use": "use_case"
+        }}
         """
     
     def create_batch_prompt(self, samples: List[Dict[str, Any]]) -> str:
-        """Create prompt for batch analysis."""
-        prompt = "Analyze these audio samples for vibe and mood. Return ONLY a JSON array.\n\n"
-        
+        """Create prompt for batch analysis with thinking protocol."""
+        prompt = """Analyze these audio samples using the thinking protocol:
+
+1. Analyze musical characteristics (BPM → energy, key → mood, spectrum → tone)
+2. Consider era and production context
+3. Identify mood and emotional qualities
+4. Determine best use case
+5. Identify compatibility factors
+
+SAMPLES:\n\n"""
+
         for i, sample in enumerate(samples):
-            prompt += f"""
-            Sample {i+1}:
-            - Filename: {sample['filename']}
-            - BPM: {sample.get('bpm', 'unknown')}
-            - Key: {sample.get('key', 'unknown')}
-            - Spectral: {sample.get('spectral_centroid', 'unknown')}
-            
-            """
-        
+            prompt += f"""Sample {i+1}:
+- Filename: {sample['filename']}
+- BPM: {sample.get('bpm', 'unknown')}
+- Key: {sample.get('key', 'unknown')}
+- Spectral Centroid: {sample.get('spectral_centroid', 'unknown')}
+
+"""
+
         prompt += """
-        For each sample, include:
-        - filename: the filename
-        - mood: array of 3 mood descriptors
-        - era: time period
-        - genre: musical genre
-        - energy_level: "low", "medium", or "high"
-        - descriptors: array of 3-5 additional terms
-        - compatibility_tags: array of tags
-        - best_use: suggested use
-        
-        Return as JSON array ONLY.
-        """
-        
+For each sample, think through the analysis, then return JSON array with:
+- filename: the filename
+- mood: array of 3 specific mood descriptors (not generic like "good")
+- era: time period (e.g., "1970s", "modern")
+- genre: musical genre
+- energy_level: "low", "medium", or "high"
+- descriptors: array of 3-5 specific terms (texture, style, character)
+- compatibility_tags: array of tags for finding compatible samples
+- best_use: suggested use (drum foundation, bass foundation, melodic layer, texture, etc.)
+
+Return as JSON array ONLY (no markdown, no explanations).
+"""
+
         return prompt
     
     def parse_vibe_response(self, response: str, filename: str, bpm: float, key: str) -> SampleVibe:
