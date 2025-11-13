@@ -29,6 +29,7 @@ from src.chat.musical_understanding import MusicalUnderstanding, MusicalRequest
 from src.agents.collector import CollectorAgent
 from src.agents.base import AgentStatus
 from src.config import settings
+from src.context import IntelligentContextManager
 
 # Load environment
 load_dotenv()
@@ -50,40 +51,6 @@ class MusicalIntent(BaseModel):
     search_queries: List[str] = Field(default_factory=list, description="Generated search queries")
 
 
-class ConversationContext:
-    """Manages conversation history and context."""
-    
-    def __init__(self, max_history: int = 10):
-        self.history: List[Dict[str, str]] = []
-        self.max_history = max_history
-        self.current_intent: Optional[MusicalIntent] = None
-        self.discovered_samples: List[Dict] = []
-    
-    def add_exchange(self, user_input: str, agent_response: str):
-        """Add a conversation exchange to history."""
-        self.history.append({
-            "timestamp": datetime.now().isoformat(),
-            "user": user_input,
-            "agent": agent_response
-        })
-        
-        # Keep history manageable
-        if len(self.history) > self.max_history:
-            self.history = self.history[-self.max_history:]
-    
-    def get_context_string(self) -> str:
-        """Get formatted conversation history for context."""
-        if not self.history:
-            return ""
-        
-        context = "Previous conversation:\n"
-        for exchange in self.history[-3:]:  # Last 3 exchanges
-            context += f"User: {exchange['user']}\n"
-            context += f"Agent: {exchange['agent'][:200]}...\n\n"
-        
-        return context
-
-
 class SP404ChatAgent:
     """Main conversational agent with musical intelligence."""
     
@@ -92,16 +59,17 @@ class SP404ChatAgent:
         if not self.api_key:
             console.print("[red]Error: OPENROUTER_API_KEY not found in environment[/red]")
             sys.exit(1)
-        
-        self.context = ConversationContext()
+
+        # Initialize intelligent context manager
+        self.context = IntelligentContextManager()
         self.specialists = self._load_specialists()
-        
+
         # Initialize musical understanding
         self.musical_understanding = MusicalUnderstanding()
-        
+
         # Initialize collector agent
         self.collector = CollectorAgent()
-        
+
         # Model configuration
         self.model = settings.chat_model
         self.api_url = "https://openrouter.ai/api/v1/chat/completions"
@@ -171,18 +139,21 @@ You have access to the following specialist knowledge:
     
     async def process_request(self, user_input: str) -> str:
         """Process user request with streaming response."""
+        # Build intelligent context
+        intelligent_context = self.context.build_context(user_input)
+
         # Build messages
         messages = [
             {"role": "system", "content": self._build_system_prompt()},
         ]
-        
-        # Add conversation context
-        if self.context.history:
+
+        # Add intelligent tier-based context
+        if intelligent_context:
             messages.append({
-                "role": "system", 
-                "content": self.context.get_context_string()
+                "role": "system",
+                "content": intelligent_context
             })
-        
+
         messages.append({"role": "user", "content": user_input})
         
         # Make API request
@@ -278,7 +249,20 @@ You have access to the following specialist knowledge:
         """Execute sample search based on user request."""
         # Parse request with musical understanding
         musical_request = self.musical_understanding.parse_request(user_input)
-        
+
+        # Update context manager with musical intent
+        self.context.update_musical_intent({
+            "genres": musical_request.genres,
+            "sub_genres": musical_request.sub_genres,
+            "bpm_range": musical_request.bpm_range,
+            "era": musical_request.era,
+            "texture_descriptors": musical_request.texture_descriptors,
+            "artist_references": musical_request.artist_references
+        })
+
+        # Register active tools
+        self.context.register_active_tool("youtube_search")
+
         # Prepare collector parameters
         collector_params = {
             "genre": musical_request.genres[0] if musical_request.genres else "electronic",
@@ -287,19 +271,19 @@ You have access to the following specialist knowledge:
             "max_results": 10,
             "assess_quality": True
         }
-        
+
         # Add BPM if specified
         if musical_request.bpm_range:
             collector_params["bpm_range"] = musical_request.bpm_range
-        
+
         # Add era if specified
         if musical_request.era:
             collector_params["era"] = musical_request.era
-        
+
         # Execute collector agent
         task_id = f"chat_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         result = await self.collector.execute(task_id, **collector_params)
-        
+
         return {
             "musical_request": musical_request,
             "collector_result": result,
@@ -310,7 +294,10 @@ You have access to the following specialist knowledge:
         """Analyze a YouTube URL for samples."""
         from src.tools.timestamp_extractor import TimestampExtractor
         from src.tools.download import get_youtube_metadata
-        
+
+        # Register active tool
+        self.context.register_active_tool("timestamp_extractor")
+
         try:
             # Try to get real metadata first
             try:
@@ -410,7 +397,8 @@ You have access to the following specialist knowledge:
 [bold]Available Commands:[/bold]
 • /help - Show this help message
 • /clear - Clear the screen
-• /history - Show conversation history  
+• /history - Show conversation history
+• /metrics - Show context manager metrics
 • /exit - Exit the chat
 
 [bold]Example Requests:[/bold]
@@ -423,23 +411,50 @@ You have access to the following specialist knowledge:
                     continue
                 
                 elif user_input.lower() == '/history':
-                    if self.context.history:
+                    if self.context.conversation_history:
                         history_table = Table(title="Conversation History")
-                        history_table.add_column("Time", style="dim")
+                        history_table.add_column("#", style="dim", width=3)
                         history_table.add_column("You", style="cyan")
                         history_table.add_column("Agent", style="green")
-                        
-                        for exchange in self.context.history[-5:]:
-                            time = datetime.fromisoformat(exchange['timestamp']).strftime("%H:%M")
+
+                        for i, exchange in enumerate(self.context.conversation_history[-5:], 1):
                             history_table.add_row(
-                                time,
+                                str(i),
                                 exchange['user'][:50] + "..." if len(exchange['user']) > 50 else exchange['user'],
                                 exchange['agent'][:50] + "..." if len(exchange['agent']) > 50 else exchange['agent']
                             )
-                        
+
                         console.print(history_table)
                     else:
                         console.print("[dim]No conversation history yet[/dim]")
+                    continue
+
+                elif user_input.lower() == '/metrics':
+                    # Display context manager metrics
+                    metrics = self.context.get_metrics_summary()
+
+                    metrics_table = Table(title="Context Manager Metrics")
+                    metrics_table.add_column("Metric", style="cyan")
+                    metrics_table.add_column("Value", style="green")
+
+                    # Current state
+                    metrics_table.add_row("Total Tokens", str(metrics["current_state"]["total_tokens"]))
+                    for tier, tokens in metrics["current_state"]["tier_tokens"].items():
+                        metrics_table.add_row(f"  {tier}", str(tokens))
+
+                    metrics_table.add_row("", "")  # Spacer
+
+                    # Performance
+                    metrics_table.add_row("Total Requests", str(metrics["performance"]["total_requests"]))
+                    metrics_table.add_row("Avg Load Time", f"{metrics['performance']['avg_load_time_ms']:.2f}ms")
+
+                    metrics_table.add_row("", "")  # Spacer
+
+                    # Budget management
+                    metrics_table.add_row("Pruning Events", str(metrics["budget_management"]["total_pruning_events"]))
+                    metrics_table.add_row("Pruning Rate", f"{metrics['budget_management']['pruning_rate']:.1f}%")
+
+                    console.print(metrics_table)
                     continue
                 
                 # Check if user provided a YouTube URL
@@ -564,7 +579,12 @@ You have access to the following specialist knowledge:
                     if collector_result.status == AgentStatus.SUCCESS:
                         result_data = collector_result.result
                         sources = result_data.get("sources", [])
-                        
+
+                        # Update context with search results and samples
+                        self.context.update_search_results(sources)
+                        for source in sources:
+                            self.context.add_discovered_sample(source)
+
                         # Show musical understanding
                         console.print("[bold]Musical Understanding:[/bold]")
                         if musical_req.genres:

@@ -1,0 +1,154 @@
+{
+  "tier_budgets": {
+    "tier1_immediate": {
+      "min_tokens": 500,
+      "max_tokens": 1200,
+      "priority": 1,
+      "always_loaded": true,
+      "description": "Current request and recent conversation"
+    },
+    "tier2_working": {
+      "min_tokens": 800,
+      "max_tokens": 2000,
+      "priority": 2,
+      "description": "Active task state and relevant tools"
+    },
+    "tier3_reference": {
+      "min_tokens": 500,
+      "max_tokens": 1500,
+      "priority": 3,
+      "description": "Heuristics and reference materials"
+    },
+    "tier4_background": {
+      "min_tokens": 300,
+      "max_tokens": 1000,
+      "priority": 4,
+      "description": "Thinking protocols and examples"
+    }
+  },
+
+  "total_budget": {
+    "soft_limit": 4000,
+    "hard_limit": 5000,
+    "warning_threshold": 3500
+  },
+
+  "tier1_sources": {
+    "conversation_history": {
+      "enabled": true,
+      "max_exchanges": 3,
+      "max_chars_per_exchange": 500,
+      "include_timestamps": false
+    },
+    "current_request": {
+      "enabled": true,
+      "include_full_text": true
+    },
+    "current_task_status": {
+      "enabled": true
+    }
+  },
+
+  "tier2_sources": {
+    "musical_intent": {
+      "enabled": true,
+      "include_reasoning": false
+    },
+    "discovered_samples": {
+      "enabled": true,
+      "max_samples": 5,
+      "include_metadata": true
+    },
+    "active_tool_docs": {
+      "enabled": true,
+      "load_on_demand": true
+    },
+    "search_results": {
+      "enabled": true,
+      "max_results": 10
+    }
+  },
+
+  "tier3_sources": {
+    "heuristics": {
+      "enabled": true,
+      "load_strategy": "task_based",
+      "include_examples": true,
+      "max_examples_per_heuristic": 2
+    },
+    "tool_registry": {
+      "enabled": true,
+      "include_triggers": true
+    },
+    "quick_references": {
+      "enabled": true,
+      "load_on_keyword": true
+    }
+  },
+
+  "tier4_sources": {
+    "thinking_protocols": {
+      "enabled": true,
+      "load_strategy": "task_type_match",
+      "protocols": {
+        "vibe_analysis": ["vibe_analysis_protocol.md"],
+        "search_query": ["search_query_generation_protocol.md"]
+      }
+    },
+    "example_libraries": {
+      "enabled": true,
+      "load_strategy": "similarity_match",
+      "max_examples": 3
+    },
+    "specialist_knowledge": {
+      "enabled": true,
+      "load_sections_only": true,
+      "max_section_length": 500
+    }
+  },
+
+  "task_type_detection": {
+    "sample_search": {
+      "keywords": ["find", "search", "looking for", "need", "want samples"],
+      "required_tiers": [1, 2, 3],
+      "optional_tiers": [4],
+      "load_heuristics": ["search_intent_detection", "query_generation"],
+      "load_protocols": ["search_query"]
+    },
+    "vibe_analysis": {
+      "keywords": ["analyze", "vibe", "mood", "what does this sound like"],
+      "required_tiers": [1, 2, 4],
+      "optional_tiers": [3],
+      "load_heuristics": ["sample_quality_assessment"],
+      "load_protocols": ["vibe_analysis"]
+    },
+    "youtube_analysis": {
+      "keywords": ["youtube.com", "youtu.be"],
+      "required_tiers": [1, 2],
+      "optional_tiers": [3],
+      "load_tools": ["timestamp_extractor"]
+    },
+    "general_conversation": {
+      "keywords": [],
+      "required_tiers": [1],
+      "optional_tiers": [2],
+      "load_minimal": true
+    }
+  },
+
+  "pruning_strategy": {
+    "when_over_budget": "priority_based",
+    "preserve_tier1": true,
+    "prune_order": [4, 3, 2],
+    "prune_oldest_first": true,
+    "minimum_context": ["current_request", "last_exchange"]
+  },
+
+  "metrics": {
+    "track_token_usage": true,
+    "track_tier_usage": true,
+    "track_load_times": true,
+    "track_pruning_events": true,
+    "log_level": "info"
+  }
+}
