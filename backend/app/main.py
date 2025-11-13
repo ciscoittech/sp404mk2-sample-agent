@@ -43,8 +43,15 @@ app.add_middleware(
 # Include API router
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
-# Template setup
-templates = Jinja2Templates(directory="/app/backend/templates")
+# Determine paths based on environment (Docker vs local)
+base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+frontend_dir = os.path.join(base_dir, "frontend") if os.path.exists(os.path.join(base_dir, "frontend")) else "/app/frontend"
+print(f"🔍 Template path debug:")
+print(f"  __file__: {__file__}")
+print(f"  base_dir: {base_dir}")
+print(f"  frontend_dir: {frontend_dir}")
+print(f"  exists: {os.path.exists(frontend_dir)}")
+templates = Jinja2Templates(directory=frontend_dir)
 
 
 @app.get("/health")
@@ -53,11 +60,20 @@ async def health_check():
     return {"status": "healthy", "version": settings.VERSION}
 
 
+# Template routes for pages that use Jinja2
+from fastapi import Request
+
+@app.get("/pages/usage.html")
+async def usage_page(request: Request):
+    """Render usage page with Jinja2 template."""
+    return templates.TemplateResponse("pages/usage.html", {"request": request})
+
+
 # Mount static files from frontend (after specific routes)
-frontend_dir = "/app/frontend"
+# Try local path first, then Docker path
 if os.path.exists(frontend_dir):
     app.mount("/static", StaticFiles(directory=os.path.join(frontend_dir, "static")), name="static")
-    # Serve frontend pages
+    # Serve other frontend pages as static files
     app.mount("/pages", StaticFiles(directory=os.path.join(frontend_dir, "pages"), html=True), name="pages")
     app.mount("/", StaticFiles(directory=frontend_dir, html=True), name="root")
 
