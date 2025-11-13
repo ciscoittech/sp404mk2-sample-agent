@@ -68,8 +68,7 @@ async def list_public_samples(
     
     # Return HTML for HTMX requests
     if hx_request:
-        from fastapi.templating import Jinja2Templates
-        templates = Jinja2Templates(directory="/app/backend/templates")
+        from app.main import templates
         
         # Convert SQLAlchemy models to simple dicts to avoid lazy loading issues
         sample_dicts = []

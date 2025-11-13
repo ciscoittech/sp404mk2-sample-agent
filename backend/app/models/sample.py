@@ -48,3 +48,8 @@ class Sample(Base):
         back_populates="sample",
         cascade="all, delete-orphan"
     )
+    api_usage = relationship(
+        "ApiUsage",
+        back_populates="sample",
+        cascade="all, delete-orphan"
+    )
