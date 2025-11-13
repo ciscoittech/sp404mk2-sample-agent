@@ -1,0 +1,568 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<heuristics domain="sample_quality_assessment">
+  <metadata>
+    <version>1.0.0</version>
+    <description>Heuristics for assessing sample and source quality from metadata and content analysis</description>
+    <last_updated>2025-01-13</last_updated>
+  </metadata>
+
+  <heuristic id="youtube_source_quality">
+    <name>Assess YouTube Source Quality</name>
+
+    <when>Evaluating YouTube search results or video analysis</when>
+
+    <consider>
+      <factor>Does title indicate professional sample pack vs amateur?</factor>
+      <factor>Is channel known for sample content?</factor>
+      <factor>What are view count and engagement metrics?</factor>
+      <factor>Does description contain detailed information?</factor>
+      <factor>Are there clear timestamps/tracklist?</factor>
+      <factor>What is video duration? (too short = suspicious)</factor>
+    </consider>
+
+    <generally>
+      High Quality Indicators (Score: 0.8-1.0):
+      - Title contains: "professional", "high quality", "WAV", "24-bit"
+      - Channel has "samples", "sounds", "audio" in name
+      - 10k+ views (indicates popularity/trust)
+      - Detailed description with sample list
+      - Duration: 2-15 minutes (sample pack sweet spot)
+      - Upload date: Recent (last 2 years)
+
+      Medium Quality (Score: 0.5-0.79):
+      - Generic title but mentions "free download"
+      - 1k-10k views
+      - Basic description
+      - Duration: 1-20 minutes
+
+      Low Quality (Score: <0.5):
+      - Clickbait title, no specifics
+      - <1k views
+      - No description or very sparse
+      - Too short (<60s) or too long (>30min)
+      - Old upload (>5 years) with low engagement
+    </generally>
+
+    <unless>
+      Rare/niche content may have low views but high quality:
+      - "Ethiopian jazz samples" might have 500 views but be excellent
+      - Consider niche-ness when assessing views
+    </unless>
+
+    <examples>
+      <example>
+        <video>
+          <title>FREE Boom Bap Drum Kit - 90s Style WAV Samples</title>
+          <channel>SampleSupply</channel>
+          <views>45000</views>
+          <duration>180</duration>
+          <description>Professional 90s boom bap drums. Includes 20 kicks, 15 snares, 30 hi-hats. WAV format, royalty-free. Download link: ...</description>
+        </video>
+        <quality_score>0.95</quality_score>
+        <reasoning>
+          + Clear, professional title
+          + Channel name suggests sample focus
+          + High views (45k)
+          + Good duration (3 minutes)
+          + Detailed description with counts
+          + WAV format mentioned
+          + Download link provided
+        </reasoning>
+      </example>
+
+      <example>
+        <video>
+          <title>samples</title>
+          <channel>RandomUser123</channel>
+          <views>230</views>
+          <duration>45</duration>
+          <description></description>
+        </video>
+        <quality_score>0.25</quality_score>
+        <reasoning>
+          - Vague title ("samples")
+          - Generic channel name
+          - Low views
+          - Too short (45 seconds)
+          - No description
+          - Likely low quality or spam
+        </reasoning>
+      </example>
+
+      <example>
+        <video>
+          <title>Rare Ethiopian Jazz Samples Pack</title>
+          <channel>WorldMusicDigger</channel>
+          <views>850</views>
+          <duration>420</duration>
+          <description>Rare Ethiopian jazz samples from 1960s-70s vinyl. 10 loops extracted from original pressings. For producers seeking unique sounds.</description>
+        </video>
+        <quality_score>0.80</quality_score>
+        <reasoning>
+          Niche content assessment:
+          + Very specific title
+          + Describes rarity/uniqueness
+          + Detailed description
+          + Channel suggests curation
+          Views are low BUT content is niche (adjust expectations)
+          Duration is longer but justified (10 loops from vinyl)
+          → Good quality despite low views
+        </reasoning>
+      </example>
+    </examples>
+
+    <scoring_formula>
+      base_score = 0.5
+
+      # Title quality (0-0.25)
+      if contains("WAV", "professional", "high quality"):
+        + 0.25
+      elif contains("free download", "sample pack"):
+        + 0.15
+      elif vague_title:
+        - 0.15
+
+      # Channel credibility (0-0.2)
+      if channel_name contains ("samples", "sounds", "audio", "beats"):
+        + 0.15
+      elif generic_username:
+        - 0.05
+
+      # Engagement (0-0.25)
+      if views > 50k:
+        + 0.25
+      elif views > 10k:
+        + 0.15
+      elif views > 1k:
+        + 0.05
+      elif views < 500:
+        - 0.10
+
+      # Description quality (0-0.15)
+      if detailed_description with timestamps/tracklist:
+        + 0.15
+      elif basic_description:
+        + 0.05
+      elif no_description:
+        - 0.10
+
+      # Duration appropriateness (0-0.15)
+      if 120 <= duration <= 600:  # 2-10 minutes
+        + 0.15
+      elif 60 <= duration <= 1200:  # 1-20 minutes
+        + 0.05
+      elif duration < 60 or duration > 1800:
+        - 0.10
+
+      final_score = min(1.0, max(0.0, base_score + adjustments))
+    </scoring_formula>
+  </heuristic>
+
+  <heuristic id="audio_sample_quality">
+    <name>Assess Individual Sample Quality</name>
+
+    <when>Analyzing downloaded audio sample</when>
+
+    <consider>
+      <factor>What is sample rate? (44.1kHz+ preferred)</factor>
+      <factor>What is bit depth? (16-bit min, 24-bit ideal)</factor>
+      <factor>Is audio clipping/distorted?</factor>
+      <factor>Is there excessive noise/hiss?</factor>
+      <factor>Is dynamic range appropriate?</factor>
+      <factor>Is sample loop-able (for loops)?</factor>
+      <factor>Is sample length appropriate for use case?</factor>
+    </consider>
+
+    <generally>
+      Technical Quality Metrics:
+
+      Excellent (0.9-1.0):
+      - 44.1kHz+ sample rate
+      - 24-bit depth
+      - No clipping (peak < -0.3dB)
+      - Low noise floor (-60dB+)
+      - Good dynamic range
+      - Clean waveform
+
+      Good (0.7-0.89):
+      - 44.1kHz sample rate
+      - 16-bit depth
+      - Minimal clipping
+      - Moderate noise (-50dB)
+      - Adequate dynamics
+
+      Fair (0.5-0.69):
+      - 44.1kHz sample rate
+      - Some clipping
+      - Noticeable noise
+      - Compressed dynamics
+
+      Poor (<0.5):
+      - <44.1kHz sample rate
+      - Heavy clipping
+      - Excessive noise
+      - Over-compressed
+    </generally>
+
+    <unless>
+      Lo-fi aesthetic intentionally uses degradation:
+      - Vinyl crackle is a feature
+      - Tape saturation is desired
+      - Bit crushing is stylistic
+      → Don't penalize for intentional "flaws"
+    </unless>
+
+    <examples>
+      <example>
+        <sample>
+          <filename>vintage_soul_loop.wav</filename>
+          <sample_rate>48000</sample_rate>
+          <bit_depth>24</bit_depth>
+          <peak_level>-1.2</peak_level>
+          <noise_floor>-65</noise_floor>
+          <has_vinyl_crackle>true</has_vinyl_crackle>
+        </sample>
+        <quality_score>0.92</quality_score>
+        <reasoning>
+          Technical excellence:
+          + 48kHz sample rate (high)
+          + 24-bit depth (professional)
+          + No clipping (-1.2dB peak is safe)
+          + Excellent noise floor
+
+          Vinyl crackle present but intentional (vintage soul)
+          → Not penalized, part of aesthetic
+
+          Overall: Excellent quality
+        </reasoning>
+      </example>
+
+      <example>
+        <sample>
+          <filename>trap_808.wav</filename>
+          <sample_rate>44100</sample_rate>
+          <bit_depth>16</bit_depth>
+          <peak_level>0.0</peak_level>
+          <clipping>true</clipping>
+        </sample>
+        <quality_score>0.60</quality_score>
+        <reasoning>
+          Technical issues:
+          - 0.0dB peak = clipping
+          - 16-bit (acceptable but not ideal for bass)
+
+          However:
+          + 44.1kHz is standard
+          + For 808, some clipping might be intentional (distortion)
+
+          Fair quality, usable but not ideal
+        </reasoning>
+      </example>
+    </examples>
+  </heuristic>
+
+  <heuristic id="musical_quality">
+    <name>Assess Musical/Creative Quality</name>
+
+    <when>Evaluating sample beyond technical specs</when>
+
+    <consider>
+      <factor>Is sample musically interesting?</factor>
+      <factor>Is rhythm/timing tight (for drums)?</factor>
+      <factor>Is pitch stable (for melodic content)?</factor>
+      <factor>Does sample have character/uniqueness?</factor>
+      <factor>Is sample usable in production context?</factor>
+    </consider>
+
+    <generally>
+      Excellent Musical Quality:
+      - Unique/interesting sound
+      - Tight timing (drums)
+      - Stable pitch (melodic)
+      - Has character/vibe
+      - Immediately usable
+      - Fits well in mixes
+
+      Good Quality:
+      - Solid/competent
+      - Minor timing issues (fixable)
+      - Mostly stable pitch
+      - Some character
+      - Usable with minor editing
+
+      Fair Quality:
+      - Generic/uninspired
+      - Timing issues
+      - Pitch problems
+      - Lacks character
+      - Needs significant editing
+
+      Poor Quality:
+      - Unusable
+      - Severely off-time
+      - Pitch all over
+      - No character
+      - Not worth editing
+    </generally>
+
+    <unless>
+      "Generic" can be good for certain uses:
+      - Clean kick drum doesn't need character
+      - Sometimes generic = versatile
+      → Context matters
+    </unless>
+
+    <examples>
+      <example>
+        <sample_type>drum_break</sample_type>
+        <characteristics>
+          <timing>Tight, human feel, slight swing</timing>
+          <character>Warm, vintage, dusty</character>
+          <uniqueness>Distinctive snare sound, vinyl crackle</uniqueness>
+          <usability>Ready to loop, minimal editing needed</usability>
+        </characteristics>
+        <musical_quality>0.95</musical_quality>
+        <reasoning>
+          Excellent on all fronts:
+          + Tight but human timing (desirable)
+          + Strong character (warm/dusty/vintage)
+          + Unique elements (snare, crackle)
+          + Immediately usable
+          Perfect for boom bap/lo-fi production
+        </reasoning>
+      </example>
+
+      <example>
+        <sample_type>808_kick</sample_type>
+        <characteristics>
+          <timing>Quantized, perfect</timing>
+          <character>Clean, punchy, standard</character>
+          <uniqueness>Generic trap 808</uniqueness>
+          <usability>Immediate, no editing</usability>
+        </characteristics>
+        <musical_quality>0.70</musical_quality>
+        <reasoning>
+          Technically solid but generic:
+          + Perfect timing (good for 808)
+          + Clean and punchy (what you want)
+          - Generic (not unique)
+          - Standard sound (heard everywhere)
+
+          BUT: For trap production, generic can be good
+          → Versatile, fits anywhere
+          → Score reflects "good utility" not "inspiring"
+        </reasoning>
+      </example>
+    </examples>
+  </heuristic>
+
+  <heuristic id="usability_assessment">
+    <name>Assess Sample Usability</name>
+
+    <when>Determining if sample is production-ready</when>
+
+    <consider>
+      <factor>Is sample properly trimmed (no silence)?</factor>
+      <factor>Does loop seamlessly (for loops)?</factor>
+      <factor>Is length appropriate for use case?</factor>
+      <factor>Are multiple variations provided?</factor>
+      <factor>Is metadata included?</factor>
+    </consider>
+
+    <generally>
+      Production-Ready (High Usability):
+      - Properly trimmed (no leading/trailing silence)
+      - Loops seamlessly (if loop)
+      - Appropriate length (drums: 1-4 bars, one-shots: 0.5-2s)
+      - Multiple variations available
+      - Metadata tags present
+      - Organized file structure
+
+      Needs Minor Work (Medium Usability):
+      - Minor trimming needed
+      - Loop mostly works (small gap)
+      - Usable length
+      - Some variations
+      - Minimal metadata
+
+      Needs Significant Work (Low Usability):
+      - Lots of silence to trim
+      - Loop doesn't work
+      - Too short or too long
+      - No variations
+      - No metadata
+    </generally>
+
+    <examples>
+      <example>
+        <sample_pack>
+          <organization>Organized by type (kicks/, snares/, hats/)</organization>
+          <trimming>All samples properly trimmed</trimming>
+          <loops>All loops tested, seamless</loops>
+          <variations>Multiple velocity layers, pitch variations</variations>
+          <metadata>BPM, key, type tags present</metadata>
+        </sample_pack>
+        <usability_score>0.95</usability_score>
+        <reasoning>
+          Professional pack, ready to use:
+          + Perfect organization
+          + No editing needed
+          + Loops work out of box
+          + Variations for realism
+          + Metadata for sorting
+          Load and go!
+        </reasoning>
+      </example>
+
+      <example>
+        <sample_pack>
+          <organization>All files in one folder</organization>
+          <trimming>Some have leading silence</trimming>
+          <loops>Not tested, some don't loop cleanly</loops>
+          <variations>Single layer only</variations>
+          <metadata>Filenames only, no tags</metadata>
+        </sample_pack>
+        <usability_score>0.55</usability_score>
+        <reasoning>
+          Needs work before use:
+          - Disorganized (one folder)
+          - Trimming needed
+          - Loop gaps need fixing
+          - No variations (repetitive)
+          - Poor metadata
+
+          Usable but requires prep time
+        </reasoning>
+      </example>
+    </examples>
+  </heuristic>
+
+  <heuristic id="composite_quality_score">
+    <name>Calculate Composite Quality Score</name>
+
+    <when>Generating overall quality assessment</when>
+
+    <consider>
+      All sub-scores:
+      - Source quality (YouTube metrics)
+      - Technical quality (audio specs)
+      - Musical quality (creative value)
+      - Usability (production-ready)
+    </consider>
+
+    <generally>
+      Weighted composite score:
+
+      composite_score = (
+        source_quality * 0.20 +
+        technical_quality * 0.25 +
+        musical_quality * 0.35 +
+        usability * 0.20
+      )
+
+      Weights explained:
+      - Musical quality: 35% (most important - is it good?)
+      - Technical quality: 25% (can't fix bad audio)
+      - Source quality: 20% (indicator of overall pack quality)
+      - Usability: 20% (affects workflow efficiency)
+    </generally>
+
+    <examples>
+      <example>
+        <scores>
+          <source>0.90</source>
+          <technical>0.95</technical>
+          <musical>0.85</musical>
+          <usability>0.90</usability>
+        </scores>
+        <composite>
+          0.90 * 0.20 + 0.95 * 0.25 + 0.85 * 0.35 + 0.90 * 0.20
+          = 0.18 + 0.2375 + 0.2975 + 0.18
+          = 0.895
+        </composite>
+        <rating>Excellent</rating>
+      </example>
+
+      <example>
+        <scores>
+          <source>0.60</source>
+          <technical>0.70</technical>
+          <musical>0.50</musical>
+          <usability>0.65</usability>
+        </scores>
+        <composite>
+          0.60 * 0.20 + 0.70 * 0.25 + 0.50 * 0.35 + 0.65 * 0.20
+          = 0.12 + 0.175 + 0.175 + 0.13
+          = 0.60
+        </composite>
+        <rating>Fair - Usable but not great</rating>
+      </example>
+    </examples>
+  </heuristic>
+
+  <quality_thresholds>
+    <threshold name="professional" min="0.85" max="1.0">
+      <description>Professional quality, production-ready</description>
+      <recommendation>Download immediately, add to library</recommendation>
+    </threshold>
+
+    <threshold name="good" min="0.70" max="0.84">
+      <description>Good quality, minor flaws acceptable</description>
+      <recommendation>Download if fits needs, minor editing OK</recommendation>
+    </threshold>
+
+    <threshold name="fair" min="0.50" max="0.69">
+      <description>Fair quality, significant work needed</description>
+      <recommendation>Download only if unique/rare, expect editing</recommendation>
+    </threshold>
+
+    <threshold name="poor" min="0.0" max="0.49">
+      <description>Poor quality, not recommended</description>
+      <recommendation>Skip unless desperate, better options exist</recommendation>
+    </threshold>
+  </quality_thresholds>
+
+  <red_flags>
+    <flag priority="critical">
+      <name>Excessive Clipping</name>
+      <description>Audio peaks at 0dB or above</description>
+      <impact>Distortion, unusable in mix</impact>
+      <action>Reject or fix with limiting</action>
+    </flag>
+
+    <flag priority="high">
+      <name>Wrong Sample Rate</name>
+      <description>Less than 44.1kHz</description>
+      <impact>Quality loss, aliasing</impact>
+      <action>Use only if unique, don't upsample</action>
+    </flag>
+
+    <flag priority="high">
+      <name>Loops Don't Loop</name>
+      <description>Audible gap or pop when looping</description>
+      <impact>Can't use as loop without editing</impact>
+      <action>Fix with crossfade or reject</action>
+    </flag>
+
+    <flag priority="medium">
+      <name>Excessive Noise</name>
+      <description>Noise floor above -50dB</description>
+      <impact>Noisy in quiet sections</impact>
+      <action>Use noise reduction or accept if lo-fi aesthetic</action>
+    </flag>
+
+    <flag priority="medium">
+      <name>No Metadata</name>
+      <description>No BPM, key, or type information</description>
+      <impact>Hard to organize/find later</impact>
+      <action>Analyze and tag yourself</action>
+    </flag>
+
+    <flag priority="low">
+      <name>Generic/Uninspired</name>
+      <description>Musically boring</description>
+      <impact>Won't inspire creativity</impact>
+      <action>Skip unless need generic utility sounds</action>
+    </flag>
+  </red_flags>
+</heuristics>

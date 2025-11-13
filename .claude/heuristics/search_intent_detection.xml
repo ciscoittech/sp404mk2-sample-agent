@@ -1,0 +1,356 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<heuristics domain="search_intent_detection">
+  <metadata>
+    <version>1.0.0</version>
+    <description>Heuristics for detecting when user wants to search for samples vs other intents</description>
+    <last_updated>2025-01-13</last_updated>
+  </metadata>
+
+  <heuristic id="detect_sample_search">
+    <name>Detect Sample Search Intent</name>
+
+    <when>User sends a message</when>
+
+    <consider>
+      <factor>Does message contain action verbs? (find, search, need, want, show, get)</factor>
+      <factor>Does message mention sample types? (samples, loops, breaks, drums, sounds)</factor>
+      <factor>Does message reference musical styles? (boom bap, lo-fi, jazz, soul)</factor>
+      <factor>Does message reference artists/producers? (Dilla, Madlib, Alchemist)</factor>
+      <factor>Does message describe vibes/moods? (dusty, dark, vintage, chill)</factor>
+      <factor>Is message asking a question? (What is..., How do I...)</factor>
+      <factor>Is message providing a URL? (youtube.com, youtu.be)</factor>
+    </consider>
+
+    <generally>
+      Classify as SEARCH INTENT if message contains:
+      - Action verb (find, search, need, want) + musical term
+      - Artist reference + implicit request ("that Madlib sound")
+      - Vibe description + implicit samples ("lo-fi bedroom vibes")
+      - Technical specs + samples ("90 BPM boom bap drums")
+    </generally>
+
+    <unless>
+      Do NOT classify as search if:
+      - Message is a question about music ("What is boom bap?")
+      - Message provides URL (use URL analysis workflow instead)
+      - Message is conversational ("Thanks", "OK", "Got it")
+      - Message asks about system capabilities ("Can you find samples?")
+    </unless>
+
+    <examples>
+      <example outcome="search_intent">
+        <input>I need some dusty 70s soul breaks</input>
+        <reasoning>
+          Contains: "need" (action verb) + "dusty 70s soul breaks" (specific samples)
+          Intent: User wants to discover samples matching this description
+          Action: Trigger youtube_search with appropriate queries
+        </reasoning>
+        <confidence>0.95</confidence>
+      </example>
+
+      <example outcome="search_intent">
+        <input>Find me that Madlib sound</input>
+        <reasoning>
+          Contains: "Find" (action verb) + "Madlib sound" (artist reference)
+          Intent: User wants samples with Madlib's aesthetic
+          Action: Generate queries like "Madlib style sample pack", "dusty jazz samples"
+        </reasoning>
+        <confidence>0.92</confidence>
+      </example>
+
+      <example outcome="search_intent">
+        <input>Looking for some lo-fi piano samples</input>
+        <reasoning>
+          Contains: "Looking for" (action phrase) + "lo-fi piano samples" (specific type)
+          Intent: Clear sample search request
+          Action: Search with genre + instrument + style
+        </reasoning>
+        <confidence>0.98</confidence>
+      </example>
+
+      <example outcome="not_search">
+        <input>What makes a good boom bap drum break?</input>
+        <reasoning>
+          Question about musical concept, not request for samples
+          Intent: Educational/informational
+          Action: Provide explanation, don't trigger search
+        </reasoning>
+        <confidence>0.90</confidence>
+      </example>
+
+      <example outcome="not_search">
+        <input>Can you find samples for me?</input>
+        <reasoning>
+          Question about capabilities, not actual request
+          Intent: Meta-question about system
+          Action: Explain capabilities, wait for actual request
+        </reasoning>
+        <confidence>0.88</confidence>
+      </example>
+
+      <example outcome="url_analysis">
+        <input>https://youtube.com/watch?v=abc123</input>
+        <reasoning>
+          Contains YouTube URL
+          Intent: User wants specific video analyzed
+          Action: Use timestamp_extractor, not search
+        </reasoning>
+        <confidence>1.0</confidence>
+      </example>
+
+      <example outcome="url_analysis">
+        <input>Check out this sample pack: https://youtu.be/xyz789</input>
+        <reasoning>
+          Contains URL even with text
+          Intent: URL analysis takes precedence over text
+          Action: Extract timestamps from provided URL
+        </reasoning>
+        <confidence>0.95</confidence>
+      </example>
+
+      <example outcome="search_intent">
+        <input>I want that Flying Lotus experimental sound</input>
+        <reasoning>
+          No explicit "find" but clear implied request
+          Contains artist reference + style descriptor
+          Intent: Sample search for experimental electronic aesthetic
+          Action: Search for "Flying Lotus style", "experimental electronic jazz samples"
+        </reasoning>
+        <confidence>0.85</confidence>
+      </example>
+
+      <example outcome="search_intent">
+        <input>Show me some 808 trap drums</input>
+        <reasoning>
+          "Show me" (action phrase) + "808 trap drums" (specific)
+          Intent: Clear search request
+          Action: Search for trap drum kits with 808s
+        </reasoning>
+        <confidence>0.96</confidence>
+      </example>
+
+      <example outcome="not_search">
+        <input>Thanks for the samples!</input>
+        <reasoning>
+          Conversational acknowledgment
+          Intent: Gratitude, not new request
+          Action: Acknowledge, don't search
+        </reasoning>
+        <confidence>1.0</confidence>
+      </example>
+    </examples>
+
+    <implementation_notes>
+      <note>Check for URL patterns first (takes precedence)</note>
+      <note>Action verbs: find, search, need, want, looking, show, get, discover, give</note>
+      <note>Sample keywords: samples, loops, breaks, drums, sounds, kit, pack</note>
+      <note>Questions often not search unless phrased as "Where can I find..."</note>
+      <note>Implicit requests (artist references) require confidence > 0.80 to trigger</note>
+    </implementation_notes>
+  </heuristic>
+
+  <heuristic id="detect_vibe_search">
+    <name>Detect Vibe-Based Search</name>
+
+    <when>Search intent detected but request is abstract/vibe-based</when>
+
+    <consider>
+      <factor>Are concrete terms used? (genre, BPM, era) vs abstract (vibe, feel, mood)</factor>
+      <factor>Are descriptors emotional? (dark, moody, chill, aggressive)</factor>
+      <factor>Are descriptors textural? (dusty, crispy, warm, gritty)</factor>
+      <factor>Is artist referenced but not for direct style match?</factor>
+    </consider>
+
+    <generally>
+      Vibe-based search requires translation:
+      - Emotional descriptors → Musical characteristics
+      - Textural descriptors → Genre + era combinations
+      - Abstract vibes → Concrete search terms
+    </generally>
+
+    <unless>
+      User provides concrete terms already:
+      - Specific BPM ("90 BPM")
+      - Specific genre ("boom bap")
+      - Specific era ("90s")
+      → Use those directly, don't over-translate
+    </unless>
+
+    <examples>
+      <example outcome="vibe_based">
+        <input>I need that dark, moody, atmospheric vibe</input>
+        <reasoning>
+          All descriptors are abstract/emotional
+          Needs translation to: "dark ambient samples", "atmospheric pads", "moody samples"
+          Consider trap, ambient, cinematic genres
+        </reasoning>
+        <translation>
+          <queries>
+            <query>dark ambient samples</query>
+            <query>moody atmospheric pads</query>
+            <query>cinematic samples dark</query>
+          </queries>
+        </translation>
+      </example>
+
+      <example outcome="concrete">
+        <input>I need 90 BPM boom bap drums</input>
+        <reasoning>
+          All terms are concrete (BPM, genre, element)
+          No translation needed, use directly
+        </reasoning>
+        <translation>
+          <queries>
+            <query>boom bap drum samples 90 BPM</query>
+          </queries>
+        </translation>
+      </example>
+
+      <example outcome="mixed">
+        <input>I want dusty 90s samples</input>
+        <reasoning>
+          "Dusty" = texture descriptor (abstract)
+          "90s" = era (concrete)
+          Combine: texture + era + sample indicators
+        </reasoning>
+        <translation>
+          <queries>
+            <query>dusty 90s hip hop samples</query>
+            <query>vintage 90s soul samples lo-fi</query>
+          </queries>
+        </translation>
+      </example>
+    </examples>
+  </heuristic>
+
+  <heuristic id="ambiguous_intent_handling">
+    <name>Handle Ambiguous Intent</name>
+
+    <when>Intent is unclear (low confidence score)</when>
+
+    <consider>
+      <factor>What is the confidence score? (<0.6 = ambiguous)</factor>
+      <factor>Are there conflicting signals? (question + search terms)</factor>
+      <factor>Is context from conversation helpful?</factor>
+    </consider>
+
+    <generally>
+      When confidence < 0.70:
+      - Ask clarifying question
+      - Offer options ("Did you want to search for samples or learn about boom bap?")
+      - Don't guess and execute (could be wrong)
+    </generally>
+
+    <unless>
+      Previous conversation context makes intent clear:
+      - User just asked about boom bap
+      - Now says "Show me some"
+      → Context: "some" = boom bap samples
+      → Proceed with search
+    </unless>
+
+    <examples>
+      <example outcome="clarify">
+        <input>What about jazz?</input>
+        <reasoning>
+          Too vague: "What about" could mean many things
+          - Search for jazz samples?
+          - Explain jazz music?
+          - Jazz in context of previous topic?
+          Confidence: 0.45 (too low)
+        </reasoning>
+        <action>
+          Ask: "Would you like me to:
+          1. Find jazz samples for you
+          2. Explain jazz music characteristics
+          3. Find jazz samples similar to [previous topic]"
+        </action>
+      </example>
+
+      <example outcome="use_context">
+        <input>
+          [Previous: User asked about Madlib's style]
+          [Current: "Show me some"]
+        </input>
+        <reasoning>
+          "Show me some" is vague alone
+          But context: Just discussed Madlib
+          Inference: "Show me some [Madlib-style samples]"
+          Confidence: 0.82 (context boosts it)
+        </reasoning>
+        <action>
+          Search for Madlib-style samples
+          Confirm: "Searching for Madlib-style samples..."
+        </action>
+      </example>
+    </examples>
+  </heuristic>
+
+  <decision_tree>
+    <root>
+      <question>Does input contain YouTube URL?</question>
+      <yes>
+        <action>Route to URL Analysis (timestamp_extractor)</action>
+        <confidence>1.0</confidence>
+      </yes>
+      <no>
+        <question>Does input contain action verbs + musical terms?</question>
+        <yes>
+          <question>Is it a question format?</question>
+          <yes>
+            <question>Is it "Where/How can I find..."?</question>
+            <yes>
+              <action>Search Intent</action>
+              <confidence>0.90</confidence>
+            </yes>
+            <no>
+              <action>Informational Intent (not search)</action>
+              <confidence>0.85</confidence>
+            </no>
+          </yes>
+          <no>
+            <action>Search Intent</action>
+            <confidence>0.95</confidence>
+          </no>
+        </yes>
+        <no>
+          <question>Does input reference artist/producer style?</question>
+          <yes>
+            <action>Search Intent (artist-based)</action>
+            <confidence>0.85</confidence>
+          </yes>
+          <no>
+            <question>Does input describe vibe/mood?</question>
+            <yes>
+              <action>Vibe-Based Search (needs translation)</action>
+              <confidence>0.75</confidence>
+            </yes>
+            <no>
+              <action>Unclear Intent - Ask for Clarification</action>
+              <confidence>0.40</confidence>
+            </no>
+          </no>
+        </no>
+      </no>
+    </root>
+  </decision_tree>
+
+  <confidence_thresholds>
+    <threshold level="high" min="0.85" max="1.0">
+      <action>Execute search immediately</action>
+      <description>Very clear search intent</description>
+    </threshold>
+    <threshold level="medium" min="0.70" max="0.84">
+      <action>Execute search with confirmation</action>
+      <description>Likely search intent, confirm with user</description>
+    </threshold>
+    <threshold level="low" min="0.50" max="0.69">
+      <action>Ask clarifying question</action>
+      <description>Ambiguous intent, need more info</description>
+    </threshold>
+    <threshold level="very_low" min="0.0" max="0.49">
+      <action>Explain capabilities and ask what they want</action>
+      <description>Unclear what user wants</description>
+    </threshold>
+  </confidence_thresholds>
+</heuristics>

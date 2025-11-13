@@ -1,0 +1,256 @@
+{
+  "version": "1.0.0",
+  "tools": [
+    {
+      "name": "youtube_search",
+      "module": "src.tools.youtube_search",
+      "class": "YouTubeSearcher",
+      "doc_path": ".claude/tools/youtube_search.md",
+      "category": "discovery",
+      "triggers": [
+        "find",
+        "search",
+        "discover",
+        "looking for",
+        "show me",
+        "get me"
+      ],
+      "contexts": [
+        "sample_discovery",
+        "music_search",
+        "genre_exploration",
+        "artist_style_search"
+      ],
+      "anti_triggers": [
+        "youtube.com/watch",
+        "youtu.be/",
+        "analyze this video",
+        "this url"
+      ],
+      "description": "Search YouTube for sample packs, loops, and breaks with quality filtering"
+    },
+    {
+      "name": "timestamp_extractor",
+      "module": "src.tools.timestamp_extractor",
+      "class": "TimestampExtractor",
+      "doc_path": ".claude/tools/timestamp_extractor.md",
+      "category": "analysis",
+      "triggers": [
+        "youtube.com/watch",
+        "youtu.be/",
+        "extract timestamps",
+        "analyze video",
+        "what's in this video"
+      ],
+      "contexts": [
+        "video_analysis",
+        "sample_pack_breakdown",
+        "timestamp_detection"
+      ],
+      "anti_triggers": [
+        "find samples",
+        "search for",
+        "discover"
+      ],
+      "description": "Extract sample timestamps from YouTube video descriptions and comments"
+    },
+    {
+      "name": "audio_analyzer",
+      "module": "src.tools.audio",
+      "class": "AudioAnalyzer",
+      "doc_path": ".claude/tools/audio_analyzer.md",
+      "category": "analysis",
+      "triggers": [
+        "analyze audio",
+        "get bpm",
+        "detect key",
+        "audio features"
+      ],
+      "contexts": [
+        "audio_analysis",
+        "sample_classification",
+        "vibe_analysis_prep"
+      ],
+      "anti_triggers": [
+        "search",
+        "find",
+        "download"
+      ],
+      "description": "Analyze audio files for BPM, key, spectral features, and musical characteristics"
+    },
+    {
+      "name": "download_manager",
+      "module": "src.tools.download",
+      "class": "DownloadManager",
+      "doc_path": ".claude/tools/download_manager.md",
+      "category": "acquisition",
+      "triggers": [
+        "download",
+        "get this",
+        "save",
+        "grab"
+      ],
+      "contexts": [
+        "sample_download",
+        "video_download",
+        "segment_extraction"
+      ],
+      "anti_triggers": [
+        "search",
+        "find",
+        "analyze"
+      ],
+      "description": "Download YouTube videos and extract audio segments with metadata tracking"
+    },
+    {
+      "name": "vibe_analyst",
+      "module": "src.agents.vibe_analysis",
+      "class": "VibeAnalysisAgent",
+      "doc_path": ".claude/thinking_protocols/vibe_analysis_protocol.md",
+      "category": "agent",
+      "triggers": [
+        "vibe",
+        "mood",
+        "compatible",
+        "what goes with",
+        "find similar"
+      ],
+      "contexts": [
+        "vibe_analysis",
+        "compatibility_check",
+        "sample_matching"
+      ],
+      "anti_triggers": [],
+      "description": "Analyze sample vibe, mood, and compatibility using AI"
+    },
+    {
+      "name": "collector",
+      "module": "src.agents.collector",
+      "class": "CollectorAgent",
+      "doc_path": null,
+      "category": "agent",
+      "triggers": [
+        "collect",
+        "gather",
+        "build library",
+        "curate"
+      ],
+      "contexts": [
+        "sample_collection",
+        "library_building",
+        "curation"
+      ],
+      "anti_triggers": [],
+      "description": "Discover and categorize samples using AI with multi-platform search"
+    }
+  ],
+  "categories": {
+    "discovery": {
+      "description": "Tools for finding and discovering new samples",
+      "tools": ["youtube_search"]
+    },
+    "analysis": {
+      "description": "Tools for analyzing audio and video content",
+      "tools": ["timestamp_extractor", "audio_analyzer", "vibe_analyst"]
+    },
+    "acquisition": {
+      "description": "Tools for downloading and acquiring samples",
+      "tools": ["download_manager"]
+    },
+    "agent": {
+      "description": "AI agents for complex multi-step tasks",
+      "tools": ["vibe_analyst", "collector"]
+    }
+  },
+  "workflows": {
+    "sample_discovery": {
+      "name": "Sample Discovery Workflow",
+      "steps": [
+        {
+          "tool": "youtube_search",
+          "description": "Search for sample content"
+        },
+        {
+          "tool": "timestamp_extractor",
+          "description": "Extract timestamps from promising videos"
+        },
+        {
+          "tool": "download_manager",
+          "description": "Download samples or segments"
+        },
+        {
+          "tool": "audio_analyzer",
+          "description": "Analyze downloaded audio"
+        },
+        {
+          "tool": "vibe_analyst",
+          "description": "Generate vibe analysis and compatibility tags"
+        }
+      ]
+    },
+    "url_analysis": {
+      "name": "YouTube URL Analysis Workflow",
+      "steps": [
+        {
+          "tool": "timestamp_extractor",
+          "description": "Extract timestamps from provided URL"
+        },
+        {
+          "tool": "download_manager",
+          "description": "Download specific segments or full video"
+        },
+        {
+          "tool": "audio_analyzer",
+          "description": "Analyze audio characteristics"
+        }
+      ]
+    },
+    "vibe_matching": {
+      "name": "Find Compatible Samples Workflow",
+      "steps": [
+        {
+          "tool": "audio_analyzer",
+          "description": "Analyze target sample"
+        },
+        {
+          "tool": "vibe_analyst",
+          "description": "Generate vibe profile"
+        },
+        {
+          "tool": "youtube_search",
+          "description": "Search for compatible samples based on vibe"
+        }
+      ]
+    }
+  },
+  "decision_tree": {
+    "description": "Tool selection decision tree for routing requests",
+    "root": {
+      "question": "Does user provide a YouTube URL?",
+      "yes": {
+        "question": "Do they want to search for more content?",
+        "yes": "youtube_search",
+        "no": "timestamp_extractor"
+      },
+      "no": {
+        "question": "Are they looking for samples?",
+        "yes": {
+          "question": "Do they have audio files to analyze?",
+          "yes": "audio_analyzer",
+          "no": "youtube_search"
+        },
+        "no": {
+          "question": "Do they want vibe/compatibility analysis?",
+          "yes": "vibe_analyst",
+          "no": "Ask for clarification"
+        }
+      }
+    }
+  },
+  "usage_notes": {
+    "tool_selection": "Use triggers and anti_triggers to route user requests to appropriate tools",
+    "context_awareness": "Check contexts to understand when a tool is appropriate",
+    "workflow_guidance": "Follow workflows for multi-step processes",
+    "documentation": "Always reference doc_path for detailed usage instructions and heuristics"
+  }
+}
