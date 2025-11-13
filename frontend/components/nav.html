@@ -1,0 +1,135 @@
+<nav class="navbar bg-base-200 shadow-lg sticky top-0 z-50">
+    <div class="flex-1">
+        <a class="btn btn-ghost text-xl" href="/">
+            <span class="text-primary font-bold">SP404</span><span class="font-normal">MK2</span>
+        </a>
+    </div>
+
+    <!-- Desktop Menu -->
+    <div class="flex-none hidden md:flex">
+        <ul class="menu menu-horizontal px-1 gap-1">
+            <li>
+                <a href="/pages/samples.html"
+                   hx-boost="true"
+                   class="{% if request.url.path == '/pages/samples.html' %}active{% endif %}">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
+                    </svg>
+                    Samples
+                </a>
+            </li>
+            <li>
+                <a href="/pages/kits.html"
+                   hx-boost="true"
+                   class="{% if request.url.path == '/pages/kits.html' %}active{% endif %}">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/>
+                    </svg>
+                    Kits
+                </a>
+            </li>
+            <li>
+                <a href="/pages/batch.html"
+                   hx-boost="true"
+                   class="{% if request.url.path == '/pages/batch.html' %}active{% endif %}">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
+                    Batch
+                </a>
+            </li>
+            <li>
+                <a href="/pages/usage.html"
+                   hx-boost="true"
+                   class="{% if request.url.path == '/pages/usage.html' %}active{% endif %}">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                    </svg>
+                    Usage
+                </a>
+            </li>
+            <li>
+                <a href="/pages/vibe-analysis.html"
+                   hx-boost="true"
+                   class="{% if request.url.path == '/pages/vibe-analysis.html' %}active{% endif %}">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
+                    </svg>
+                    Vibe
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Theme Switcher -->
+    <div class="flex-none mx-2">
+        {% include 'components/theme-switcher.html' %}
+    </div>
+
+    <!-- Mobile Menu Button -->
+    <div class="flex-none md:hidden">
+        <button class="btn btn-square btn-ghost" onclick="mobileMenu.showModal()" aria-label="Open menu">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+        </button>
+    </div>
+</nav>
+
+<!-- Mobile Menu Modal -->
+<dialog id="mobileMenu" class="modal modal-bottom md:hidden">
+    <div class="modal-box w-full max-w-full rounded-t-2xl">
+        <h3 class="font-bold text-lg mb-4">Menu</h3>
+        <ul class="menu menu-lg gap-2">
+            <li>
+                <a href="/pages/samples.html" class="flex items-center gap-3">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
+                    </svg>
+                    <span>Samples</span>
+                </a>
+            </li>
+            <li>
+                <a href="/pages/kits.html" class="flex items-center gap-3">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/>
+                    </svg>
+                    <span>Kits</span>
+                </a>
+            </li>
+            <li>
+                <a href="/pages/batch.html" class="flex items-center gap-3">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
+                    <span>Batch Processing</span>
+                </a>
+            </li>
+            <li>
+                <a href="/pages/usage.html" class="flex items-center gap-3">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                    </svg>
+                    <span>API Usage & Costs</span>
+                </a>
+            </li>
+            <li>
+                <a href="/pages/vibe-analysis.html" class="flex items-center gap-3">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
+                    </svg>
+                    <span>Vibe Analysis</span>
+                </a>
+            </li>
+        </ul>
+
+        <div class="divider"></div>
+
+        <div class="text-center">
+            <p class="text-sm text-base-content/60">SP404MK2 Sample Manager</p>
+        </div>
+    </div>
+    <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+    </form>
+</dialog>
