@@ -1,0 +1,234 @@
+{
+  "patterns": {
+    "single_call": {
+      "description": "Simple single LLM call with examples",
+      "when_to_use": [
+        "Request has clear examples to follow",
+        "Task is well-defined and straightforward",
+        "No tool execution needed",
+        "Context is sufficient for decision"
+      ],
+      "examples": [
+        "Generate search queries from artist name",
+        "Classify sample genre",
+        "Extract mood descriptors"
+      ],
+      "cost": "low",
+      "latency": "low"
+    },
+
+    "routing": {
+      "description": "Route request to specialized tool or agent",
+      "when_to_use": [
+        "Request maps directly to a specific tool",
+        "Tool has clear trigger keywords",
+        "Single tool can handle entire request",
+        "No coordination between multiple tools needed"
+      ],
+      "examples": [
+        "YouTube URL → timestamp_extractor",
+        "Search request → youtube_search",
+        "Vibe analysis → vibe_analysis_agent"
+      ],
+      "cost": "low",
+      "latency": "low"
+    },
+
+    "prompt_chain": {
+      "description": "Sequential execution with validation gates",
+      "when_to_use": [
+        "Task has multiple sequential steps",
+        "Later steps depend on earlier results",
+        "Need validation between steps",
+        "Complex workflow with decision points"
+      ],
+      "examples": [
+        "Search → Filter → Download workflow",
+        "Analyze → Classify → Recommend pipeline",
+        "Extract → Validate → Process sequence"
+      ],
+      "cost": "medium",
+      "latency": "medium"
+    },
+
+    "parallel": {
+      "description": "Execute independent tasks concurrently",
+      "when_to_use": [
+        "Multiple independent subtasks",
+        "No dependencies between tasks",
+        "Results can be aggregated after completion",
+        "Time-sensitive operations"
+      ],
+      "examples": [
+        "Search multiple platforms simultaneously",
+        "Analyze multiple samples concurrently",
+        "Generate multiple query variations at once"
+      ],
+      "cost": "high",
+      "latency": "low"
+    },
+
+    "orchestrator_workers": {
+      "description": "Coordinator delegates to specialized workers",
+      "when_to_use": [
+        "Very complex multi-step workflow",
+        "Need coordination and replanning",
+        "Multiple specialized agents involved",
+        "Requires dynamic decision making"
+      ],
+      "examples": [
+        "Full sample collection workflow (search, analyze, filter, organize)",
+        "Complex multi-source aggregation",
+        "Adaptive sampling strategy"
+      ],
+      "cost": "very_high",
+      "latency": "high"
+    }
+  },
+
+  "decision_tree": {
+    "step1_check_tools": {
+      "question": "Does request map to a single tool?",
+      "if_yes": {
+        "pattern": "routing",
+        "check_triggers": true
+      },
+      "if_no": "step2_check_complexity"
+    },
+
+    "step2_check_complexity": {
+      "question": "Is this a simple, well-defined task?",
+      "criteria": [
+        "Single clear outcome",
+        "Examples exist in knowledge base",
+        "No external tool calls needed"
+      ],
+      "if_yes": {
+        "pattern": "single_call",
+        "load_examples": true
+      },
+      "if_no": "step3_check_dependencies"
+    },
+
+    "step3_check_dependencies": {
+      "question": "Do subtasks have dependencies?",
+      "if_yes": {
+        "pattern": "prompt_chain",
+        "requires": ["step_validation", "error_handling"]
+      },
+      "if_no": "step4_check_count"
+    },
+
+    "step4_check_count": {
+      "question": "Are there 3+ independent subtasks?",
+      "if_yes": {
+        "pattern": "parallel",
+        "optimize_for": "latency"
+      },
+      "if_no": "step5_check_orchestration"
+    },
+
+    "step5_check_orchestration": {
+      "question": "Does task need dynamic coordination?",
+      "if_yes": {
+        "pattern": "orchestrator_workers",
+        "warning": "High cost - ensure justified"
+      },
+      "if_no": {
+        "pattern": "prompt_chain",
+        "fallback": true
+      }
+    }
+  },
+
+  "task_pattern_mapping": {
+    "youtube_url_analysis": {
+      "pattern": "routing",
+      "route_to": "timestamp_extractor",
+      "triggers": ["youtube.com", "youtu.be"]
+    },
+
+    "sample_search": {
+      "pattern": "routing",
+      "route_to": "youtube_search",
+      "triggers": ["find", "search", "looking for", "need samples"]
+    },
+
+    "vibe_analysis": {
+      "pattern": "single_call",
+      "use_examples": true,
+      "use_protocol": "vibe_analysis_protocol"
+    },
+
+    "query_generation": {
+      "pattern": "single_call",
+      "use_examples": true,
+      "use_protocol": "search_query_generation_protocol"
+    },
+
+    "sample_discovery_workflow": {
+      "pattern": "prompt_chain",
+      "steps": [
+        {
+          "name": "generate_queries",
+          "pattern": "single_call"
+        },
+        {
+          "name": "search_platforms",
+          "pattern": "parallel"
+        },
+        {
+          "name": "assess_quality",
+          "pattern": "single_call"
+        },
+        {
+          "name": "filter_results",
+          "pattern": "single_call",
+          "gate": "quality_threshold"
+        }
+      ]
+    },
+
+    "batch_sample_analysis": {
+      "pattern": "parallel",
+      "max_concurrent": 5,
+      "aggregate_results": true
+    },
+
+    "general_conversation": {
+      "pattern": "single_call",
+      "use_context": true,
+      "use_specialists": false
+    }
+  },
+
+  "pattern_metrics": {
+    "track_usage": true,
+    "track_success_rate": true,
+    "track_latency": true,
+    "track_cost": true,
+    "log_pattern_selection": true
+  },
+
+  "optimization_rules": {
+    "prefer_simple": {
+      "rule": "Choose simplest pattern that solves the problem",
+      "reason": "Lower latency and cost"
+    },
+
+    "avoid_orchestrator": {
+      "rule": "Only use orchestrator for truly complex workflows",
+      "reason": "Very high cost and latency"
+    },
+
+    "batch_parallel": {
+      "rule": "Use parallel for 3+ independent operations",
+      "reason": "Significant latency reduction"
+    },
+
+    "cache_routing": {
+      "rule": "Cache routing decisions for common patterns",
+      "reason": "Faster response on repeated requests"
+    }
+  }
+}
