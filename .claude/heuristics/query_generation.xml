@@ -1,0 +1,505 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<heuristics domain="query_generation">
+  <metadata>
+    <version>1.0.0</version>
+    <description>Heuristics for generating effective YouTube search queries from user intent</description>
+    <last_updated>2025-01-13</last_updated>
+  </metadata>
+
+  <heuristic id="query_specificity">
+    <name>Balance Query Specificity</name>
+
+    <when>Generating search queries from user request</when>
+
+    <consider>
+      <factor>How many descriptors does user provide?</factor>
+      <factor>Are descriptors common (jazz) or rare (Ethiopian jazz)?</factor>
+      <factor>Is BPM/key specified?</factor>
+      <factor>Will query return results or be too narrow?</factor>
+    </consider>
+
+    <generally>
+      Optimal query has 2-4 core terms:
+      - 1-2 style/genre terms ("boom bap", "lo-fi jazz")
+      - 1 element term ("samples", "drums", "loops")
+      - 0-1 quality term ("WAV", "free download")
+
+      Examples of good balance:
+      - "boom bap drum samples" (3 terms)
+      - "lo-fi jazz piano samples WAV" (4 terms + format)
+      - "trap 808 bass kit" (3 terms)
+    </generally>
+
+    <unless>
+      User explicitly requests very specific search:
+      - "Find 93 BPM D minor soul samples"
+      → Honor the specificity, but also generate broader alternative
+
+      Or user references obscure/rare content:
+      - "Ethiopian jazz samples"
+      → Specificity is the point, keep it
+    </unless>
+
+    <examples>
+      <example outcome="well_balanced">
+        <user_request>I need boom bap drums</user_request>
+        <query>boom bap drum samples</query>
+        <reasoning>
+          3 terms: genre (boom bap) + element (drum) + type (samples)
+          Not too broad: "drums" alone would return anything
+          Not too narrow: No BPM/era constraints unless user specified
+        </reasoning>
+        <confidence>0.95</confidence>
+      </example>
+
+      <example outcome="too_broad">
+        <user_request>I need drums</user_request>
+        <bad_query>drums</bad_query>
+        <good_query>hip hop drum samples</good_query>
+        <reasoning>
+          "drums" alone: Too generic, returns drum lessons, drum sets, etc.
+          Adding genre context + "samples": Much better targeting
+        </reasoning>
+      </example>
+
+      <example outcome="too_narrow">
+        <user_request>Find me samples</user_request>
+        <bad_query>1994 NYC underground hip hop MPC3000 boom bap breaks 93 BPM</bad_query>
+        <good_query>90s boom bap drum breaks</good_query>
+        <reasoning>
+          Bad: 8 constraints, overly specific, likely zero results
+          Good: Era (90s) + style (boom bap) + element (drum breaks)
+          Captures intent without over-constraining
+        </reasoning>
+      </example>
+
+      <example outcome="honor_specificity">
+        <user_request>I need 808 samples in E minor around 140 BPM</user_request>
+        <primary_query>808 bass samples 140 BPM</primary_query>
+        <alternative_query>trap 808 bass kit</alternative_query>
+        <reasoning>
+          User was very specific: Honor it in primary query
+          But also generate broader alternative (trap context)
+          Don't include key (E minor) - too constraining for YouTube search
+        </reasoning>
+      </example>
+    </examples>
+  </heuristic>
+
+  <heuristic id="sample_indicator_inclusion">
+    <name>Always Include Sample Indicators</name>
+
+    <when>Generating any search query</when>
+
+    <consider>
+      <factor>Does query already contain "sample", "pack", "loop", "break", "kit"?</factor>
+      <factor>What is the primary element user wants? (drums, melody, texture)</factor>
+    </consider>
+
+    <generally>
+      ALWAYS include one of: samples, sample pack, loops, breaks, kit, sounds
+
+      Why: YouTube algorithm needs this to distinguish:
+      - "boom bap samples" → Sample packs ✓
+      - "boom bap" → Finished beats, tutorials, history ✗
+    </generally>
+
+    <unless>
+      Never omit sample indicators.
+      This is a hard rule, not a guideline.
+    </unless>
+
+    <examples>
+      <example>
+        <user_request>Find me some jazz</user_request>
+        <bad_query>jazz</bad_query>
+        <good_query>jazz samples</good_query>
+        <reasoning>Without "samples", returns jazz music, not sample packs</reasoning>
+      </example>
+
+      <example>
+        <user_request>I need drums</user_request>
+        <bad_query>drums</bad_query>
+        <good_query>drum kit samples</good_query>
+        <reasoning>
+          "drums" alone: Could be lessons, performances, kits (physical drums)
+          "drum kit samples" or "drum samples": Clearly sample packs
+        </reasoning>
+      </example>
+    </examples>
+  </heuristic>
+
+  <heuristic id="artist_reference_translation">
+    <name>Translate Artist References</name>
+
+    <when>User references artist/producer style</when>
+
+    <consider>
+      <factor>Is artist well-known in sample/beat community?</factor>
+      <factor>What are artist's musical characteristics?</factor>
+      <factor>What source material does artist use?</factor>
+      <factor>What era/gear defines their sound?</factor>
+    </consider>
+
+    <generally>
+      Generate 2 types of queries:
+      1. Direct reference: "[Artist] style sample pack"
+      2. Characteristic-based: Translate style into searchable terms
+
+      Example: "Madlib sound"
+      → Direct: "Madlib style sample pack"
+      → Characteristics: "dusty jazz samples", "obscure soul samples"
+    </generally>
+
+    <unless>
+      Artist is obscure or not known for sampling:
+      → Focus on describing their sound in searchable terms
+      → Skip direct artist reference (won't work on YouTube)
+    </unless>
+
+    <examples>
+      <example>
+        <user_request>I need that J Dilla bounce</user_request>
+        <direct_query>J Dilla style sample pack</direct_query>
+        <characteristic_queries>
+          <query>neo soul samples 90 BPM</query>
+          <query>dusty jazz loops vinyl</query>
+          <query>MPC drum samples boom bap</query>
+        </characteristic_queries>
+        <reasoning>
+          Dilla = Neo-soul sampling + MPC workflow + 85-95 BPM + jazzy/dusty aesthetic
+          Direct reference works (well-known)
+          Characteristics capture the sound without name
+        </reasoning>
+      </example>
+
+      <example>
+        <user_request>Find me Flying Lotus type samples</user_request>
+        <direct_query>Flying Lotus style sample pack</direct_query>
+        <characteristic_queries>
+          <query>experimental electronic jazz samples</query>
+          <query>glitch samples vintage synth</query>
+          <query>abstract electronic loops</query>
+        </characteristic_queries>
+        <reasoning>
+          FlyLo = Experimental electronic + jazz fusion + glitch + vintage synths
+          Translate to searchable genre/texture combinations
+        </reasoning>
+      </example>
+
+      <example>
+        <user_request>I want samples like Radiohead uses</user_request>
+        <skip_direct>Radiohead style sample pack</skip_direct>
+        <use_characteristics>
+          <query>atmospheric samples cinematic</query>
+          <query>experimental rock samples</query>
+          <query>ambient electronic textures</query>
+        </use_characteristics>
+        <reasoning>
+          Radiohead not known in sample/beat community
+          Direct reference unlikely to work
+          Focus on describing their sonic aesthetic
+        </reasoning>
+      </example>
+    </examples>
+  </heuristic>
+
+  <heuristic id="multi_query_strategy">
+    <name>Generate Multiple Query Angles</name>
+
+    <when>User request allows for interpretation</when>
+
+    <consider>
+      <factor>Can request be approached from different angles?</factor>
+      <factor>Are there synonymous terms? (boom bap = golden era = 90s hip hop)</factor>
+      <factor>Are there related genres/styles to explore?</factor>
+    </consider>
+
+    <generally>
+      Generate 3-5 queries covering different angles:
+      1. Direct/literal interpretation
+      2. Genre-focused variant
+      3. Era-focused variant
+      4. Texture/quality variant
+      5. Alternative terminology
+    </generally>
+
+    <unless>
+      User is extremely specific:
+      - "90 BPM boom bap drums" → Not much room for variation
+      → 1-2 queries sufficient
+    </unless>
+
+    <examples>
+      <example>
+        <user_request>I need lo-fi samples</user_request>
+        <queries>
+          <query priority="1">lo-fi hip hop sample pack</query>
+          <query priority="2">chill jazz samples for beats</query>
+          <query priority="3">vinyl texture samples dusty</query>
+          <query priority="4">bedroom producer samples</query>
+          <query priority="5">lo-fi piano samples emotional</query>
+        </queries>
+        <reasoning>
+          Angle 1: Direct genre
+          Angle 2: Source material (jazz → lo-fi)
+          Angle 3: Texture focus (vinyl/dusty)
+          Angle 4: Production context
+          Angle 5: Specific element (piano common in lo-fi)
+        </reasoning>
+      </example>
+
+      <example>
+        <user_request>Find me trap drums</user_request>
+        <queries>
+          <query priority="1">trap drum kit 808</query>
+          <query priority="2">hard trap drums aggressive</query>
+          <query priority="3">808 bass kit trap</query>
+        </queries>
+        <reasoning>
+          Specific request, less room for variation
+          Angle 1: Direct + key element (808)
+          Angle 2: Mood descriptor (hard/aggressive)
+          Angle 3: Focus on signature element (808 bass)
+        </reasoning>
+      </example>
+    </examples>
+  </heuristic>
+
+  <heuristic id="platform_optimization">
+    <name>Optimize for YouTube Search</name>
+
+    <when>Generating any YouTube search query</when>
+
+    <consider>
+      <factor>Does YouTube's algorithm favor certain terms?</factor>
+      <factor>Are there common upload patterns? (sample pack, free download)</factor>
+      <factor>Do quality indicators help? (WAV, high quality)</factor>
+    </consider>
+
+    <generally>
+      YouTube-specific optimizations:
+      - Front-load important terms (first 2-3 words matter most)
+      - Include upload indicators: "free download", "sample pack"
+      - Include format indicators when appropriate: "WAV", "stems"
+      - Avoid negation: Don't use "-trap" or "without vocals"
+      - Use common spellings: "lo-fi" not "lofi", "boom bap" not "boombap"
+    </generally>
+
+    <unless>
+      User specifically requests obscure/rare content:
+      → Obscurity is the point, don't dilute with common terms
+    </unless>
+
+    <examples>
+      <example>
+        <query_structure>
+          <good>[Genre] [Element] samples [Quality]</good>
+          <example>boom bap drum samples WAV</example>
+        </query_structure>
+        <reasoning>
+          Front-loaded: "boom bap" is first (most important)
+          Sample indicator: "samples"
+          Quality signal: "WAV" (attracts higher quality uploads)
+        </reasoning>
+      </example>
+
+      <example>
+        <good_query>trap 808 bass sample pack free download</good_query>
+        <reasoning>
+          "free download" helps find actual downloadable packs
+          "sample pack" is common upload title pattern
+          Together: Higher chance of finding usable content
+        </reasoning>
+      </example>
+
+      <example>
+        <bad_query>samples -trap -edm</bad_query>
+        <good_query>boom bap samples</good_query>
+        <reasoning>
+          YouTube search doesn't handle negation well
+          Better: Be specific about what you WANT, not what you don't
+        </reasoning>
+      </example>
+    </examples>
+  </heuristic>
+
+  <heuristic id="vibe_to_concrete_translation">
+    <name>Translate Vibes to Searchable Terms</name>
+
+    <when>User describes abstract vibe/mood rather than concrete musical terms</when>
+
+    <consider>
+      <factor>What musical characteristics create this vibe?</factor>
+      <factor>What genres typically embody this mood?</factor>
+      <factor>What era/production style matches?</factor>
+      <factor>What instruments/sounds create this texture?</factor>
+    </consider>
+
+    <generally>
+      Translate emotional/textural descriptors into:
+      - Genre terms (dark vibe → trap, ambient, cinematic)
+      - Era terms (nostalgic → 90s, vintage, retro)
+      - Texture terms (warm → analog, vinyl, lo-fi)
+      - Instrument terms (ethereal → pads, strings, synths)
+    </generally>
+
+    <unless>
+      User provides both vibe AND concrete terms:
+      - "dark 90s samples" → Keep both, no translation needed
+    </unless>
+
+    <examples>
+      <example>
+        <user_request>I want dark, moody, atmospheric samples</user_request>
+        <translation_process>
+          Dark → Minor keys, low frequencies → Trap, ambient, cinematic
+          Moody → Emotional, serious → Pads, strings, piano
+          Atmospheric → Spacious, reverb → Ambient, cinematic, textures
+        </translation_process>
+        <queries>
+          <query>dark ambient samples cinematic</query>
+          <query>moody piano samples emotional</query>
+          <query>atmospheric pads trap</query>
+          <query>dark synth samples</query>
+        </queries>
+      </example>
+
+      <example>
+        <user_request>Looking for warm, nostalgic, vintage vibes</user_request>
+        <translation_process>
+          Warm → Analog, mid-range focused → Vinyl, tape, lo-fi
+          Nostalgic → Past eras → 70s, 80s, 90s
+          Vintage → Old recordings/gear → Analog, vinyl, retro
+        </translation_process>
+        <queries>
+          <query>vintage soul samples 70s vinyl</query>
+          <query>warm lo-fi samples analog</query>
+          <query>nostalgic samples 90s</query>
+          <query>retro samples vintage texture</query>
+        </queries>
+      </example>
+
+      <example>
+        <user_request>Chill, laid-back samples</user_request>
+        <translation_process>
+          Chill → Low energy, slow tempo → Lo-fi, downtempo, jazz
+          Laid-back → Relaxed, smooth → Slow BPM, mellow instruments
+        </translation_process>
+        <queries>
+          <query>chill lo-fi samples</query>
+          <query>laid-back jazz samples</query>
+          <query>downtempo samples mellow</query>
+          <query>smooth samples relaxing</query>
+        </queries>
+      </example>
+    </examples>
+  </heuristic>
+
+  <heuristic id="bpm_key_handling">
+    <name>Handle BPM and Key Specifications</name>
+
+    <when>User provides technical specifications (BPM, key)</when>
+
+    <consider>
+      <factor>Is BPM specific (93) or range (85-95)?</factor>
+      <factor>Is key important for YouTube search?</factor>
+      <factor>Will including BPM narrow results too much?</factor>
+    </consider>
+
+    <generally>
+      BPM:
+      - Include if user specifies and it's within common range
+      - Round to nearest 5 for broader results (93 → "90 BPM" or "85-95 BPM")
+      - Use range format for broader search
+
+      Key:
+      - Generally SKIP in YouTube queries (too narrow)
+      - YouTube uploaders rarely tag by key
+      - Better to filter results after download/analysis
+    </generally>
+
+    <unless>
+      User explicitly emphasizes BPM/key importance:
+      → Include but also generate alternative without it
+    </unless>
+
+    <examples>
+      <example>
+        <user_request>I need 93 BPM boom bap drums</user_request>
+        <primary_query>boom bap drum samples 90 BPM</primary_query>
+        <alternative_query>boom bap drum kit</alternative_query>
+        <reasoning>
+          93 rounded to 90 (common BPM reference point)
+          Provides alternative without BPM (broader search)
+          Can filter exact BPM after downloading
+        </reasoning>
+      </example>
+
+      <example>
+        <user_request>Find 808 samples in E minor</user_request>
+        <primary_query>trap 808 bass samples</primary_query>
+        <skip_key>E minor</skip_key>
+        <reasoning>
+          Key rarely tagged on YouTube
+          Filter by key after download using audio analysis
+          Focus search on genre/element (trap/808)
+        </reasoning>
+      </example>
+
+      <example>
+        <user_request>Fast tempo drum breaks around 170 BPM</user_request>
+        <query>drum and bass breaks 170 BPM</query>
+        <reasoning>
+          170 BPM strongly suggests drum & bass genre
+          Include BPM (defining characteristic of genre)
+          "drum and bass" + "170 BPM" are commonly used together
+        </reasoning>
+      </example>
+    </examples>
+  </heuristic>
+
+  <decision_tree>
+    <root>
+      <question>Does user provide artist reference?</question>
+      <yes>
+        <action>Generate direct artist query + characteristic queries</action>
+        <example>"Madlib style" + "dusty jazz samples"</example>
+      </yes>
+      <no>
+        <question>Does user provide concrete musical terms?</question>
+        <yes>
+          <question>How specific are the terms?</question>
+          <specific>
+            <action>Use terms directly with 2-3 query variations</action>
+            <example>"boom bap drums 90 BPM"</example>
+          </specific>
+          <general>
+            <action>Generate multiple angles (genre, era, texture)</action>
+            <example>"jazz samples" → jazz/soul/funk variants</example>
+          </general>
+        </yes>
+        <no>
+          <question>Does user describe vibe/mood?</question>
+          <yes>
+            <action>Translate vibe to concrete musical terms</action>
+            <example>"dark moody" → "dark ambient", "trap samples"</example>
+          </yes>
+          <no>
+            <action>Ask for clarification on style/genre preference</action>
+          </no>
+        </no>
+      </no>
+    </root>
+  </decision_tree>
+
+  <quality_checklist>
+    <item priority="critical">Query includes sample indicator (samples/pack/loops/kit)</item>
+    <item priority="critical">Query has 2-4 core terms (not 1, not 10)</item>
+    <item priority="high">Important terms front-loaded</item>
+    <item priority="high">Terms are commonly used (not overly technical)</item>
+    <item priority="medium">Multiple queries generated for coverage</item>
+    <item priority="medium">Queries represent different angles</item>
+    <item priority="low">Quality indicators included (WAV, free)</item>
+  </quality_checklist>
+</heuristics>
