@@ -15,9 +15,9 @@ import shutil
 import os
 
 from app.main import app
-from app.core.database import Base
+from app.db.base import Base
 from app.api.deps import get_db
-from app.models import User, Sample, Kit
+from app.models import User, Sample, Kit, ApiUsage, Batch, VibeAnalysis
 from app.services.auth_service import AuthService
 from app.schemas.auth import UserCreate
 
