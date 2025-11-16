@@ -71,7 +71,6 @@ def get_vibe_search_service(
 async def search_samples_by_vibe(
     query: str = Query(..., description="Natural language search query", min_length=1),
     limit: int = Query(20, description="Maximum results to return", ge=1, le=100),
-    min_similarity: float = Query(0.7, description="Minimum similarity threshold", ge=0, le=1),
     bpm_min: Optional[float] = Query(None, description="Minimum BPM", ge=0),
     bpm_max: Optional[float] = Query(None, description="Maximum BPM", ge=0),
     genre: Optional[str] = Query(None, description="Genre filter (exact match)"),
@@ -97,28 +96,45 @@ async def search_samples_by_vibe(
         results = await vibe_search_service.search_by_vibe(
             query=query,
             limit=limit,
-            min_similarity=min_similarity,
-            bpm_min=bpm_min,
-            bpm_max=bpm_max,
-            genre=genre,
-            energy_min=energy_min,
-            energy_max=energy_max,
-            danceability_min=danceability_min,
-            danceability_max=danceability_max
+            filters={
+                "bpm_min": bpm_min,
+                "bpm_max": bpm_max,
+                "genre": genre,
+                "energy_min": energy_min,
+                "energy_max": energy_max,
+                "danceability_min": danceability_min,
+                "danceability_max": danceability_max
+            }
         )
 
-        # Extract execution time from first result (all have the same value)
-        execution_time_ms = results[0]["execution_time_ms"] if results else 0
-
-        # Remove execution_time_ms from individual results (it's in the response root)
+        # Format results - remove fields not in response model, add placeholder URLs
+        formatted_results = []
         for result in results:
-            result.pop("execution_time_ms", None)
+            formatted_result = {
+                "id": result.get("id"),
+                "title": result.get("title"),
+                "bpm": result.get("bpm"),
+                "musical_key": result.get("musical_key"),
+                "genre": result.get("genre"),
+                "duration": result.get("duration"),
+                "similarity": result.get("similarity"),
+                "mood": result.get("mood_primary"),
+                "mood_secondary": result.get("mood_secondary"),
+                "energy_level": result.get("energy_level"),
+                "danceability": result.get("danceability"),
+                "vibe_tags": result.get("vibe_tags", []),
+                "acousticness": result.get("acousticness"),
+                "instrumentalness": result.get("instrumentalness"),
+                "preview_url": f"/api/v1/samples/{result.get('id')}/preview",
+                "full_url": f"/api/v1/samples/{result.get('id')}/download"
+            }
+            formatted_results.append(formatted_result)
 
         return VibeSearchResponse(
             query=query,
-            results=results,
-            count=len(results),
-            execution_time_ms=execution_time_ms
+            results=formatted_results,
+            count=len(formatted_results),
+            execution_time_ms=0
         )
 
     except EmbeddingError as e:
@@ -131,7 +147,6 @@ async def search_samples_by_vibe(
 async def get_similar_samples(
     sample_id: int,
     limit: int = Query(10, description="Maximum results to return", ge=1, le=50),
-    min_similarity: float = Query(0.8, description="Minimum similarity threshold", ge=0, le=1),
     vibe_search_service: VibeSearchService = Depends(get_vibe_search_service)
 ):
     """
@@ -141,20 +156,38 @@ async def get_similar_samples(
     musical characteristics.
     """
     try:
-        results = await vibe_search_service.get_similar_samples(
+        results = await vibe_search_service.find_similar(
             sample_id=sample_id,
-            limit=limit,
-            min_similarity=min_similarity
+            limit=limit
         )
 
-        # Remove execution_time_ms from individual results if present
+        # Format results - remove fields not in response model, add placeholder URLs
+        formatted_results = []
         for result in results:
-            result.pop("execution_time_ms", None)
+            formatted_result = {
+                "id": result.get("id"),
+                "title": result.get("title"),
+                "bpm": result.get("bpm"),
+                "musical_key": result.get("musical_key"),
+                "genre": result.get("genre"),
+                "duration": result.get("duration"),
+                "similarity": result.get("similarity"),
+                "mood": result.get("mood_primary"),
+                "mood_secondary": result.get("mood_secondary"),
+                "energy_level": result.get("energy_level"),
+                "danceability": result.get("danceability"),
+                "vibe_tags": result.get("vibe_tags", []),
+                "acousticness": result.get("acousticness"),
+                "instrumentalness": result.get("instrumentalness"),
+                "preview_url": f"/api/v1/samples/{result.get('id')}/preview",
+                "full_url": f"/api/v1/samples/{result.get('id')}/download"
+            }
+            formatted_results.append(formatted_result)
 
         return SimilarSamplesResponse(
             reference_sample_id=sample_id,
-            results=results,
-            count=len(results)
+            results=formatted_results,
+            count=len(formatted_results)
         )
 
     except Exception as e:
