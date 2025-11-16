@@ -1,0 +1,142 @@
+{
+  "name": "SP404MK2-Specific Hooks",
+  "description": "Project-specific hooks for SP-404MK2 sample validation and quality gates",
+  "version": "1.0.0",
+
+  "hooks": [
+    {
+      "event": "before_file_write",
+      "name": "validate-audio-export-format",
+      "description": "Ensure exported audio meets SP-404MK2 requirements (48kHz/16-bit)",
+      "command": "python3 .claude-library/hooks/scripts/validate_audio_format.py ${file_path}",
+      "enabled": true,
+      "blocking": false,
+      "timeout_ms": 2000,
+      "conditions": {
+        "file_patterns": ["backend/app/services/sp404_export_service.py", "**/*export*.py"]
+      }
+    },
+
+    {
+      "event": "after_file_write",
+      "name": "check-python-syntax",
+      "description": "Validate Python syntax after file changes",
+      "command": "python3 -m py_compile ${file_path}",
+      "enabled": true,
+      "blocking": false,
+      "timeout_ms": 3000,
+      "conditions": {
+        "file_patterns": ["**/*.py"],
+        "exclude_patterns": ["**/__pycache__/**", "**/venv/**", "**/node_modules/**"]
+      }
+    },
+
+    {
+      "event": "after_file_write",
+      "name": "format-python-code",
+      "description": "Auto-format Python code with black (if available)",
+      "command": "which black > /dev/null 2>&1 && black ${file_path} || echo 'black not installed, skipping'",
+      "enabled": false,
+      "blocking": false,
+      "timeout_ms": 5000,
+      "conditions": {
+        "file_patterns": ["backend/**/*.py", "src/**/*.py"],
+        "exclude_patterns": ["**/migrations/**", "**/__pycache__/**"]
+      }
+    },
+
+    {
+      "event": "before_bash_command",
+      "name": "block-dangerous-commands",
+      "description": "Block dangerous bash commands that could damage the project",
+      "command": "python3 .claude-library/hooks/scripts/check_dangerous_command.py \"${bash_command}\"",
+      "enabled": true,
+      "blocking": true,
+      "timeout_ms": 1000,
+      "conditions": {
+        "dangerous_patterns": [
+          "rm -rf /",
+          "rm -rf ~",
+          "rm -rf .",
+          "chmod -R 777",
+          "dd if=",
+          "> /dev/sda"
+        ]
+      }
+    },
+
+    {
+      "event": "after_task_complete",
+      "name": "validate-tests-exist",
+      "description": "Check that new features have corresponding tests (MVP-level: 2-5 tests)",
+      "command": "python3 .claude-library/hooks/scripts/check_tests_exist.py ${task_description}",
+      "enabled": false,
+      "blocking": false,
+      "timeout_ms": 3000,
+      "conditions": {
+        "task_keywords": ["implement", "create", "add", "build"]
+      }
+    },
+
+    {
+      "event": "before_file_write",
+      "name": "check-migration-reversible",
+      "description": "Ensure Alembic migrations have both upgrade() and downgrade()",
+      "command": "python3 .claude-library/hooks/scripts/check_migration.py ${file_path}",
+      "enabled": true,
+      "blocking": false,
+      "timeout_ms": 2000,
+      "conditions": {
+        "file_patterns": ["backend/alembic/versions/**/*.py"]
+      }
+    },
+
+    {
+      "event": "after_file_write",
+      "name": "log-file-changes",
+      "description": "Log all file changes to .claude-metrics/file-changes.log",
+      "command": "echo \"$(date '+%Y-%m-%d %H:%M:%S') - Modified: ${file_path}\" >> .claude-metrics/file-changes.log",
+      "enabled": true,
+      "blocking": false,
+      "timeout_ms": 500
+    }
+  ],
+
+  "scripts": {
+    "validate_audio_format": {
+      "description": "Check that audio export code uses correct sample rate and bit depth",
+      "fallback": "echo 'Audio validation script not found, skipping'"
+    },
+    "check_dangerous_command": {
+      "description": "Block dangerous bash commands",
+      "fallback": "exit 0"
+    },
+    "check_tests_exist": {
+      "description": "Verify new features have tests",
+      "fallback": "echo 'Test validation script not found, skipping'"
+    },
+    "check_migration": {
+      "description": "Validate Alembic migration structure",
+      "fallback": "echo 'Migration validation script not found, skipping'"
+    }
+  },
+
+  "notifications": {
+    "slack": {
+      "enabled": false,
+      "webhook_url": "",
+      "events": ["task_complete", "task_failed"]
+    },
+    "discord": {
+      "enabled": false,
+      "webhook_url": "",
+      "events": ["task_complete"]
+    }
+  },
+
+  "metrics": {
+    "log_to_file": true,
+    "log_path": ".claude-metrics/hooks.log",
+    "track_execution_time": true
+  }
+}

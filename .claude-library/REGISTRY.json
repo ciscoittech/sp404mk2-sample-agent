@@ -1,0 +1,358 @@
+{
+  "version": "1.0.0",
+  "framework_version": "1.1",
+  "project": "SP404MK2 Sample Agent",
+  "description": "AI-powered sample collection and organization system for Roland SP-404MK2",
+  "complexity_level": "complex",
+
+  "agents": {
+    "system-architect": {
+      "name": "system-architect",
+      "path": ".claude-library/agents/core/system-architect.md",
+      "description": "FastAPI backend architecture, database design, and API-first development",
+      "category": "core",
+      "priority": 1,
+      "tools": ["Read", "Write", "Grep", "Glob"],
+      "triggers": [
+        "architecture",
+        "design",
+        "spec",
+        "API",
+        "database",
+        "schema",
+        "endpoint",
+        "data model"
+      ],
+      "contexts": ["project-structure", "api-patterns", "database-schemas"],
+      "model": "sonnet"
+    },
+
+    "senior-engineer": {
+      "name": "senior-engineer",
+      "path": ".claude-library/agents/core/senior-engineer.md",
+      "description": "Full-stack implementation (Python + HTMX) with MVP-level testing",
+      "category": "core",
+      "priority": 1,
+      "tools": ["*"],
+      "triggers": [
+        "implement",
+        "code",
+        "write",
+        "create",
+        "build",
+        "develop",
+        "fix"
+      ],
+      "contexts": ["project-structure", "api-patterns", "testing-standards"],
+      "model": "sonnet"
+    },
+
+    "code-reviewer": {
+      "name": "code-reviewer",
+      "path": ".claude-library/agents/core/code-reviewer.md",
+      "description": "Code quality, security, performance, and testing review",
+      "category": "core",
+      "priority": 1,
+      "tools": ["Read", "Grep", "Glob"],
+      "triggers": [
+        "review",
+        "check",
+        "quality",
+        "security",
+        "approve",
+        "validate"
+      ],
+      "contexts": ["project-structure", "testing-standards"],
+      "model": "sonnet"
+    },
+
+    "workflow-orchestrator": {
+      "name": "workflow-orchestrator",
+      "path": ".claude-library/agents/core/workflow-orchestrator.md",
+      "description": "Multi-agent parallel coordination for complex features",
+      "category": "core",
+      "priority": 1,
+      "tools": ["Task", "Read"],
+      "triggers": [
+        "orchestrate",
+        "coordinate",
+        "workflow",
+        "parallel",
+        "multi-agent",
+        "complex feature"
+      ],
+      "contexts": ["project-structure"],
+      "model": "sonnet"
+    },
+
+    "fastapi-specialist": {
+      "name": "fastapi-specialist",
+      "path": ".claude-library/agents/specialized/fastapi-specialist.md",
+      "description": "FastAPI async endpoints, Pydantic validation, dual response pattern",
+      "category": "specialized",
+      "priority": 2,
+      "tools": ["Read", "Write", "Grep", "Bash"],
+      "triggers": [
+        "API",
+        "endpoint",
+        "FastAPI",
+        "Pydantic",
+        "route",
+        "HTMX response",
+        "WebSocket"
+      ],
+      "contexts": ["api-patterns", "project-structure"],
+      "model": "sonnet"
+    },
+
+    "database-specialist": {
+      "name": "database-specialist",
+      "path": ".claude-library/agents/specialized/database-specialist.md",
+      "description": "SQLAlchemy models, Alembic migrations, query optimization",
+      "category": "specialized",
+      "priority": 2,
+      "tools": ["Read", "Write", "Grep", "Bash"],
+      "triggers": [
+        "database",
+        "SQLAlchemy",
+        "migration",
+        "Alembic",
+        "query",
+        "model",
+        "schema",
+        "relationship"
+      ],
+      "contexts": ["database-schemas", "project-structure"],
+      "model": "sonnet"
+    },
+
+    "frontend-specialist": {
+      "name": "frontend-specialist",
+      "path": ".claude-library/agents/specialized/frontend-specialist.md",
+      "description": "HTMX hypermedia, Alpine.js interactivity, DaisyUI styling",
+      "category": "specialized",
+      "priority": 2,
+      "tools": ["Read", "Write", "Edit", "Bash"],
+      "triggers": [
+        "frontend",
+        "HTMX",
+        "Alpine.js",
+        "DaisyUI",
+        "UI",
+        "page",
+        "component",
+        "template"
+      ],
+      "contexts": ["api-patterns", "project-structure"],
+      "model": "sonnet"
+    },
+
+    "ai-integration-specialist": {
+      "name": "ai-integration-specialist",
+      "path": ".claude-library/agents/specialized/ai-integration-specialist.md",
+      "description": "OpenRouter API, cost tracking, model selection, prompt engineering",
+      "category": "specialized",
+      "priority": 2,
+      "tools": ["Read", "Write", "Grep", "Bash"],
+      "triggers": [
+        "AI",
+        "OpenRouter",
+        "vibe analysis",
+        "LLM",
+        "model",
+        "prompt",
+        "cost tracking",
+        "hybrid analysis"
+      ],
+      "contexts": ["project-structure", "api-patterns"],
+      "model": "sonnet"
+    },
+
+    "audio-processing-specialist": {
+      "name": "audio-processing-specialist",
+      "path": ".claude-library/agents/specialized/audio-processing-specialist.md",
+      "description": "librosa audio analysis, BPM detection, SP-404MK2 export",
+      "category": "specialized",
+      "priority": 2,
+      "tools": ["Read", "Write", "Grep", "Bash"],
+      "triggers": [
+        "audio",
+        "librosa",
+        "BPM",
+        "key detection",
+        "audio features",
+        "SP-404",
+        "export",
+        "sample rate"
+      ],
+      "contexts": ["project-structure"],
+      "model": "sonnet"
+    },
+
+    "testing-specialist": {
+      "name": "testing-specialist",
+      "path": ".claude-library/agents/specialized/testing-specialist.md",
+      "description": "Pytest, Playwright, MVP-level testing, real integrations",
+      "category": "specialized",
+      "priority": 2,
+      "tools": ["Read", "Write", "Edit", "Bash"],
+      "triggers": [
+        "test",
+        "testing",
+        "Pytest",
+        "Playwright",
+        "fixture",
+        "coverage",
+        "E2E"
+      ],
+      "contexts": ["testing-standards", "project-structure"],
+      "model": "haiku"
+    }
+  },
+
+  "commands": {
+    "/build": {
+      "path": ".claude/commands/build.md",
+      "description": "Build new features using TDD with parallel agent orchestration",
+      "category": "development",
+      "agents": [
+        "system-architect",
+        "testing-specialist",
+        "senior-engineer",
+        "code-reviewer"
+      ],
+      "optional_agents": [
+        "fastapi-specialist",
+        "database-specialist",
+        "frontend-specialist",
+        "ai-integration-specialist",
+        "audio-processing-specialist",
+        "workflow-orchestrator"
+      ]
+    },
+
+    "/debug": {
+      "path": ".claude/commands/debug.md",
+      "description": "Debug issues across the SP404MK2 stack",
+      "category": "maintenance",
+      "agents": [
+        "senior-engineer",
+        "code-reviewer"
+      ],
+      "optional_agents": [
+        "fastapi-specialist",
+        "database-specialist",
+        "frontend-specialist",
+        "ai-integration-specialist",
+        "audio-processing-specialist"
+      ]
+    },
+
+    "/test": {
+      "path": ".claude/commands/test.md",
+      "description": "Run tests, analyze coverage, and improve test quality",
+      "category": "quality",
+      "agents": [
+        "testing-specialist",
+        "senior-engineer"
+      ],
+      "optional_agents": [
+        "code-reviewer"
+      ]
+    },
+
+    "/deploy": {
+      "path": ".claude/commands/deploy.md",
+      "description": "Deploy to production with quality gates and validation",
+      "category": "deployment",
+      "agents": [
+        "senior-engineer"
+      ],
+      "optional_agents": [
+        "code-reviewer"
+      ]
+    }
+  },
+
+  "contexts": {
+    "project-structure": {
+      "path": ".claude-library/contexts/project-structure.md",
+      "description": "Complete project structure, tech stack, and file organization",
+      "size_kb": 5.2,
+      "auto_load": false
+    },
+
+    "api-patterns": {
+      "path": ".claude-library/contexts/api-patterns.md",
+      "description": "FastAPI patterns, dual response, file upload, pagination, WebSockets",
+      "size_kb": 4.8,
+      "auto_load": false
+    },
+
+    "database-schemas": {
+      "path": ".claude-library/contexts/database-schemas.md",
+      "description": "Database schema, models, relationships, query patterns, migrations",
+      "size_kb": 4.5,
+      "auto_load": false
+    },
+
+    "testing-standards": {
+      "path": ".claude-library/contexts/testing-standards.md",
+      "description": "MVP-level testing philosophy, fixtures, patterns, anti-patterns",
+      "size_kb": 4.3,
+      "auto_load": false
+    }
+  },
+
+  "settings": {
+    "default_model": "sonnet",
+    "max_parallel_agents": 4,
+    "context_loading": "on-demand",
+    "total_context_size_kb": 18.8,
+    "agent_count": 10,
+    "command_count": 4,
+
+    "hooks": {
+      "enabled": true,
+      "scope": "project",
+      "configs": [
+        ".claude-library/hooks/configs/code-quality.json",
+        ".claude-library/hooks/configs/sp404-specific.json"
+      ],
+      "allow_blocking": true,
+      "timeout_ms": 5000,
+      "log_hook_output": true
+    },
+
+    "observability": {
+      "enabled": true,
+      "database_path": ".claude-metrics/observability.db",
+      "track_tokens": true,
+      "track_costs": true,
+      "track_artifacts": true,
+      "validate_outputs": true
+    }
+  },
+
+  "project_metadata": {
+    "tech_stack": {
+      "backend": "FastAPI + SQLAlchemy + Alembic",
+      "frontend": "HTMX + Alpine.js + DaisyUI",
+      "ai": "OpenRouter API (Qwen models)",
+      "audio": "librosa + soundfile",
+      "testing": "Pytest + Playwright"
+    },
+    "complexity": "complex",
+    "lines_of_code": 47739,
+    "test_coverage": "97.6%",
+    "features": [
+      "YouTube sample analysis",
+      "AI vibe analysis with cost tracking",
+      "Real-time audio feature extraction",
+      "SP-404MK2 hardware export",
+      "Batch processing",
+      "User preferences management",
+      "Web dashboard with HTMX"
+    ]
+  }
+}
