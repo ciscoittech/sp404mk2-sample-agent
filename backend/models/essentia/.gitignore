@@ -1,0 +1,9 @@
+# Ignore large model files
+*.pb
+*.h5
+*.onnx
+*.tflite
+
+# Keep directory structure
+!.gitignore
+!README.md

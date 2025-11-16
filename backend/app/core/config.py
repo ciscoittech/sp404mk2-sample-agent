@@ -21,7 +21,8 @@ class Settings(BaseSettings):
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
     
     # Database
-    DATABASE_URL: str = "sqlite+aiosqlite:///./sp404_samples.db"
+    # Default to PostgreSQL (can be overridden via .env for local SQLite development)
+    DATABASE_URL: str = "postgresql+asyncpg://sp404_user:changeme@localhost:5432/sp404_samples"
     
     # CORS
     BACKEND_CORS_ORIGINS: List[str] = ["http://localhost:5173", "http://localhost:3000"]
@@ -54,7 +55,8 @@ class Settings(BaseSettings):
     
     # External APIs
     OPENROUTER_API_KEY: Optional[str] = None
-    
+    APP_URL: str = "http://localhost:8100"
+
     # Environment
     ENVIRONMENT: str = "development"
     
@@ -66,11 +68,82 @@ class Settings(BaseSettings):
     COLLECTOR_MODEL: str = "qwen/qwen3-235b-a22b-2507"
     DEBUG: bool = False
 
+    # Audio Analysis Settings
+    USE_ESSENTIA: bool = True
+    """Master switch to enable/disable Essentia audio analysis.
+
+    When True and Essentia is available, Essentia will be used for BPM detection
+    and genre classification (if enabled). Falls back to librosa if Essentia fails
+    or is unavailable.
+
+    Set to False to always use librosa, useful for:
+    - Development environments without Essentia installed
+    - Debugging librosa-specific behavior
+    - Systems where Essentia installation is problematic
+
+    Default: True (use Essentia when available)
+    """
+
+    ENABLE_GENRE_CLASSIFICATION: bool = False
+    """Enable/disable Essentia genre classification feature.
+
+    Genre classification requires:
+    - Essentia to be installed and available
+    - Pre-trained TensorFlow models to be downloaded (~150MB)
+    - Model files in backend/models/essentia/
+
+    Set to False to:
+    - Skip genre classification (BPM only)
+    - Avoid model compatibility issues
+    - Reduce memory usage during analysis
+
+    Note: Currently disabled by default due to model compatibility issues.
+    Will be enabled in future release after TensorFlow compatibility is resolved.
+
+    Default: False (genre classification disabled)
+    """
+
+    ESSENTIA_BPM_METHOD: str = "multifeature"
+    """BPM detection method to use when Essentia is enabled.
+
+    Available methods:
+    - "multifeature": Most accurate, slower (recommended for samples <30s)
+    - "degara": Fast, good accuracy (recommended for samples >=30s)
+    - "percival": Alternative algorithm, balanced speed/accuracy
+
+    The service will auto-select the best method based on sample duration
+    if not explicitly overridden.
+
+    Default: "multifeature"
+    """
+
+    AUDIO_ANALYSIS_TIMEOUT: int = 30
+    """Maximum time (in seconds) to wait for audio analysis to complete.
+
+    Prevents hanging on corrupted files or extremely long samples.
+    If analysis exceeds this timeout, it will be cancelled and an error returned.
+
+    Recommended values:
+    - Development: 30 seconds
+    - Production: 60 seconds (for large files)
+    - Batch processing: 120 seconds
+
+    Default: 30 seconds
+    """
+
     # OpenRouter API Usage Tracking & Cost Management
     model_pricing: dict = {
         "google/gemma-3-27b-it": {
             "input": 0.09 / 1_000_000,   # $0.09 per 1M input tokens
             "output": 0.16 / 1_000_000   # $0.16 per 1M output tokens
+        },
+        "qwen/qwen-2.5-7b-instruct": {
+            "input": 0.06 / 1_000_000,   # $0.06 per 1M input tokens (7B instruct model)
+            "output": 0.12 / 1_000_000   # $0.12 per 1M output tokens
+        },
+        "qwen/qwen3-7b-it": {
+            "input": 0.06 / 1_000_000,   # Alias for qwen-2.5-7b-instruct
+            "output": 0.12 / 1_000_000
         },
         "qwen/qwen3-235b-a22b-2507": {
             "input": 0.20 / 1_000_000,   # $0.20 per 1M input tokens

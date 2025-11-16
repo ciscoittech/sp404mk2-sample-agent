@@ -25,10 +25,16 @@ class Sample(Base):
     bpm = Column(Float, index=True)
     musical_key = Column(String)
     genre = Column(String, index=True)
-    
+
+    # Confidence scores (0-100 integer scale)
+    bpm_confidence = Column(Integer, nullable=True, comment="BPM detection confidence score (0-100)")
+    genre_confidence = Column(Integer, nullable=True, comment="Genre classification confidence score (0-100)")
+    key_confidence = Column(Integer, nullable=True, comment="Musical key detection confidence score (0-100)")
+
     # JSON fields for flexible data
     tags = Column(JSON, default=list)
     extra_metadata = Column(JSON, default=dict)  # For additional properties
+    analysis_metadata = Column(JSON, nullable=True, comment="Analysis details: analyzer used, method, raw values, corrections applied")
     
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now())

@@ -2,7 +2,8 @@
 fastapi>=0.104.0
 uvicorn[standard]>=0.24.0
 sqlalchemy>=2.0.0
-aiosqlite>=0.19.0
+asyncpg>=0.29.0
+psycopg2-binary>=2.9.9
 alembic>=1.12.0
 pydantic>=2.4.0
 pydantic-settings>=2.0.0
@@ -21,6 +22,8 @@ jinja2>=3.1.0
 numpy>=1.24.0
 librosa>=0.10.0
 soundfile>=0.12.0
+essentia>=2.1b5  # High-accuracy audio analysis (BPM, genre) - 2.1b6 preferred
+essentia-tensorflow>=2.1b6  # TensorFlow support for genre classification (MAEST models)
 yt-dlp>=2024.1.0
 
 # CLI dependencies (for batch processor)
@@ -29,3 +32,13 @@ rich>=13.0.0
 
 # AI dependencies (for OpenRouter)
 openai>=1.0.0
+
+# YouTube API dependencies
+google-api-python-client>=2.110.0
+google-auth>=2.25.2
+google-auth-oauthlib>=1.2.0
+google-auth-httplib2>=0.2.0
+
+# OpenRouter service dependencies
+tenacity>=8.2.0
+tiktoken>=0.6.0

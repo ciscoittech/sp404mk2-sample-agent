@@ -14,6 +14,11 @@ class SampleBase(BaseModel):
     musical_key: Optional[str] = None
     tags: List[str] = Field(default_factory=list)
 
+    # Confidence scores (0-100 integer scale)
+    bpm_confidence: Optional[int] = Field(None, ge=0, le=100, description="BPM detection confidence score (0-100)")
+    genre_confidence: Optional[int] = Field(None, ge=0, le=100, description="Genre classification confidence score (0-100)")
+    key_confidence: Optional[int] = Field(None, ge=0, le=100, description="Musical key detection confidence score (0-100)")
+
 
 class SampleCreate(SampleBase):
     """Schema for creating a sample (form data)."""
@@ -27,6 +32,9 @@ class SampleUpdate(BaseModel):
     bpm: Optional[float] = Field(None, ge=20, le=300)
     musical_key: Optional[str] = None
     tags: Optional[List[str]] = None
+    bpm_confidence: Optional[int] = Field(None, ge=0, le=100)
+    genre_confidence: Optional[int] = Field(None, ge=0, le=100)
+    key_confidence: Optional[int] = Field(None, ge=0, le=100)
 
 
 class SampleInDBBase(SampleBase):
@@ -53,6 +61,7 @@ class Sample(SampleInDBBase):
 class SampleInDB(SampleInDBBase):
     """Schema for sample in database."""
     extra_metadata: Dict[str, Any] = Field(default_factory=dict)
+    analysis_metadata: Optional[Dict[str, Any]] = Field(None, description="Analysis details: analyzer used, method, raw values, corrections applied")
 
 
 class SampleListResponse(BaseModel):

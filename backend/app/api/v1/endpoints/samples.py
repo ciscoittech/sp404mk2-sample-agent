@@ -11,9 +11,10 @@ import json
 from app.api.deps import get_db, get_current_user
 from app.models.user import User
 from app.schemas.sample import (
-    SampleCreate, Sample, SampleUpdate, 
+    SampleCreate, Sample, SampleUpdate,
     SampleListResponse, AnalysisRequest, AnalysisResponse
 )
+from app.schemas.audio_features import AnalysisDebugResponse, BPMDebugInfo, GenreDebugInfo
 from app.services.sample_service import SampleService
 
 templates = Jinja2Templates(directory="templates")
@@ -198,22 +199,73 @@ async def get_sample(
 ):
     """Get a specific sample by ID."""
     sample_service = SampleService(db)
-    
+
     sample = await sample_service.get_sample_by_id(
         sample_id=sample_id,
         user_id=current_user.id
     )
-    
+
     if not sample:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Sample not found"
         )
-    
+
     # Add file URL
     sample.file_url = f"/api/v1/samples/{sample.id}/download"
-    
+
     return sample
+
+
+@router.get("/{sample_id}/analysis-debug", response_model=AnalysisDebugResponse)
+async def get_analysis_debug(
+    sample_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get detailed analysis metadata for debugging.
+
+    Returns:
+    - All BPM estimates from different analyzers
+    - Outliers removed
+    - Agreement level
+    - Genre predictions (top 3)
+    - Full analysis metadata
+    """
+    sample_service = SampleService(db)
+
+    sample = await sample_service.get_sample_by_id(
+        sample_id=sample_id,
+        user_id=current_user.id
+    )
+
+    if not sample:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Sample not found"
+        )
+
+    # Extract metadata
+    metadata = sample.analysis_metadata or {}
+
+    return {
+        "sample_id": sample_id,
+        "bpm": {
+            "value": sample.bpm,
+            "confidence": sample.bpm_confidence,
+            "raw_value": metadata.get("bpm_raw"),
+            "was_corrected": metadata.get("was_corrected"),
+            "method": metadata.get("bpm_method")
+        },
+        "genre": {
+            "value": sample.genre,
+            "confidence": sample.genre_confidence,
+            "sp404_category": metadata.get("sp404_category"),
+            "top_3": metadata.get("genre_top_3")
+        } if sample.genre else None,
+        "metadata": metadata
+    }
 
 
 @router.patch("/{sample_id}", response_model=Sample)
@@ -408,37 +460,37 @@ async def list_samples_public(
     }
 
 
-@public_router.get("/{sample_id}/download")
+@public_router.api_route("/{sample_id}/download", methods=["GET", "HEAD"])
 async def download_sample_public(
     sample_id: int,
     db: AsyncSession = Depends(get_db)
 ):
-    """Download sample file without authentication (public endpoint)."""
+    """Download sample file without authentication (public endpoint). Supports both GET and HEAD requests."""
     from fastapi.responses import FileResponse
     import os
-    
+
     sample_service = SampleService(db)
-    
+
     # Get sample (no user filter)
     sample = await sample_service.get_sample_by_id(
         sample_id=sample_id,
         user_id=None  # No user filter for public endpoint
     )
-    
+
     if not sample:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Sample not found"
         )
-    
+
     # Check if file exists
     if not os.path.exists(sample.file_path):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Sample file not found"
         )
-    
-    # Return file
+
+    # Return file (FileResponse handles both GET and HEAD automatically)
     return FileResponse(
         path=sample.file_path,
         filename=f"{sample.title}{os.path.splitext(sample.file_path)[1]}",

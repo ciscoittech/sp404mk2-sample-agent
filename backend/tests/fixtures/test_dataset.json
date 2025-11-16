@@ -1,0 +1,115 @@
+{
+  "version": "1.0",
+  "created": "2025-11-16T09:55:34.412254",
+  "description": "Ground truth BPMs for accuracy validation",
+  "samples": [
+    {
+      "file": "fixtures/samples/click_90bpm.wav",
+      "ground_truth_bpm": 90.0,
+      "genre": "hip-hop",
+      "sample_type": "loop",
+      "duration": 4.0,
+      "source": "Generated click track",
+      "notes": "Boom bap tempo"
+    },
+    {
+      "file": "fixtures/samples/click_105bpm.wav",
+      "ground_truth_bpm": 105.0,
+      "genre": "hip-hop",
+      "sample_type": "loop",
+      "duration": 4.0,
+      "source": "Generated click track",
+      "notes": "Classic hip-hop tempo"
+    },
+    {
+      "file": "fixtures/samples/click_115bpm.wav",
+      "ground_truth_bpm": 115.0,
+      "genre": "hip-hop",
+      "sample_type": "loop",
+      "duration": 4.0,
+      "source": "Generated click track",
+      "notes": "Mid-tempo"
+    },
+    {
+      "file": "fixtures/samples/click_140bpm.wav",
+      "ground_truth_bpm": 140.0,
+      "genre": "trap",
+      "sample_type": "loop",
+      "duration": 2.0,
+      "source": "Generated click track",
+      "notes": "Trap tempo"
+    },
+    {
+      "file": "fixtures/samples/click_170bpm.wav",
+      "ground_truth_bpm": 170.0,
+      "genre": "hip-hop",
+      "sample_type": "loop",
+      "duration": 2.0,
+      "source": "Generated click track",
+      "notes": "Double-time"
+    },
+    {
+      "file": "fixtures/samples/click_75bpm.wav",
+      "ground_truth_bpm": 75.0,
+      "genre": "hip-hop",
+      "sample_type": "loop",
+      "duration": 4.0,
+      "source": "Generated click track",
+      "notes": "Slow tempo edge case"
+    },
+    {
+      "file": "fixtures/samples/click_120bpm.wav",
+      "ground_truth_bpm": 120.0,
+      "genre": "house",
+      "sample_type": "loop",
+      "duration": 4.0,
+      "source": "Generated click track",
+      "notes": "Common house tempo"
+    },
+    {
+      "file": "fixtures/samples/click_60bpm.wav",
+      "ground_truth_bpm": 60.0,
+      "genre": "downtempo",
+      "sample_type": "loop",
+      "duration": 4.0,
+      "source": "Generated click track",
+      "notes": "Lower boundary edge case"
+    },
+    {
+      "file": "fixtures/samples/click_180bpm.wav",
+      "ground_truth_bpm": 180.0,
+      "genre": "dnb",
+      "sample_type": "loop",
+      "duration": 2.0,
+      "source": "Generated click track",
+      "notes": "Upper boundary edge case"
+    },
+    {
+      "file": "fixtures/samples/musical_90bpm.wav",
+      "ground_truth_bpm": 90.0,
+      "genre": "hip-hop",
+      "sample_type": "loop",
+      "duration": 4.0,
+      "source": "Generated musical sample",
+      "notes": "Musical content at boom bap tempo"
+    },
+    {
+      "file": "fixtures/samples/musical_140bpm.wav",
+      "ground_truth_bpm": 140.0,
+      "genre": "trap",
+      "sample_type": "loop",
+      "duration": 2.0,
+      "source": "Generated musical sample",
+      "notes": "Musical content at trap tempo"
+    },
+    {
+      "file": "fixtures/samples/musical_105bpm.wav",
+      "ground_truth_bpm": 105.0,
+      "genre": "hip-hop",
+      "sample_type": "loop",
+      "duration": 4.0,
+      "source": "Generated musical sample",
+      "notes": "Musical content at classic tempo"
+    }
+  ]
+}

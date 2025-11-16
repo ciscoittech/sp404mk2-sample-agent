@@ -1,6 +1,6 @@
 {% for sample in samples %}
-<div class="card bg-base-100 shadow-xl sample-card" 
-     hx-target="this" 
+<div class="card sample-card"
+     hx-target="this"
      hx-swap="outerHTML"
      role="article"
      aria-label="Sample: {{ sample.title }}">
@@ -45,14 +45,35 @@
             <div class="bg-base-200 rounded-lg p-3">
                 <div class="text-xs text-base-content/60 mb-1">BPM</div>
                 <div class="text-lg font-semibold">{{ sample.bpm|round|int if sample.bpm else "--" }}</div>
+                {% if sample.bpm_confidence %}
+                    {% if sample.bpm_confidence >= 80 %}
+                        <div class="badge badge-success badge-xs mt-1">High Confidence</div>
+                    {% elif sample.bpm_confidence >= 50 %}
+                        <div class="badge badge-warning badge-xs mt-1">Medium</div>
+                    {% else %}
+                        <div class="badge badge-error badge-xs mt-1">Low - Review</div>
+                    {% endif %}
+                {% endif %}
             </div>
             <div class="bg-base-200 rounded-lg p-3">
                 <div class="text-xs text-base-content/60 mb-1">Key</div>
                 <div class="text-lg font-semibold">{{ sample.musical_key or "--" }}</div>
+                {% if sample.key_confidence %}
+                    <div class="badge badge-ghost badge-xs mt-1">{{ sample.key_confidence }}%</div>
+                {% endif %}
             </div>
             <div class="bg-base-200 rounded-lg p-3">
                 <div class="text-xs text-base-content/60 mb-1">Genre</div>
                 <div class="text-sm font-semibold truncate">{{ sample.genre or "--" }}</div>
+                {% if sample.genre_confidence %}
+                    {% if sample.genre_confidence >= 80 %}
+                        <div class="badge badge-success badge-xs mt-1">{{ sample.genre_confidence }}%</div>
+                    {% elif sample.genre_confidence >= 50 %}
+                        <div class="badge badge-warning badge-xs mt-1">{{ sample.genre_confidence }}%</div>
+                    {% else %}
+                        <div class="badge badge-error badge-xs mt-1">{{ sample.genre_confidence }}%</div>
+                    {% endif %}
+                {% endif %}
             </div>
         </div>
         
@@ -161,7 +182,7 @@
      hx-trigger="revealed"
      hx-swap="outerHTML"
      hx-target="#load-more"
-     hx-include="[name='search'], [name='genre'], [name='bpm-min'], [name='bpm-max']"
+     hx-include="[name='search'], [name='genre'], [name='instrument_type'], [name='sample_type'], [name='bpm-min'], [name='bpm-max']"
      class="text-center mt-8 col-span-full"
      aria-label="Loading more samples">
     <span class="loading loading-dots loading-lg" aria-hidden="true"></span>
