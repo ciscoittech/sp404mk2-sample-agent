@@ -41,27 +41,30 @@
         </div>
         
         <!-- Metadata -->
-        <div class="grid grid-cols-3 gap-2 text-center my-2">
-            <div class="stat p-2">
-                <div class="stat-title text-xs">BPM</div>
-                <div class="stat-value text-lg">{{ sample.bpm or "--" }}</div>
+        <div class="grid grid-cols-3 gap-4 text-center my-3">
+            <div class="bg-base-200 rounded-lg p-3">
+                <div class="text-xs text-base-content/60 mb-1">BPM</div>
+                <div class="text-lg font-semibold">{{ sample.bpm|round|int if sample.bpm else "--" }}</div>
             </div>
-            <div class="stat p-2">
-                <div class="stat-title text-xs">Key</div>
-                <div class="stat-value text-lg">{{ sample.musical_key or "--" }}</div>
+            <div class="bg-base-200 rounded-lg p-3">
+                <div class="text-xs text-base-content/60 mb-1">Key</div>
+                <div class="text-lg font-semibold">{{ sample.musical_key or "--" }}</div>
             </div>
-            <div class="stat p-2">
-                <div class="stat-title text-xs">Genre</div>
-                <div class="stat-value text-xs">{{ sample.genre or "--" }}</div>
+            <div class="bg-base-200 rounded-lg p-3">
+                <div class="text-xs text-base-content/60 mb-1">Genre</div>
+                <div class="text-sm font-semibold truncate">{{ sample.genre or "--" }}</div>
             </div>
         </div>
         
         <!-- Tags -->
         {% if sample.tags %}
         <div class="flex flex-wrap gap-1 my-2">
-            {% for tag in sample.tags %}
+            {% for tag in sample.tags[:5] %}
             <span class="badge badge-sm">{{ tag }}</span>
             {% endfor %}
+            {% if sample.tags|length > 5 %}
+            <span class="badge badge-sm badge-ghost">+{{ sample.tags|length - 5 }} more</span>
+            {% endif %}
         </div>
         {% endif %}
         
@@ -130,8 +133,17 @@
                 ✓ Analyzed
             </button>
             {% endif %}
-            
-            <button class="btn btn-sm btn-primary btn-disabled" 
+
+            <button class="btn btn-sm btn-accent"
+                    onclick="openExportModal({{ sample.id }}, '{{ sample.title }}')"
+                    aria-label="Export sample for SP-404MK2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                </svg>
+                Export
+            </button>
+
+            <button class="btn btn-sm btn-primary btn-disabled"
                     disabled
                     title="Kit functionality requires authentication"
                     aria-label="Add sample to current kit (disabled in demo)">
