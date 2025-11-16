@@ -1,0 +1,34 @@
+{
+  "project": "SP404MK2 Sample Agent",
+  "description": "AI-powered sample collection and organization system for Roland SP-404MK2",
+  "version": "1.0.0",
+  "framework_version": "1.1",
+  "tech_stack": {
+    "backend": ["Python 3.13", "FastAPI", "SQLAlchemy", "Alembic"],
+    "frontend": ["HTMX", "Alpine.js", "DaisyUI", "Tailwind CSS"],
+    "ai_ml": ["OpenRouter API", "Qwen models", "librosa", "soundfile"],
+    "testing": ["Pytest", "Playwright"],
+    "database": ["SQLite", "aiosqlite"],
+    "hardware": ["SP-404MK2"]
+  },
+  "agents": {
+    "core": 4,
+    "specialized": 6,
+    "total": 10
+  },
+  "commands": {
+    "available": ["/build", "/debug", "/test", "/deploy"]
+  },
+  "contexts": {
+    "available": ["project-structure", "api-patterns", "database-schemas", "testing-standards"]
+  },
+  "features": {
+    "parallel_execution": true,
+    "lazy_loading": true,
+    "context_minimization": true,
+    "workflow_orchestration": true
+  },
+  "complexity_level": "complex",
+  "lines_of_code": 47739,
+  "python_files": 98
+}
