@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_db
 from app.services.sample_service import SampleService
-from app.schemas.sample import SampleCreate
+from app.schemas.sample import SampleCreate, SampleListResponse, Sample
 import os
 import json
 from pathlib import Path
@@ -16,7 +16,7 @@ from pathlib import Path
 router = APIRouter()
 
 
-@router.get("/samples/")
+@router.get("/samples/", response_model=SampleListResponse)
 async def list_public_samples(
     request: Request,
     page: int = 1,
@@ -105,17 +105,17 @@ async def list_public_samples(
             "next_page": page + 1
         })
     
-    # Return JSON for API requests
-    return {
-        "items": samples,
-        "total": total,
-        "page": page,
-        "pages": pages,
-        "limit": limit
-    }
+    # Return JSON for API requests - FastAPI will handle serialization via response_model
+    return SampleListResponse(
+        items=samples,
+        total=total,
+        page=page,
+        pages=pages,
+        limit=limit
+    )
 
 
-@router.post("/samples/")
+@router.post("/samples/", response_model=Sample, status_code=status.HTTP_201_CREATED)
 async def upload_sample_public(
     file: UploadFile = File(...),
     title: str = Form(...),

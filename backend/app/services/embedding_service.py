@@ -29,7 +29,8 @@ class EmbeddingService:
     Service for generating text embeddings using OpenRouter API.
 
     Uses OpenAI's text-embedding-3-small model (1536 dimensions) for generating
-    vector representations of text. Includes automatic cost tracking and retry logic.
+    vector representations of text. Excellent value and high quality embeddings.
+    Includes automatic cost tracking and retry logic.
     """
 
     BASE_URL = "https://openrouter.ai/api/v1"
@@ -58,7 +59,7 @@ class EmbeddingService:
             text: Input text to embed (max ~8000 tokens)
 
         Returns:
-            List of 1536 floating point values representing the embedding
+            List of 768 floating point values representing the embedding
 
         Raises:
             EmbeddingError: On API errors or validation failures

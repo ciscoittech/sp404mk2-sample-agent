@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Music, Grid3x3, Upload, Settings } from 'lucide-react';
+import { Music, Grid3x3, Upload, Settings, Sparkles } from 'lucide-react';
 import { ThemeSwitcher } from '@/components/ThemeSwitcher';
 
 export function Header() {
@@ -16,6 +16,10 @@ export function Header() {
             <Link to="/" className="flex items-center gap-2 text-sm hover:text-primary transition-colors">
               <Grid3x3 className="h-4 w-4" />
               Samples
+            </Link>
+            <Link to="/vibe-search" className="flex items-center gap-2 text-sm hover:text-primary transition-colors text-amber-500">
+              <Sparkles className="h-4 w-4" />
+              Vibe Search
             </Link>
             <Link to="/kits" className="flex items-center gap-2 text-sm hover:text-primary transition-colors">
               <Music className="h-4 w-4" />

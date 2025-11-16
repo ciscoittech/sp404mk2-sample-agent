@@ -78,6 +78,28 @@ export interface UserPreferences {
   theme: 'dark' | 'light';
 }
 
+// Vibe search types
+export interface VibeSearchResult extends Sample {
+  similarity: number; // 0-1 cosine similarity score
+}
+
+export interface VibeSearchResponse {
+  query: string;
+  results: VibeSearchResult[];
+  count: number;
+  execution_time_ms: number;
+}
+
+export interface VibeSearchFilters {
+  bpm_min?: number;
+  bpm_max?: number;
+  genre?: string;
+  energy_min?: number;
+  energy_max?: number;
+  danceability_min?: number;
+  danceability_max?: number;
+}
+
 // API Error types
 export interface APIError {
   detail: string;

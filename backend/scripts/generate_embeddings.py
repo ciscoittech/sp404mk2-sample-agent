@@ -249,15 +249,18 @@ async def store_embedding_in_postgres(
         result = await session.execute(query)
         existing = result.scalar_one_or_none()
 
+        # Convert embedding list to JSON string for SQLite compatibility
+        embedding_json = json.dumps(embedding) if isinstance(embedding, list) else embedding
+
         if existing:
             # Update existing embedding
-            existing.vibe_vector = embedding
+            existing.vibe_vector = embedding_json
             existing.embedding_source = source_text
         else:
             # Insert new embedding
             new_embedding = SampleEmbedding(
                 sample_id=sample_id,
-                vibe_vector=embedding,
+                vibe_vector=embedding_json,
                 embedding_source=source_text
             )
             session.add(new_embedding)

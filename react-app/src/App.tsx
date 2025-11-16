@@ -6,6 +6,7 @@ import { ThemeProvider } from '@/components/ThemeProvider';
 import { AppShell } from '@/components/layout/AppShell';
 import { DashboardPage } from '@/pages/DashboardPage';
 import { SamplesPage } from '@/pages/SamplesPage';
+import { VibeSearchPage } from '@/pages/VibeSearchPage';
 import { KitsPage } from '@/pages/KitsPage';
 import { UploadPage } from '@/pages/UploadPage';
 import { SettingsPage } from '@/pages/SettingsPage';
@@ -42,6 +43,7 @@ function App() {
             <Routes>
               <Route path="/" element={<DashboardPage />} />
               <Route path="/samples" element={<SamplesPage />} />
+              <Route path="/vibe-search" element={<VibeSearchPage />} />
               <Route path="/kits" element={<KitsPage />} />
               <Route path="/upload" element={<UploadPage />} />
               <Route path="/settings" element={<SettingsPage />} />
