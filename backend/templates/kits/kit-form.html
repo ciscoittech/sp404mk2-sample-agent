@@ -1,0 +1,42 @@
+<!-- Kit Create/Edit Form Template -->
+<form
+  hx-post="/api/v1/kits"
+  hx-target="#kit-list"
+  hx-swap="afterbegin"
+  class="space-y-4"
+>
+  <div class="form-control">
+    <label class="label">
+      <span class="label-text">Kit Name</span>
+    </label>
+    <input
+      type="text"
+      name="name"
+      placeholder="My Awesome Kit"
+      class="input input-bordered"
+      required
+      maxlength="255"
+    />
+  </div>
+
+  <div class="form-control">
+    <label class="label">
+      <span class="label-text">Description (optional)</span>
+    </label>
+    <textarea
+      name="description"
+      placeholder="Description of your kit..."
+      class="textarea textarea-bordered"
+      rows="3"
+    ></textarea>
+  </div>
+
+  <div class="flex gap-2 justify-end">
+    <button type="button" class="btn btn-ghost" onclick="closeModal()">
+      Cancel
+    </button>
+    <button type="submit" class="btn btn-primary">
+      Create Kit
+    </button>
+  </div>
+</form>

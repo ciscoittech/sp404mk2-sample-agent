@@ -3,18 +3,20 @@ Batch processing endpoints
 """
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks, WebSocket, Request, Header, Form
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 import uuid
 from datetime import datetime
+from pathlib import Path
 
 from app.api.deps import get_db, get_current_user
 from app.models.user import User
 from app.schemas.batch import (
-    BatchCreate, BatchStatus, BatchResponse, 
+    BatchCreate, BatchStatus, BatchResponse,
     BatchProgress, BatchListResponse
 )
 from app.services.batch_service import BatchService
+from app.templates_config import templates
 
 router = APIRouter()
 public_router = APIRouter()
@@ -251,9 +253,6 @@ async def list_batches_public(
     
     # Return HTML for HTMX requests
     if hx_request:
-        from fastapi.templating import Jinja2Templates
-        templates = Jinja2Templates(directory="/app/backend/templates")
-        
         # Return different templates based on status filter
         if status == "processing":
             return templates.TemplateResponse("partials/active-batches.html", {
@@ -293,9 +292,6 @@ async def get_batch_public(
     
     # Return HTML for HTMX requests
     if hx_request:
-        from fastapi.templating import Jinja2Templates
-        templates = Jinja2Templates(directory="/app/backend/templates")
-        
         return templates.TemplateResponse("partials/batch-details.html", {
             "request": request,
             "batch": batch
@@ -355,7 +351,171 @@ async def import_batch_results(
                 <span>Error importing results: {str(e)}</span>
             </div>
             """)
-        
+
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
+
+
+@public_router.post("/{batch_id}/cancel")
+async def cancel_batch_public(
+    batch_id: str,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    hx_request: Optional[str] = Header(None)
+):
+    """Cancel a running batch job (PUBLIC - no auth)."""
+    try:
+        batch_service = BatchService(db)
+
+        success = await batch_service.cancel_batch(
+            batch_id=batch_id,
+            user_id=1  # Demo user
+        )
+
+        if not success:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Cannot cancel batch"
+            )
+
+        # Return HTML for HTMX
+        if hx_request:
+            return HTMLResponse(content="""
+            <div class="alert alert-info">
+                <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span>Batch processing cancelled successfully.</span>
+            </div>
+            """)
+
+        return {"message": "Batch cancelled successfully"}
+
+    except Exception as e:
+        if hx_request:
+            return HTMLResponse(content=f"""
+            <div class="alert alert-error">
+                <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <span>Error cancelling batch: {str(e)}</span>
+            </div>
+            """)
+
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
+
+
+@public_router.post("/{batch_id}/retry")
+async def retry_batch_public(
+    batch_id: str,
+    request: Request,
+    background_tasks: BackgroundTasks,
+    db: AsyncSession = Depends(get_db),
+    hx_request: Optional[str] = Header(None)
+):
+    """Retry a failed batch job."""
+    try:
+        batch_service = BatchService(db)
+
+        # Get the failed batch
+        batch = await batch_service.get_batch(
+            batch_id=batch_id,
+            user_id=1  # Demo user
+        )
+
+        if not batch:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Batch not found"
+            )
+
+        # Validate it's in FAILED status
+        if batch.status != "failed":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Cannot retry batch with status: {batch.status}"
+            )
+
+        # Create new batch with same collection_path and options
+        new_batch = await batch_service.create_batch(
+            user_id=1,  # Demo user
+            collection_path=batch.collection_path,
+            options=batch.options
+        )
+
+        # Start processing in background
+        background_tasks.add_task(
+            batch_service.process_batch,
+            batch_id=new_batch.id
+        )
+
+        # Return HTML for HTMX
+        if hx_request:
+            return HTMLResponse(content=f"""
+            <div class="alert alert-success">
+                <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <span>Batch retry started! New batch ID: {new_batch.id}</span>
+            </div>
+            """)
+
+        return new_batch
+
+    except Exception as e:
+        if hx_request:
+            return HTMLResponse(content=f"""
+            <div class="alert alert-error">
+                <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <span>Error retrying batch: {str(e)}</span>
+            </div>
+            """)
+
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
+
+
+@public_router.get("/{batch_id}/export")
+async def export_batch_results(
+    batch_id: str,
+    db: AsyncSession = Depends(get_db)
+):
+    """Download batch results as JSON file."""
+    try:
+        batch_service = BatchService(db)
+
+        # Get batch
+        batch = await batch_service.get_batch(
+            batch_id=batch_id,
+            user_id=1  # Demo user
+        )
+
+        if not batch:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Batch not found"
+            )
+
+        # Check if export_path exists
+        export_path = Path(batch.export_path) if batch.export_path else None
+
+        if not export_path or not export_path.exists():
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Export file not found. Batch may not be completed."
+            )
+
+        # Return file with download headers
+        return FileResponse(
+            path=str(export_path),
+            media_type="application/json",
+            filename=f"batch_{batch_id}_results.json"
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=str(e)

@@ -22,6 +22,10 @@ class Settings(BaseSettings):
         default="",
         description="OpenRouter API key for AI models"
     )
+    youtube_api_key: str = Field(
+        default="",
+        description="YouTube Data API v3 key for channel monitoring"
+    )
     
     # Turso Database Configuration
     turso_url: str = Field(
@@ -94,6 +98,24 @@ class Settings(BaseSettings):
         default=5.00,
         description="Cost threshold for alerts in USD"
     )
+
+    # YouTube API Configuration
+    youtube_daily_quota: int = Field(
+        default=10000,
+        description="YouTube API daily quota limit (units)"
+    )
+    youtube_quota_alert_threshold: float = Field(
+        default=0.8,
+        description="Alert when YouTube quota reaches this percentage"
+    )
+    youtube_crawl_frequency_days: int = Field(
+        default=7,
+        description="Default days between channel crawls"
+    )
+    youtube_priority_crawl_frequency_days: int = Field(
+        default=1,
+        description="Days between crawls for high-priority channels"
+    )
     
     # Model Configuration
     architect_model: str = Field(
@@ -132,7 +154,53 @@ class Settings(BaseSettings):
         default=2000,
         description="Max tokens for collector responses"
     )
-    
+
+    # OpenRouter Model Pricing (per token in USD)
+    # Based on OpenRouter pricing as of 2025
+    model_pricing: dict[str, dict[str, float]] = Field(
+        default={
+            "google/gemma-3-27b-it": {
+                "input": 0.09 / 1_000_000,   # $0.09 per 1M input tokens
+                "output": 0.16 / 1_000_000   # $0.16 per 1M output tokens
+            },
+            "qwen/qwen3-235b-a22b-2507": {
+                "input": 0.20 / 1_000_000,   # $0.20 per 1M input tokens
+                "output": 0.60 / 1_000_000   # $0.60 per 1M output tokens
+            },
+            "qwen/qwen3-235b-a22b-2507:free": {
+                "input": 0.0,                # Free tier
+                "output": 0.0
+            },
+            "deepseek/deepseek-r1": {
+                "input": 0.10 / 1_000_000,
+                "output": 0.40 / 1_000_000
+            },
+            "deepseek/deepseek-v3": {
+                "input": 0.27 / 1_000_000,
+                "output": 1.10 / 1_000_000
+            },
+            "qwen/qwen3-coder": {
+                "input": 0.15 / 1_000_000,
+                "output": 0.50 / 1_000_000
+            }
+        },
+        description="Cost per token for each AI model (input/output)"
+    )
+
+    # Budget Limits
+    monthly_budget_usd: float = Field(
+        default=10.0,
+        description="Monthly OpenRouter budget limit in USD"
+    )
+    daily_token_limit: int = Field(
+        default=100000,
+        description="Daily token usage limit"
+    )
+    budget_alert_threshold: float = Field(
+        default=0.8,
+        description="Alert when budget reaches this percentage (0.0-1.0)"
+    )
+
     @field_validator("turso_url")
     @classmethod
     def validate_turso_url(cls, v: str) -> str:

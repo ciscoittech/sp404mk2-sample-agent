@@ -1,7 +1,7 @@
 """
 FastAPI application entry point
 """
-from fastapi import FastAPI, WebSocket
+from fastapi import FastAPI, WebSocket, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -40,18 +40,34 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Custom exception handler to convert Pydantic ValidationError to 400 instead of 422
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+from pydantic import ValidationError
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    """Convert 422 validation errors to 400 bad request."""
+    # Extract first error message
+    errors = exc.errors()
+    if errors:
+        first_error = errors[0]
+        msg = first_error.get('msg', 'Validation error')
+        field = first_error.get('loc', [])[-1] if first_error.get('loc') else 'field'
+        detail = f"{field}: {msg}"
+    else:
+        detail = "Validation error"
+
+    return JSONResponse(
+        status_code=400,
+        content={"detail": detail}
+    )
+
 # Include API router
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
-# Determine paths based on environment (Docker vs local)
-base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-frontend_dir = os.path.join(base_dir, "frontend") if os.path.exists(os.path.join(base_dir, "frontend")) else "/app/frontend"
-print(f"🔍 Template path debug:")
-print(f"  __file__: {__file__}")
-print(f"  base_dir: {base_dir}")
-print(f"  frontend_dir: {frontend_dir}")
-print(f"  exists: {os.path.exists(frontend_dir)}")
-templates = Jinja2Templates(directory=frontend_dir)
+# Import templates and paths from shared config to avoid circular imports
+from app.templates_config import templates, frontend_dir
 
 
 @app.get("/health")
@@ -61,12 +77,16 @@ async def health_check():
 
 
 # Template routes for pages that use Jinja2
-from fastapi import Request
-
 @app.get("/pages/usage.html")
 async def usage_page(request: Request):
     """Render usage page with Jinja2 template."""
     return templates.TemplateResponse("pages/usage.html", {"request": request})
+
+
+@app.get("/pages/settings.html")
+async def settings_page(request: Request):
+    """Render settings page with Jinja2 template."""
+    return templates.TemplateResponse("pages/settings.html", {"request": request})
 
 
 # Mount static files from frontend (after specific routes)

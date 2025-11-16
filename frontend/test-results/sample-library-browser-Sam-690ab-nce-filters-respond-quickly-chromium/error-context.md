@@ -1,0 +1,115 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - main [ref=e6]:
+      - generic [ref=e7]:
+        - generic [ref=e8]:
+          - heading "Sample Library" [level=1] [ref=e9]
+          - paragraph [ref=e10]: Browse and manage your sample collection
+        - generic [ref=e11]:
+          - button "Clear Filters" [ref=e13] [cursor=pointer]
+          - searchbox "Search samples" [ref=e15]
+          - combobox "Filter by genre" [ref=e17] [cursor=pointer]:
+            - option "All Genres"
+            - option "Hip-Hop"
+            - option "Jazz" [selected]
+            - option "Electronic"
+            - option "Soul"
+            - option "Trap"
+          - generic [ref=e19]:
+            - spinbutton "Minimum BPM" [ref=e20]
+            - generic [ref=e21]: "-"
+            - spinbutton "Maximum BPM" [ref=e22]
+            - generic [ref=e23]: BPM
+          - button "Upload new sample" [ref=e25] [cursor=pointer]:
+            - img [ref=e26]
+            - text: Upload Sample
+        - generic "Loading more samples" [ref=e29]
+    - generic [ref=e30]:
+      - generic "close sidebar"
+      - complementary "Main navigation" [ref=e31]:
+        - generic [ref=e32]:
+          - heading "SP404MK2" [level=1] [ref=e33]
+          - paragraph [ref=e34]: Sample Agent
+        - searchbox "Global sample search" [ref=e36]
+        - list [ref=e38]:
+          - listitem [ref=e39]:
+            - link "Dashboard" [ref=e40] [cursor=pointer]:
+              - /url: /
+              - img [ref=e41]
+              - generic [ref=e43]: Dashboard
+          - listitem [ref=e44]:
+            - link "Samples library" [ref=e45] [cursor=pointer]:
+              - /url: /pages/samples.html
+              - img [ref=e46]
+              - generic [ref=e48]: Samples
+              - generic [ref=e49]: "0"
+          - listitem [ref=e50]:
+            - link "Sample kits" [ref=e51] [cursor=pointer]:
+              - /url: /pages/kits.html
+              - img [ref=e52]
+              - generic [ref=e54]: Kits
+              - generic [ref=e55]: "0"
+          - listitem [ref=e56]:
+            - link "Batch processing" [ref=e57] [cursor=pointer]:
+              - /url: /pages/batch.html
+              - img [ref=e58]
+              - generic [ref=e60]: Batch
+        - list [ref=e62]:
+          - listitem [ref=e63]:
+            - link "API usage and costs" [ref=e64] [cursor=pointer]:
+              - /url: /pages/usage.html
+              - img [ref=e65]
+              - generic [ref=e67]: Usage
+          - listitem [ref=e68]:
+            - link "Application settings" [ref=e69] [cursor=pointer]:
+              - /url: /pages/settings.html
+              - img [ref=e70]
+              - generic [ref=e73]: Settings
+        - generic [ref=e75]:
+          - generic [ref=e77]:
+            - generic [ref=e78]: Budget
+            - generic [ref=e79]: $0.00
+            - generic [ref=e80]: of $10.00
+          - button "Upload new sample" [ref=e81] [cursor=pointer]:
+            - img [ref=e82]
+            - generic [ref=e84]: Upload Sample
+  - dialog:
+    - generic:
+      - heading "Upload Sample" [level=3]
+      - generic:
+        - generic:
+          - generic:
+            - generic: Sample File
+          - button "Choose File"
+        - generic:
+          - generic:
+            - generic: Title
+          - textbox "Sample title..."
+        - generic:
+          - generic:
+            - generic:
+              - generic: Genre
+            - combobox:
+              - option "Select genre" [selected]
+              - option "Hip-Hop"
+              - option "Jazz"
+              - option "Electronic"
+              - option "Soul"
+              - option "Trap"
+          - generic:
+            - generic:
+              - generic: BPM
+            - spinbutton
+        - generic:
+          - generic:
+            - generic: Tags (comma separated)
+          - textbox "drums, vintage, lofi"
+        - generic:
+          - button "Cancel"
+          - button "Upload"
+    - generic:
+      - button "close"
+```

@@ -1,0 +1,107 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - main [ref=e6]:
+    - generic [ref=e8]:
+      - generic [ref=e9]:
+        - heading "OpenRouter API Usage & Costs" [level=1] [ref=e10]
+        - paragraph [ref=e11]: Track your AI model spending and token usage
+      - generic [ref=e12]:
+        - generic [ref=e14]:
+          - heading "💰 Total Spend (Month)" [level=2] [ref=e15]
+          - paragraph [ref=e16]: $0.0000
+          - generic [ref=e17]: 0 API calls
+        - generic [ref=e19]:
+          - heading "🔢 Tokens Used" [level=2] [ref=e20]
+          - paragraph [ref=e21]: "0"
+          - generic [ref=e22]: 0 in / 0 out
+        - generic [ref=e24]:
+          - heading "📊 Budget Status" [level=2] [ref=e25]
+          - paragraph [ref=e26]: $10.00
+          - generic [ref=e27]: 0.0% of budget used
+          - progressbar [ref=e28]
+        - generic [ref=e30]:
+          - heading "🤖 Top Model" [level=2] [ref=e31]
+          - paragraph [ref=e32]: "-"
+          - generic [ref=e33]: $0.0000 • 0 calls
+      - generic [ref=e34]:
+        - heading "💸 Cost Breakdown by Operation" [level=2] [ref=e37]
+        - heading "📈 Daily Cost (Last 30 Days)" [level=2] [ref=e42]
+      - generic [ref=e46]:
+        - heading "🔍 Model Comparison" [level=2] [ref=e47]
+        - table [ref=e49]:
+          - rowgroup [ref=e50]:
+            - row "Model Calls Tokens Cost Avg Cost/Call" [ref=e51]:
+              - cell "Model" [ref=e52]
+              - cell "Calls" [ref=e53]
+              - cell "Tokens" [ref=e54]
+              - cell "Cost" [ref=e55]
+              - cell "Avg Cost/Call" [ref=e56]
+          - rowgroup
+      - generic [ref=e58]:
+        - generic [ref=e59]:
+          - heading "📋 Recent API Calls (Last 50)" [level=2] [ref=e60]
+          - link "Export CSV" [ref=e61] [cursor=pointer]:
+            - /url: /api/v1/usage/export
+            - img [ref=e62]
+            - text: Export CSV
+        - table [ref=e65]:
+          - rowgroup [ref=e66]:
+            - row "Time Model Operation Tokens (in/out) Cost" [ref=e67]:
+              - cell "Time" [ref=e68]
+              - cell "Model" [ref=e69]
+              - cell "Operation" [ref=e70]
+              - cell "Tokens (in/out)" [ref=e71]
+              - cell "Cost" [ref=e72]
+          - rowgroup
+  - generic [ref=e73]:
+    - generic "close sidebar"
+    - complementary "Main navigation" [ref=e74]:
+      - generic [ref=e75]:
+        - heading "SP404MK2" [level=1] [ref=e76]
+        - paragraph [ref=e77]: Sample Agent
+      - searchbox "Global sample search" [ref=e79]
+      - list [ref=e81]:
+        - listitem [ref=e82]:
+          - link "Dashboard" [ref=e83] [cursor=pointer]:
+            - /url: /
+            - img [ref=e84]
+            - generic [ref=e86]: Dashboard
+        - listitem [ref=e87]:
+          - link "Samples library" [ref=e88] [cursor=pointer]:
+            - /url: /pages/samples.html
+            - img [ref=e89]
+            - generic [ref=e91]: Samples
+            - generic [ref=e92]: "0"
+        - listitem [ref=e93]:
+          - link "Sample kits" [ref=e94] [cursor=pointer]:
+            - /url: /pages/kits.html
+            - img [ref=e95]
+            - generic [ref=e97]: Kits
+            - generic [ref=e98]: "0"
+        - listitem [ref=e99]:
+          - link "Batch processing" [ref=e100] [cursor=pointer]:
+            - /url: /pages/batch.html
+            - img [ref=e101]
+            - generic [ref=e103]: Batch
+      - list [ref=e105]:
+        - listitem [ref=e106]:
+          - link "API usage and costs" [ref=e107] [cursor=pointer]:
+            - /url: /pages/usage.html
+            - img [ref=e108]
+            - generic [ref=e110]: Usage
+        - listitem [ref=e111]:
+          - link "Application settings" [ref=e112] [cursor=pointer]:
+            - /url: /pages/settings.html
+            - img [ref=e113]
+            - generic [ref=e116]: Settings
+      - generic [ref=e118]:
+        - generic [ref=e120]:
+          - generic [ref=e121]: Budget
+          - generic [ref=e122]: $0.00
+          - generic [ref=e123]: of $10.00
+        - button "Upload new sample" [ref=e124] [cursor=pointer]:
+          - img [ref=e125]
+          - generic [ref=e127]: Upload Sample
+```

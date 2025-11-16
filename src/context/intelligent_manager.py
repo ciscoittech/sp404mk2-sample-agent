@@ -73,6 +73,7 @@ class IntelligentContextManager:
         self.discovered_samples: List[Dict[str, Any]] = []
         self.search_results: List[Dict[str, Any]] = []
         self.active_tools: Set[str] = set()
+        self.specialist_sections: List[str] = []  # Hardware manual sections
 
     def detect_task_type(self, user_input: str) -> TaskContext:
         """
@@ -274,10 +275,13 @@ class IntelligentContextManager:
             elif "vibe" in self.current_task.task_type:
                 examples = ["vibe_analysis/reasoning_examples.md"]
 
+        # Use hardware manual sections if set
+        sections = self.specialist_sections if self.specialist_sections else None
+
         tier_content = self.tier_loader.load_tier4_background(
             thinking_protocols=protocols,
             example_libraries=examples,
-            specialist_sections=None
+            specialist_sections=sections
         )
 
         if tier_content.content:  # Only add if there's content

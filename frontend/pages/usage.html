@@ -243,27 +243,26 @@
 
                 async loadData() {
                     try {
-                        // Load summary and budget in parallel
-                        const [summaryRes, budgetRes, dailyRes, recentRes] = await Promise.all([
-                            fetch('/api/v1/usage/public/summary'),
-                            fetch('/api/v1/usage/budget').catch(() => ({ status: 401 })),
-                            fetch('/api/v1/usage/daily?days=30').catch(() => ({ status: 401 })),
-                            fetch('/api/v1/usage/recent?limit=50').catch(() => ({ status: 401 }))
+                        // Load all data from public endpoints (no auth required)
+                        const [summaryRes, dailyRes, recentRes] = await Promise.all([
+                            fetch('/api/v1/public/usage/summary'),
+                            fetch('/api/v1/public/usage/daily?days=30'),
+                            fetch('/api/v1/public/usage/recent?limit=50')
                         ]);
 
-                        // Parse summary (always available via public endpoint)
+                        // Parse summary and budget
                         const data = await summaryRes.json();
                         this.summary = data.summary;
                         this.budgetData = data.budget;
 
-                        // Parse daily data if authenticated
+                        // Parse daily data
                         if (dailyRes.ok) {
                             const daily = await dailyRes.json();
                             this.dailyData = daily.data;
                             this.updateDailyChart();
                         }
 
-                        // Parse recent calls if authenticated
+                        // Parse recent calls
                         if (recentRes.ok) {
                             const recent = await recentRes.json();
                             this.recentCalls = recent.calls;

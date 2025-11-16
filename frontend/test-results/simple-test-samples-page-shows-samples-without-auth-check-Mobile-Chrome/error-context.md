@@ -1,0 +1,122 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - checkbox "Open sidebar menu close sidebar"
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - generic "Open sidebar menu" [ref=e7] [cursor=pointer]:
+          - img [ref=e8]
+        - generic [ref=e11]: SP404MK2
+      - main [ref=e13]:
+        - generic [ref=e14]:
+          - generic [ref=e15]:
+            - heading "Sample Library" [level=1] [ref=e16]
+            - paragraph [ref=e17]: Browse and manage your sample collection
+          - generic [ref=e18]:
+            - button "Clear Filters" [ref=e20] [cursor=pointer]
+            - searchbox "Search samples" [ref=e22]
+            - combobox "Filter by genre" [ref=e24] [cursor=pointer]:
+              - option "All Genres" [selected]
+              - option "Hip-Hop"
+              - option "Jazz"
+              - option "Electronic"
+              - option "Soul"
+              - option "Trap"
+            - generic [ref=e26]:
+              - spinbutton "Minimum BPM" [ref=e27]
+              - generic [ref=e28]: "-"
+              - spinbutton "Maximum BPM" [ref=e29]
+              - generic [ref=e30]: BPM
+            - button "Upload new sample" [ref=e32] [cursor=pointer]:
+              - img [ref=e33]
+              - text: Upload Sample
+    - generic:
+      - generic "close sidebar"
+      - complementary "Main navigation":
+        - generic:
+          - heading "SP404MK2" [level=1]
+          - paragraph: Sample Agent
+        - generic:
+          - searchbox "Global sample search"
+        - list:
+          - listitem:
+            - link "Dashboard":
+              - /url: /
+              - img
+              - generic: Dashboard
+          - listitem:
+            - link "Samples library":
+              - /url: /pages/samples.html
+              - img
+              - generic: Samples
+              - generic: "0"
+          - listitem:
+            - link "Sample kits":
+              - /url: /pages/kits.html
+              - img
+              - generic: Kits
+              - generic: "0"
+          - listitem:
+            - link "Batch processing":
+              - /url: /pages/batch.html
+              - img
+              - generic: Batch
+        - list:
+          - listitem:
+            - link "API usage and costs":
+              - /url: /pages/usage.html
+              - img
+              - generic: Usage
+          - listitem:
+            - link "Application settings":
+              - /url: /pages/settings.html
+              - img
+              - generic: Settings
+        - generic:
+          - generic:
+            - generic:
+              - generic: Budget
+              - generic: $0.00
+              - generic: of $10.00
+          - button "Upload new sample":
+            - img
+            - generic: Upload Sample
+  - dialog:
+    - generic:
+      - heading "Upload Sample" [level=3]
+      - generic:
+        - generic:
+          - generic:
+            - generic: Sample File
+          - button "Choose File"
+        - generic:
+          - generic:
+            - generic: Title
+          - textbox "Sample title..."
+        - generic:
+          - generic:
+            - generic:
+              - generic: Genre
+            - combobox:
+              - option "Select genre" [selected]
+              - option "Hip-Hop"
+              - option "Jazz"
+              - option "Electronic"
+              - option "Soul"
+              - option "Trap"
+          - generic:
+            - generic:
+              - generic: BPM
+            - spinbutton
+        - generic:
+          - generic:
+            - generic: Tags (comma separated)
+          - textbox "drums, vintage, lofi"
+        - generic:
+          - button "Cancel"
+          - button "Upload"
+    - generic:
+      - button "close"
+```

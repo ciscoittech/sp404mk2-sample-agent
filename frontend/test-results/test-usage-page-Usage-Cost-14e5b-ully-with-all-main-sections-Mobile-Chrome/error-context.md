@@ -1,0 +1,115 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - checkbox "Open sidebar menu close sidebar"
+  - generic [ref=e4]:
+    - generic [ref=e5]:
+      - generic "Open sidebar menu" [ref=e7] [cursor=pointer]:
+        - img [ref=e8]
+      - generic [ref=e11]: SP404MK2
+    - main [ref=e13]:
+      - generic [ref=e15]:
+        - generic [ref=e16]:
+          - heading "OpenRouter API Usage & Costs" [level=1] [ref=e17]
+          - paragraph [ref=e18]: Track your AI model spending and token usage
+        - generic [ref=e19]:
+          - generic [ref=e21]:
+            - heading "💰 Total Spend (Month)" [level=2] [ref=e22]
+            - paragraph [ref=e23]: $0.0000
+            - generic [ref=e24]: 0 API calls
+          - generic [ref=e26]:
+            - heading "🔢 Tokens Used" [level=2] [ref=e27]
+            - paragraph [ref=e28]: "0"
+            - generic [ref=e29]: 0 in / 0 out
+          - generic [ref=e31]:
+            - heading "📊 Budget Status" [level=2] [ref=e32]
+            - paragraph [ref=e33]: $10.00
+            - generic [ref=e34]: 0.0% of budget used
+            - progressbar [ref=e35]
+          - generic [ref=e37]:
+            - heading "🤖 Top Model" [level=2] [ref=e38]
+            - paragraph [ref=e39]: "-"
+            - generic [ref=e40]: $0.0000 • 0 calls
+        - generic [ref=e41]:
+          - heading "💸 Cost Breakdown by Operation" [level=2] [ref=e44]
+          - heading "📈 Daily Cost (Last 30 Days)" [level=2] [ref=e49]
+        - generic [ref=e53]:
+          - heading "🔍 Model Comparison" [level=2] [ref=e54]
+          - table [ref=e56]:
+            - rowgroup [ref=e57]:
+              - row "Model Calls Tokens Cost Avg Cost/Call" [ref=e58]:
+                - cell "Model" [ref=e59]
+                - cell "Calls" [ref=e60]
+                - cell "Tokens" [ref=e61]
+                - cell "Cost" [ref=e62]
+                - cell "Avg Cost/Call" [ref=e63]
+            - rowgroup
+        - generic [ref=e65]:
+          - generic [ref=e66]:
+            - heading "📋 Recent API Calls (Last 50)" [level=2] [ref=e67]
+            - link "Export CSV" [ref=e68] [cursor=pointer]:
+              - /url: /api/v1/usage/export
+              - img [ref=e69]
+              - text: Export CSV
+          - table [ref=e72]:
+            - rowgroup [ref=e73]:
+              - row "Time Model Operation Tokens (in/out) Cost" [ref=e74]:
+                - cell "Time" [ref=e75]
+                - cell "Model" [ref=e76]
+                - cell "Operation" [ref=e77]
+                - cell "Tokens (in/out)" [ref=e78]
+                - cell "Cost" [ref=e79]
+            - rowgroup
+  - generic:
+    - generic "close sidebar"
+    - complementary "Main navigation":
+      - generic:
+        - heading "SP404MK2" [level=1]
+        - paragraph: Sample Agent
+      - generic:
+        - searchbox "Global sample search"
+      - list:
+        - listitem:
+          - link "Dashboard":
+            - /url: /
+            - img
+            - generic: Dashboard
+        - listitem:
+          - link "Samples library":
+            - /url: /pages/samples.html
+            - img
+            - generic: Samples
+            - generic: "0"
+        - listitem:
+          - link "Sample kits":
+            - /url: /pages/kits.html
+            - img
+            - generic: Kits
+            - generic: "0"
+        - listitem:
+          - link "Batch processing":
+            - /url: /pages/batch.html
+            - img
+            - generic: Batch
+      - list:
+        - listitem:
+          - link "API usage and costs":
+            - /url: /pages/usage.html
+            - img
+            - generic: Usage
+        - listitem:
+          - link "Application settings":
+            - /url: /pages/settings.html
+            - img
+            - generic: Settings
+      - generic:
+        - generic:
+          - generic:
+            - generic: Budget
+            - generic: $0.00
+            - generic: of $10.00
+        - button "Upload new sample":
+          - img
+          - generic: Upload Sample
+```

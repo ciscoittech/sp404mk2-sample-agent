@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kit Builder Test - SP404MK2</title>
+
+    <!-- Tailwind + DaisyUI -->
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.14/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Alpine.js for interactivity -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body class="bg-base-200 min-h-screen">
+
+    <div class="container mx-auto p-8" x-data="kitBuilder()">
+
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold mb-2">🎵 AI Kit Builder Test</h1>
+            <p class="text-base-content/70">Natural language to sample kit conversion</p>
+        </div>
+
+        <!-- Input Form -->
+        <div class="card bg-base-100 shadow-xl mb-8">
+            <div class="card-body">
+                <h2 class="card-title mb-4">Describe Your Sound</h2>
+
+                <div class="form-control mb-4">
+                    <label class="label">
+                        <span class="label-text">What kind of kit do you want?</span>
+                    </label>
+                    <input
+                        type="text"
+                        x-model="prompt"
+                        placeholder="e.g., 'lo-fi hip hop at 85 BPM' or 'dark trap drums with heavy 808s'"
+                        class="input input-bordered w-full"
+                        @keyup.enter="buildKit()"
+                    />
+                </div>
+
+                <div class="form-control mb-4">
+                    <label class="label">
+                        <span class="label-text">Number of samples (1-16)</span>
+                    </label>
+                    <input
+                        type="number"
+                        x-model.number="numSamples"
+                        min="1"
+                        max="16"
+                        class="input input-bordered w-full"
+                    />
+                </div>
+
+                <div class="form-control mb-4">
+                    <label class="cursor-pointer label">
+                        <span class="label-text">Create and save kit to database</span>
+                        <input type="checkbox" x-model="createKit" class="checkbox checkbox-primary" />
+                    </label>
+                </div>
+
+                <button
+                    @click="buildKit()"
+                    :disabled="loading || !prompt"
+                    class="btn btn-primary btn-lg w-full"
+                >
+                    <span x-show="!loading">🎹 Build Kit</span>
+                    <span x-show="loading" class="loading loading-spinner"></span>
+                    <span x-show="loading">Building...</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Example Prompts -->
+        <div class="card bg-base-100 shadow-xl mb-8" x-show="!kitData">
+            <div class="card-body">
+                <h3 class="card-title mb-2">Example Prompts</h3>
+                <div class="flex flex-wrap gap-2">
+                    <button @click="prompt = 'lo-fi hip hop at 85 BPM'; buildKit()" class="btn btn-sm btn-outline">Lo-fi Hip Hop</button>
+                    <button @click="prompt = 'dark trap drums with heavy 808s'; buildKit()" class="btn btn-sm btn-outline">Dark Trap</button>
+                    <button @click="prompt = 'boom bap style with vinyl texture'; buildKit()" class="btn btn-sm btn-outline">Boom Bap</button>
+                    <button @click="prompt = 'chill ambient drums and textures'; buildKit()" class="btn btn-sm btn-outline">Ambient</button>
+                    <button @click="prompt = 'energetic house drums at 128 BPM'; buildKit()" class="btn btn-sm btn-outline">House</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Error Display -->
+        <div x-show="error" class="alert alert-error mb-8">
+            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <span x-text="error"></span>
+        </div>
+
+        <!-- Kit Results -->
+        <div x-show="kitData" class="space-y-4">
+
+            <!-- Kit Info -->
+            <div class="stats shadow w-full">
+                <div class="stat">
+                    <div class="stat-title">Kit Name</div>
+                    <div class="stat-value text-2xl" x-text="kitData?.name || 'Preview Kit'"></div>
+                    <div class="stat-desc" x-text="kitData?.description || prompt"></div>
+                </div>
+                <div class="stat">
+                    <div class="stat-title">Samples Found</div>
+                    <div class="stat-value text-primary" x-text="analysis?.total_found || 0"></div>
+                </div>
+                <div class="stat">
+                    <div class="stat-title">Samples Selected</div>
+                    <div class="stat-value text-secondary" x-text="analysis?.total_selected || 0"></div>
+                </div>
+            </div>
+
+            <!-- Analysis Info -->
+            <div class="card bg-base-100 shadow-xl" x-show="analysis?.analysis">
+                <div class="card-body">
+                    <h3 class="card-title">AI Analysis</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <span class="font-semibold">Genre:</span>
+                            <span x-text="analysis?.analysis?.genre || 'N/A'"></span>
+                        </div>
+                        <div>
+                            <span class="font-semibold">BPM:</span>
+                            <span x-text="analysis?.analysis?.bpm || 'N/A'"></span>
+                        </div>
+                        <div>
+                            <span class="font-semibold">Vibe:</span>
+                            <span x-text="analysis?.analysis?.vibe || 'N/A'"></span>
+                        </div>
+                        <div>
+                            <span class="font-semibold">Tags:</span>
+                            <span x-text="analysis?.analysis?.tags?.join(', ') || 'N/A'"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pad Assignments -->
+            <div class="card bg-base-100 shadow-xl">
+                <div class="card-body">
+                    <h3 class="card-title mb-4">Pad Assignments (SP-404MK2)</h3>
+
+                    <!-- If kit was created and saved -->
+                    <template x-if="kitData?.samples">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <template x-for="assignment in kitData.samples" :key="assignment.sample_id">
+                                <div class="card bg-base-200 shadow">
+                                    <div class="card-body p-4">
+                                        <div class="badge badge-primary badge-lg mb-2">
+                                            <span x-text="'Pad ' + assignment.pad_bank + assignment.pad_number"></span>
+                                        </div>
+                                        <h4 class="font-semibold text-sm mb-1" x-text="assignment.sample.title"></h4>
+                                        <div class="text-xs space-y-1">
+                                            <div><span class="opacity-70">BPM:</span> <span x-text="assignment.sample.bpm || 'N/A'"></span></div>
+                                            <div><span class="opacity-70">Genre:</span> <span x-text="assignment.sample.genre || 'N/A'"></span></div>
+                                            <div><span class="opacity-70">Duration:</span> <span x-text="Math.round(assignment.sample.duration * 100) / 100 + 's'"></span></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+
+                    <!-- If kit was NOT created (preview mode with analysis.samples) -->
+                    <template x-if="!kitData?.samples && analysis?.samples">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <template x-for="selection in analysis.samples" :key="selection.sample_id">
+                                <div class="card bg-base-200 shadow">
+                                    <div class="card-body p-4">
+                                        <div class="badge badge-accent badge-lg mb-2">
+                                            <span x-text="'Pad ' + selection.pad_number"></span>
+                                        </div>
+                                        <div class="text-xs">
+                                            <div><span class="opacity-70">Sample ID:</span> <span x-text="selection.sample_id"></span></div>
+                                            <div class="mt-2 italic" x-text="selection.reason"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex gap-4">
+                <button @click="resetForm()" class="btn btn-outline flex-1">
+                    🔄 Build Another Kit
+                </button>
+                <button x-show="kitData?.id" @click="window.location.href='/pages/kits.html'" class="btn btn-primary flex-1">
+                    📚 View All Kits
+                </button>
+            </div>
+
+        </div>
+
+        <!-- Raw JSON Debug (collapsible) -->
+        <div class="collapse collapse-arrow bg-base-100 shadow-xl mt-8" x-show="kitData || analysis">
+            <input type="checkbox" />
+            <div class="collapse-title font-medium">
+                🔍 Raw API Response (Debug)
+            </div>
+            <div class="collapse-content">
+                <pre class="text-xs overflow-auto p-4 bg-base-200 rounded" x-text="JSON.stringify({ kit: kitData, analysis: analysis }, null, 2)"></pre>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        function kitBuilder() {
+            return {
+                prompt: '',
+                numSamples: 12,
+                createKit: true,
+                loading: false,
+                error: null,
+                kitData: null,
+                analysis: null,
+
+                async buildKit() {
+                    this.loading = true;
+                    this.error = null;
+                    this.kitData = null;
+                    this.analysis = null;
+
+                    try {
+                        const params = new URLSearchParams({
+                            prompt: this.prompt,
+                            num_samples: this.numSamples,
+                            create_kit: this.createKit
+                        });
+
+                        const response = await fetch(`http://localhost:8100/api/v1/kits/build?${params}`, {
+                            method: 'POST',
+                            headers: {
+                                'Accept': 'application/json'
+                            }
+                        });
+
+                        if (!response.ok) {
+                            const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }));
+                            throw new Error(errorData.detail || `HTTP ${response.status}`);
+                        }
+
+                        const data = await response.json();
+
+                        // If create_kit=true, response is a KitResponse
+                        // If create_kit=false, response is analysis data
+                        if (this.createKit && data.id) {
+                            this.kitData = data;
+                        } else {
+                            this.analysis = data;
+                        }
+
+                        console.log('Kit built successfully:', data);
+
+                    } catch (err) {
+                        console.error('Error building kit:', err);
+                        this.error = err.message;
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+
+                resetForm() {
+                    this.kitData = null;
+                    this.analysis = null;
+                    this.error = null;
+                    this.prompt = '';
+                }
+            }
+        }
+    </script>
+
+</body>
+</html>

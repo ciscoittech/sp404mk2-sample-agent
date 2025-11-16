@@ -1,0 +1,27 @@
+{
+  "last_run": null,
+  "total_runs": 0,
+  "total_samples_processed": 0,
+  "queue": [
+    {
+      "directory": "samples/gumroad/The Crate vol.5",
+      "priority": 10,
+      "max_samples": 100,
+      "status": "pending",
+      "attempts": 0,
+      "last_attempt": null,
+      "samples_processed": 0,
+      "error_message": null
+    },
+    {
+      "directory": "samples/google_drive/Wanns Wavs 1 2",
+      "priority": 10,
+      "max_samples": 100,
+      "status": "pending",
+      "attempts": 0,
+      "last_attempt": null,
+      "samples_processed": 0,
+      "error_message": null
+    }
+  ]
+}

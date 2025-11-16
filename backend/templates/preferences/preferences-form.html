@@ -1,0 +1,154 @@
+<div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+        <h2 class="card-title text-2xl mb-4">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            </svg>
+            User Preferences
+        </h2>
+
+        <form hx-patch="/api/v1/preferences"
+              hx-target="#preferences-result"
+              hx-swap="innerHTML"
+              class="space-y-6">
+
+            <!-- Vibe Analysis Section -->
+            <div class="divider divider-start">Vibe Analysis</div>
+
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text font-semibold">Vibe Analysis Model</span>
+                </label>
+                <select name="vibe_analysis_model"
+                        class="select select-bordered w-full"
+                        required>
+                    {% for model in models %}
+                    <option value="{{ model.model_id }}"
+                            {% if preferences.vibe_analysis_model == model.model_id %}selected{% endif %}>
+                        {{ model.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+                <label class="label">
+                    <span class="label-text-alt">Choose the AI model for analyzing sample vibes</span>
+                </label>
+            </div>
+
+            <div class="form-control">
+                <label class="label cursor-pointer">
+                    <span class="label-text">
+                        <div class="font-semibold">Auto Vibe Analysis</div>
+                        <div class="text-sm text-base-content/70">Automatically analyze vibes when samples are uploaded</div>
+                    </span>
+                    <input type="hidden" name="auto_vibe_analysis" value="false">
+                    <input type="checkbox"
+                           name="auto_vibe_analysis"
+                           value="true"
+                           {% if preferences.auto_vibe_analysis %}checked{% endif %}
+                           class="toggle toggle-primary" />
+                </label>
+            </div>
+
+            <div class="form-control">
+                <label class="label cursor-pointer">
+                    <span class="label-text">
+                        <div class="font-semibold">Auto Audio Features</div>
+                        <div class="text-sm text-base-content/70">Automatically extract audio features on upload</div>
+                    </span>
+                    <input type="hidden" name="auto_audio_features" value="false">
+                    <input type="checkbox"
+                           name="auto_audio_features"
+                           value="true"
+                           {% if preferences.auto_audio_features %}checked{% endif %}
+                           class="toggle toggle-primary" />
+                </label>
+            </div>
+
+            <!-- Batch Processing Section -->
+            <div class="divider divider-start">Batch Processing</div>
+
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text font-semibold">Batch Processing Model</span>
+                </label>
+                <select name="batch_processing_model"
+                        class="select select-bordered w-full"
+                        required>
+                    {% for model in models %}
+                    <option value="{{ model.model_id }}"
+                            {% if preferences.batch_processing_model == model.model_id %}selected{% endif %}>
+                        {{ model.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+                <label class="label">
+                    <span class="label-text-alt">Choose the AI model for batch analysis</span>
+                </label>
+            </div>
+
+            <div class="form-control">
+                <label class="label cursor-pointer">
+                    <span class="label-text">
+                        <div class="font-semibold">Batch Auto-Analyze</div>
+                        <div class="text-sm text-base-content/70">Automatically analyze batches after processing</div>
+                    </span>
+                    <input type="hidden" name="batch_auto_analyze" value="false">
+                    <input type="checkbox"
+                           name="batch_auto_analyze"
+                           value="true"
+                           {% if preferences.batch_auto_analyze %}checked{% endif %}
+                           class="toggle toggle-primary" />
+                </label>
+            </div>
+
+            <!-- Cost Controls Section -->
+            <div class="divider divider-start">Cost Controls</div>
+
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text font-semibold">Max Cost Per Request (USD)</span>
+                </label>
+                <input type="number"
+                       name="max_cost_per_request"
+                       step="0.01"
+                       min="0.01"
+                       value="{{ preferences.max_cost_per_request or '' }}"
+                       placeholder="No limit"
+                       class="input input-bordered w-full" />
+                <label class="label">
+                    <span class="label-text-alt">Leave empty for no limit</span>
+                </label>
+            </div>
+
+            <!-- Model Pricing Info -->
+            <div class="alert alert-info">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                </svg>
+                <div class="text-sm">
+                    <div class="font-semibold mb-1">Model Pricing</div>
+                    {% for model in models %}
+                    <div class="flex justify-between items-center">
+                        <span>{{ model.name }}:</span>
+                        <span class="font-mono text-xs">${{ "%.6f" | format(model.input_cost) }}/token in, ${{ "%.6f" | format(model.output_cost) }}/token out</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="card-actions justify-end">
+                <button type="submit" class="btn btn-primary">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    Save Preferences
+                </button>
+            </div>
+        </form>
+
+        <!-- Result container for HTMX responses -->
+        <div id="preferences-result" class="mt-4"></div>
+    </div>
+</div>

@@ -13,16 +13,15 @@ async def create_batch_table():
     async with engine.begin() as conn:
         # Create table
         await conn.run_sync(Base.metadata.create_all)
-        
+
         print("✅ Batch table created successfully")
-        
-        # Verify table exists
-        result = await conn.execute(
-            text("SELECT name FROM sqlite_master WHERE type='table' AND name='batches';")
-        )
-        table_exists = result.fetchone()
-        
-        if table_exists:
+
+        # Verify table exists using SQLAlchemy inspector (cross-database compatible)
+        from sqlalchemy import inspect
+        inspector = await conn.run_sync(lambda sync_conn: inspect(sync_conn))
+        table_names = await conn.run_sync(lambda sync_conn: inspect(sync_conn).get_table_names())
+
+        if 'batches' in table_names:
             print("✅ Verified: 'batches' table exists")
         else:
             print("❌ Error: 'batches' table was not created")

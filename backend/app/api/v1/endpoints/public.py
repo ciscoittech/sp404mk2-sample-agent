@@ -20,11 +20,13 @@ router = APIRouter()
 async def list_public_samples(
     request: Request,
     page: int = 1,
-    limit: int = 20,
+    limit: int = 16,
     search: Optional[str] = None,
     genre: Optional[str] = None,
     bpm_min: Optional[float] = None,
     bpm_max: Optional[float] = None,
+    instrument_type: Optional[str] = None,
+    sample_type: Optional[str] = None,
     db: AsyncSession = Depends(get_db),
     hx_request: Optional[str] = Header(None)
 ):
@@ -32,20 +34,22 @@ async def list_public_samples(
     if page < 1:
         page = 1
     if limit < 1 or limit > 100:
-        limit = 20
-    
+        limit = 16
+
     skip = (page - 1) * limit
-    
+
     sample_service = SampleService(db)
-    
+
     # Get samples with filters (no user_id filter)
-    if search or genre or bpm_min or bpm_max:
+    if search or genre or bpm_min or bpm_max or instrument_type or sample_type:
         samples = await sample_service.search_samples(
             user_id=None,  # Show all samples
             search=search,
             genre=genre,
             bpm_min=bpm_min,
             bpm_max=bpm_max,
+            instrument_type=instrument_type,
+            sample_type=sample_type,
             skip=skip,
             limit=limit
         )
@@ -68,7 +72,7 @@ async def list_public_samples(
     
     # Return HTML for HTMX requests
     if hx_request:
-        from app.main import templates
+        from app.templates_config import templates
         
         # Convert SQLAlchemy models to simple dicts to avoid lazy loading issues
         sample_dicts = []
@@ -115,7 +119,7 @@ async def list_public_samples(
 async def upload_sample_public(
     file: UploadFile = File(...),
     title: str = Form(...),
-    genre: Optional[str] = Form(None),
+    genre: Optional[str] = Form(None, alias="upload-genre"),
     bpm: Optional[str] = Form(None),  # Accept as string then convert
     musical_key: Optional[str] = Form(None),
     tags: Optional[str] = Form(""),  # Default to empty string

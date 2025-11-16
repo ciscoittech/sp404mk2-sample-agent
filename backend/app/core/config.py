@@ -21,8 +21,8 @@ class Settings(BaseSettings):
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
     
     # Database
-    # Default to PostgreSQL (can be overridden via .env for local SQLite development)
-    DATABASE_URL: str = "postgresql+asyncpg://sp404_user:changeme@localhost:5432/sp404_samples"
+    # Default to PostgreSQL with OrbStack port
+    DATABASE_URL: str = "postgresql+asyncpg://sp404_user:changeme123@localhost:5433/sp404_samples"
     
     # CORS
     BACKEND_CORS_ORIGINS: List[str] = ["http://localhost:5173", "http://localhost:3000"]
@@ -131,6 +131,12 @@ class Settings(BaseSettings):
     Default: 30 seconds
     """
 
+    # Vector Search Settings
+    EMBEDDING_MODEL: str = "openai/text-embedding-3-small"
+    EMBEDDING_DIMENSIONS: int = 1536
+    DEFAULT_SIMILARITY_THRESHOLD: float = 0.7
+    MAX_SEARCH_RESULTS: int = 100
+
     # OpenRouter API Usage Tracking & Cost Management
     model_pricing: dict = {
         "google/gemma-3-27b-it": {
@@ -164,6 +170,10 @@ class Settings(BaseSettings):
         "qwen/qwen3-coder": {
             "input": 0.15 / 1_000_000,
             "output": 0.50 / 1_000_000
+        },
+        "openai/text-embedding-3-small": {
+            "input": 0.02 / 1_000_000,   # $0.02 per 1M tokens (embeddings)
+            "output": 0.0                # No output tokens for embeddings
         }
     }
 

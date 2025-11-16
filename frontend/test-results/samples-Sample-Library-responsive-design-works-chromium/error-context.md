@@ -1,0 +1,114 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - main [ref=e6]:
+      - generic [ref=e7]:
+        - generic [ref=e8]:
+          - heading "Sample Library" [level=1] [ref=e9]
+          - paragraph [ref=e10]: Browse and manage your sample collection
+        - generic [ref=e11]:
+          - button "Clear Filters" [ref=e13] [cursor=pointer]
+          - searchbox "Search samples" [ref=e15]
+          - combobox "Filter by genre" [ref=e17] [cursor=pointer]:
+            - option "All Genres" [selected]
+            - option "Hip-Hop"
+            - option "Jazz"
+            - option "Electronic"
+            - option "Soul"
+            - option "Trap"
+          - generic [ref=e19]:
+            - spinbutton "Minimum BPM" [ref=e20]
+            - generic [ref=e21]: "-"
+            - spinbutton "Maximum BPM" [ref=e22]
+            - generic [ref=e23]: BPM
+          - button "Upload new sample" [ref=e25] [cursor=pointer]:
+            - img [ref=e26]
+            - text: Upload Sample
+    - generic [ref=e29]:
+      - generic "close sidebar"
+      - complementary "Main navigation" [ref=e30]:
+        - generic [ref=e31]:
+          - heading "SP404MK2" [level=1] [ref=e32]
+          - paragraph [ref=e33]: Sample Agent
+        - searchbox "Global sample search" [ref=e35]
+        - list [ref=e37]:
+          - listitem [ref=e38]:
+            - link "Dashboard" [ref=e39] [cursor=pointer]:
+              - /url: /
+              - img [ref=e40]
+              - generic [ref=e42]: Dashboard
+          - listitem [ref=e43]:
+            - link "Samples library" [ref=e44] [cursor=pointer]:
+              - /url: /pages/samples.html
+              - img [ref=e45]
+              - generic [ref=e47]: Samples
+              - generic [ref=e48]: "0"
+          - listitem [ref=e49]:
+            - link "Sample kits" [ref=e50] [cursor=pointer]:
+              - /url: /pages/kits.html
+              - img [ref=e51]
+              - generic [ref=e53]: Kits
+              - generic [ref=e54]: "0"
+          - listitem [ref=e55]:
+            - link "Batch processing" [ref=e56] [cursor=pointer]:
+              - /url: /pages/batch.html
+              - img [ref=e57]
+              - generic [ref=e59]: Batch
+        - list [ref=e61]:
+          - listitem [ref=e62]:
+            - link "API usage and costs" [ref=e63] [cursor=pointer]:
+              - /url: /pages/usage.html
+              - img [ref=e64]
+              - generic [ref=e66]: Usage
+          - listitem [ref=e67]:
+            - link "Application settings" [ref=e68] [cursor=pointer]:
+              - /url: /pages/settings.html
+              - img [ref=e69]
+              - generic [ref=e72]: Settings
+        - generic [ref=e74]:
+          - generic [ref=e76]:
+            - generic [ref=e77]: Budget
+            - generic [ref=e78]: $0.00
+            - generic [ref=e79]: of $10.00
+          - button "Upload new sample" [ref=e80] [cursor=pointer]:
+            - img [ref=e81]
+            - generic [ref=e83]: Upload Sample
+  - dialog:
+    - generic:
+      - heading "Upload Sample" [level=3]
+      - generic:
+        - generic:
+          - generic:
+            - generic: Sample File
+          - button "Choose File"
+        - generic:
+          - generic:
+            - generic: Title
+          - textbox "Sample title..."
+        - generic:
+          - generic:
+            - generic:
+              - generic: Genre
+            - combobox:
+              - option "Select genre" [selected]
+              - option "Hip-Hop"
+              - option "Jazz"
+              - option "Electronic"
+              - option "Soul"
+              - option "Trap"
+          - generic:
+            - generic:
+              - generic: BPM
+            - spinbutton
+        - generic:
+          - generic:
+            - generic: Tags (comma separated)
+          - textbox "drums, vintage, lofi"
+        - generic:
+          - button "Cancel"
+          - button "Upload"
+    - generic:
+      - button "close"
+```

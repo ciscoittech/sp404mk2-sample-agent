@@ -1,0 +1,29 @@
+<!-- Kit List Template -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+  {% for kit in kits %}
+  <div class="card bg-base-200 shadow-xl hover:shadow-2xl transition-shadow kit-card">
+    <div class="card-body">
+      <h3 class="card-title">{{ kit.name }}</h3>
+      {% if kit.description %}
+      <p class="text-sm opacity-70">{{ kit.description }}</p>
+      {% endif %}
+      <div class="flex gap-2 text-xs opacity-60">
+        <span>{{ kit.sample_count }} samples</span>
+        <span>•</span>
+        <span>{{ kit.created_at.strftime('%Y-%m-%d') if kit.created_at else 'N/A' }}</span>
+      </div>
+      <div class="card-actions justify-end mt-4">
+        <a href="/pages/kits.html?kit_id={{ kit.id }}" class="btn btn-primary btn-sm">
+          Open Kit
+        </a>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+{% if total == 0 %}
+<div class="text-center py-12">
+  <p class="text-lg opacity-70">No kits found. Create your first kit to get started!</p>
+</div>
+{% endif %}

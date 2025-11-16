@@ -9,25 +9,59 @@ from ..logging_config import AgentLogger
 from ..tools import database
 from .base import Agent, AgentResult, AgentStatus
 
+# Usage tracking imports
+try:
+    from backend.app.services.usage_tracking_service import UsageTrackingService
+    from backend.app.db.base import AsyncSessionLocal
+    TRACKING_AVAILABLE = True
+except ImportError:
+    TRACKING_AVAILABLE = False
+
 
 class CollectorAgent(Agent):
     """Agent responsible for discovering and categorizing samples using AI."""
-    
+
     def __init__(self):
         """Initialize the Collector Agent."""
         super().__init__("collector")
         self.logger = AgentLogger(self.name)
-        
+
         # OpenRouter configuration
         self.api_key = os.getenv("OPENROUTER_API_KEY")
         self.api_url = "https://openrouter.ai/api/v1/chat/completions"
-        
+
         # Import settings and use configured model
         from ..config import settings
         self.model = settings.collector_model
-        
+
         if not self.api_key:
             raise ValueError("OPENROUTER_API_KEY not found in environment")
+
+    async def _track_api_usage(
+        self,
+        operation: str,
+        input_tokens: int,
+        output_tokens: int,
+        task_id: Optional[str] = None
+    ) -> None:
+        """Track API usage with the tracking service if available."""
+        if not TRACKING_AVAILABLE:
+            return
+
+        try:
+            async with AsyncSessionLocal() as db:
+                service = UsageTrackingService(db)
+                await service.track_api_call(
+                    model=self.model,
+                    operation=operation,
+                    input_tokens=input_tokens,
+                    output_tokens=output_tokens,
+                    user_id=None,
+                    extra_metadata={"task_id": task_id} if task_id else None
+                )
+                self.logger.debug(f"Tracked {operation}: {input_tokens} input, {output_tokens} output tokens")
+        except Exception as e:
+            self.logger.warning(f"Failed to track API usage: {str(e)}")
             
     async def execute(self, task_id: str, **kwargs) -> AgentResult:
         """
@@ -60,12 +94,12 @@ class CollectorAgent(Agent):
             
             # Generate search queries using AI
             search_queries = await self._generate_search_queries(
-                genre, style, bpm_range, era
+                genre, style, bpm_range, era, task_id
             )
-            
+
             # Analyze queries to extract sample ideas
             sources = await self._discover_samples(
-                search_queries, genre, style, max_results
+                search_queries, genre, style, max_results, task_id
             )
             
             # Log to database
@@ -119,10 +153,11 @@ class CollectorAgent(Agent):
         genre: str,
         style: Optional[str],
         bpm_range: Optional[Tuple[int, int]],
-        era: str
+        era: str,
+        task_id: Optional[str] = None
     ) -> List[str]:
         """Generate search queries using AI."""
-        
+
         prompt = f"""Generate 5 specific YouTube search queries to find high-quality {genre} samples for music production.
 
 Genre: {genre}
@@ -145,7 +180,7 @@ Return ONLY a JSON array of 5 search query strings. Example:
             "HTTP-Referer": "http://localhost:3000",
             "X-Title": "SP404MK2 Sample Agent"
         }
-        
+
         payload = {
             "model": self.model,
             "messages": [
@@ -155,7 +190,7 @@ Return ONLY a JSON array of 5 search query strings. Example:
             "temperature": settings.model_temperature,
             "max_tokens": 800
         }
-        
+
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 self.api_url,
@@ -163,13 +198,24 @@ Return ONLY a JSON array of 5 search query strings. Example:
                 json=payload,
                 timeout=30.0
             )
-            
+
             if response.status_code != 200:
                 raise Exception(f"API Error: {response.status_code} - {response.text}")
-            
+
             result = response.json()
             content = result['choices'][0]['message']['content']
-            
+
+            # Track API usage
+            usage_data = result.get('usage', {})
+            input_tokens = usage_data.get('prompt_tokens', 0)
+            output_tokens = usage_data.get('completion_tokens', 0)
+            await self._track_api_usage(
+                operation="collector_search",
+                input_tokens=input_tokens,
+                output_tokens=output_tokens,
+                task_id=task_id
+            )
+
             # Extract JSON from response
             try:
                 # Clean up response
@@ -180,7 +226,7 @@ Return ONLY a JSON array of 5 search query strings. Example:
                     content = content[3:]
                 if content.endswith("```"):
                     content = content[:-3]
-                
+
                 queries = json.loads(content.strip())
                 return queries[:5]  # Ensure max 5 queries
             except:
@@ -198,10 +244,11 @@ Return ONLY a JSON array of 5 search query strings. Example:
         search_queries: List[str],
         genre: str,
         style: Optional[str],
-        max_results: int
+        max_results: int,
+        task_id: Optional[str] = None
     ) -> List[Dict[str, Any]]:
         """Use AI to imagine realistic sample discoveries based on queries."""
-        
+
         prompt = f"""Based on these YouTube search queries for {genre} {style or ''} samples:
 {json.dumps(search_queries, indent=2)}
 
@@ -233,7 +280,7 @@ Return ONLY a JSON array of samples. Example format:
             "HTTP-Referer": "http://localhost:3000",
             "X-Title": "SP404MK2 Sample Agent"
         }
-        
+
         payload = {
             "model": self.model,
             "messages": [
@@ -243,7 +290,7 @@ Return ONLY a JSON array of samples. Example format:
             "temperature": settings.model_temperature + 0.1,
             "max_tokens": settings.collector_max_tokens
         }
-        
+
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 self.api_url,
@@ -251,13 +298,24 @@ Return ONLY a JSON array of samples. Example format:
                 json=payload,
                 timeout=30.0
             )
-            
+
             if response.status_code != 200:
                 raise Exception(f"API Error: {response.status_code} - {response.text}")
-            
+
             result = response.json()
             content = result['choices'][0]['message']['content']
-            
+
+            # Track API usage
+            usage_data = result.get('usage', {})
+            input_tokens = usage_data.get('prompt_tokens', 0)
+            output_tokens = usage_data.get('completion_tokens', 0)
+            await self._track_api_usage(
+                operation="collector_discover",
+                input_tokens=input_tokens,
+                output_tokens=output_tokens,
+                task_id=task_id
+            )
+
             # Parse AI response
             try:
                 # Clean up response
@@ -268,9 +326,9 @@ Return ONLY a JSON array of samples. Example format:
                     content = content[3:]
                 if content.endswith("```"):
                     content = content[:-3]
-                
+
                 samples = json.loads(content.strip())
-                
+
                 # Convert to our format
                 sources = []
                 for i, sample in enumerate(samples[:max_results]):
@@ -292,14 +350,14 @@ Return ONLY a JSON array of samples. Example format:
                         "quality_score": sample.get("quality", 0.8),
                         "tags": [genre, style or genre, sample.get("type", "sample")]
                     }
-                    
+
                     if sample.get("bpm"):
                         source["tags"].append(f"{sample['bpm']}bpm")
-                    
+
                     sources.append(source)
-                
+
                 return sources
-                
+
             except Exception as e:
                 self.logger.error(f"Failed to parse AI response: {str(e)}")
                 # Return minimal mock data on error

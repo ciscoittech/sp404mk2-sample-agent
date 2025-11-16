@@ -1,0 +1,69 @@
+=== STORAGE OPTIMIZATION REPORT ===
+Date: 2025-11-14
+
+=== BEFORE CLEANUP ===
+/dev/disk3s5   460Gi   394Gi   3.8Gi   100%    6.1M   40M   13%   /System/Volumes/Data
+=== AFTER CLEANUP ===
+/dev/disk3s5   460Gi   394Gi   4.0Gi    99%    6.1M   42M   13%   /System/Volumes/Data
+
+=== CLEANUP SUMMARY ===
+Files/Directories Deleted:
+  - 47 .pyc Python cache files
+  - .DS_Store system files (macOS)
+  - backend/.pytest_cache directory
+  - frontend/test-results (612 KB)
+  - frontend/playwright-report
+  - sp404_samples.db root duplicate (4.0 MB)
+
+Space Freed: ~4.6 MB (from safe cleanup operations)
+
+=== TOP 10 LARGEST DIRECTORIES ===
+3.0G	sounds/
+3.0G	samples/
+739M	venv/
+ 80M	backend/
+ 32M	frontend/
+ 20M	uploads/
+520K	src/
+492K	docs/
+288K	tests/
+ 88K	scripts/
+
+=== CRITICAL FINDINGS ===
+
+1. AUDIO SAMPLES (6.0 GB - 75% of local storage)
+   - sounds/Wanns Wavs 1 2: 2.1 GB (1,604 WAV files)
+   - samples/google_drive: 2.0 GB
+   - samples/gumroad: 908 MB
+   ACTION: These are production data - DO NOT DELETE
+
+2. PYTHON VIRTUAL ENV (919 MB)
+   Current state: Must keep for development
+
+3. FRONTEND NODE MODULES (31 MB)
+   Can be regenerated with 'npm install'
+
+=== RECOMMENDATIONS FOR MAJOR SPACE RECOVERY ===
+
+OPTION 1: Archive Audio Samples to External Drive
+  - Move sounds/ (2.1 GB) to external SSD
+  - Move samples/ (3.0 GB) to external storage
+  - Space recovered: 5.1 GB (95% of local storage)
+  - Time: 10-20 minutes depending on drive speed
+
+OPTION 2: Clean venv and Reinstall Only Production Dependencies
+  - Delete venv (919 MB)
+  - Rebuild with: pip install -r backend/requirements.txt
+  - Space recovered: ~400-500 MB (development tools removed)
+
+OPTION 3: Delete Frontend Node Modules (Regenerate on Demand)
+  - Delete frontend/node_modules (31 MB)
+  - Restore with: cd frontend && npm install
+  - Space recovered: 31 MB (regenerable)
+
+RECOMMENDED APPROACH:
+  1. Archive sounds/ and samples/ to external drive (primary priority)
+  2. Delete frontend/node_modules (easily regenerated)
+  3. Keep venv for development (can optimize later if needed)
+
+Expected results: Free up 5.1+ GB of local storage space

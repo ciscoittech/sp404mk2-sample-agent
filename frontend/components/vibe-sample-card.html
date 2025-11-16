@@ -1,0 +1,208 @@
+<!-- Vibe Search Sample Card Component -->
+<!-- Enhanced card specifically for vibe search results with similarity scoring -->
+
+<div class="card sample-card bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-200 relative"
+     x-data="vibeSampleCard({{ sample.id }}, '{{ sample.title }}', {{ sample.bpm }}, '{{ sample.musical_key }}', '{{ sample.genre }}', '{{ sample.file_url }}', {{ similarity|default:0 }})">
+
+    <!-- Similarity Badge (Top-Right) -->
+    <div class="badge badge-primary absolute top-3 right-3 z-10 gap-1 shadow-lg">
+        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+        </svg>
+        <span x-text="`${similarity}% match`"></span>
+    </div>
+
+    <!-- Waveform Preview -->
+    <figure class="bg-base-200 h-32 relative overflow-hidden">
+        <div class="waveform-container absolute inset-0 flex items-center justify-center">
+            <!-- Simple SVG waveform -->
+            <svg class="w-full h-16 text-primary/40" viewBox="0 0 200 40" preserveAspectRatio="none">
+                <path d="M0 20 L10 15 L20 25 L30 10 L40 30 L50 15 L60 25 L70 12 L80 28 L90 18 L100 22 L110 14 L120 26 L130 16 L140 24 L150 18 L160 22 L170 20 L180 25 L190 15 L200 20"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      fill="none"
+                      opacity="0.7"/>
+            </svg>
+        </div>
+    </figure>
+
+    <div class="card-body p-4">
+        <!-- Title -->
+        <h3 class="card-title text-base line-clamp-2" x-text="title">{{ sample.title }}</h3>
+
+        <!-- Musical Properties -->
+        <div class="flex gap-2 text-sm flex-wrap">
+            <span class="badge badge-sm" x-text="`${bpm} BPM`">{{ sample.bpm }} BPM</span>
+            <span class="badge badge-sm" x-text="key">{{ sample.musical_key|default:"--" }}</span>
+            <span class="badge badge-sm capitalize" x-text="genre">{{ sample.genre|default:"--" }}</span>
+            {% if sample.sample_type %}
+            <span class="badge badge-sm capitalize">{{ sample.sample_type }}</span>
+            {% endif %}
+        </div>
+
+        <!-- Vibe Tags -->
+        {% if sample.vibe_analysis and sample.vibe_analysis.tags %}
+        <div class="flex gap-1 flex-wrap mt-2">
+            {% for tag in sample.vibe_analysis.tags|slice:":5" %}
+            <span class="badge badge-sm badge-ghost">{{ tag }}</span>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Energy & Danceability Meters -->
+        {% if sample.vibe_analysis %}
+        <div class="space-y-2 mt-2">
+            <!-- Energy -->
+            <div class="flex items-center gap-2">
+                <span class="text-xs text-base-content/70 w-16">Energy</span>
+                <progress class="progress progress-primary w-full h-2"
+                         value="{{ sample.vibe_analysis.energy_level }}"
+                         max="100"></progress>
+                <span class="text-xs font-semibold w-8">{{ sample.vibe_analysis.energy_level|floatformat:0 }}%</span>
+            </div>
+
+            <!-- Danceability -->
+            {% if sample.vibe_analysis.danceability %}
+            <div class="flex items-center gap-2">
+                <span class="text-xs text-base-content/70 w-16">Dance</span>
+                <progress class="progress progress-accent w-full h-2"
+                         value="{{ sample.vibe_analysis.danceability }}"
+                         max="100"></progress>
+                <span class="text-xs font-semibold w-8">{{ sample.vibe_analysis.danceability|floatformat:0 }}%</span>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Mood Indicator -->
+        <div class="flex items-center gap-2 mt-2">
+            <span class="text-xs text-base-content/70">Mood:</span>
+            <span class="text-sm">{{ sample.vibe_analysis.mood_primary|default:"Unknown" }}</span>
+            <span>{{ sample.vibe_analysis.mood_emoji|default:"🎵" }}</span>
+        </div>
+        {% endif %}
+
+        <!-- Audio Player -->
+        <div class="mt-3 bg-base-200 rounded-lg p-2" x-data="audioPlayer('{{ sample.file_url }}')">
+            <div class="flex items-center gap-2">
+                <button @click="togglePlay()" class="btn btn-circle btn-sm btn-primary">
+                    <svg x-show="!playing" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/>
+                    </svg>
+                    <svg x-show="playing" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                    </svg>
+                </button>
+                <div class="flex-1">
+                    <input type="range"
+                           :value="currentTime"
+                           :max="duration"
+                           @input="seek($event.target.value)"
+                           class="range range-xs range-primary"
+                           step="0.1">
+                </div>
+                <span class="text-xs font-mono" x-text="formatTime(currentTime)">0:00</span>
+                <span class="text-xs text-base-content/50">/</span>
+                <span class="text-xs font-mono text-base-content/70" x-text="formatTime(duration)">0:00</span>
+            </div>
+            <audio x-ref="audio"
+                   :src="audioUrl"
+                   @timeupdate="currentTime = $refs.audio.currentTime"
+                   @loadedmetadata="duration = $refs.audio.duration"
+                   @ended="playing = false"
+                   preload="metadata"></audio>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="card-actions justify-end mt-4 gap-2 flex-wrap">
+            <button @click="findSimilar()"
+                    class="btn btn-sm btn-ghost gap-1"
+                    title="Find similar samples">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
+                </svg>
+                Similar
+            </button>
+            <button @click="addToKit()"
+                    class="btn btn-sm btn-primary gap-1"
+                    title="Add to kit">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                </svg>
+                Add to Kit
+            </button>
+            <a href="{{ sample.file_url }}"
+               download
+               class="btn btn-sm btn-accent gap-1"
+               title="Download sample">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                </svg>
+                Download
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Alpine.js Vibe Sample Card Component
+    function vibeSampleCard(id, title, bpm, key, genre, audioUrl, similarity = 0) {
+        return {
+            id: id,
+            title: title,
+            bpm: bpm,
+            key: key,
+            genre: genre,
+            audioUrl: audioUrl,
+            similarity: similarity,
+
+            findSimilar() {
+                // Navigate to vibe search with similar_to parameter
+                window.location.href = `/pages/vibe-search.html?similar_to=${this.id}`;
+            },
+
+            addToKit() {
+                // Open kit selection modal or trigger HTMX request
+                htmx.ajax('POST', '/api/v1/kits/current/add', {
+                    values: { sample_id: this.id },
+                    target: 'body',
+                    swap: 'beforeend'
+                });
+            }
+        }
+    }
+
+    // Audio Player Component
+    function audioPlayer(url) {
+        return {
+            audioUrl: url,
+            playing: false,
+            currentTime: 0,
+            duration: 0,
+
+            togglePlay() {
+                const audio = this.$refs.audio;
+                if (this.playing) {
+                    audio.pause();
+                } else {
+                    // Pause all other audio players first
+                    document.querySelectorAll('audio').forEach(a => {
+                        if (a !== audio) a.pause();
+                    });
+                    audio.play();
+                }
+                this.playing = !this.playing;
+            },
+
+            seek(time) {
+                this.$refs.audio.currentTime = time;
+            },
+
+            formatTime(seconds) {
+                if (!seconds || isNaN(seconds)) return '0:00';
+                const mins = Math.floor(seconds / 60);
+                const secs = Math.floor(seconds % 60);
+                return `${mins}:${secs.toString().padStart(2, '0')}`;
+            }
+        }
+    }
+</script>

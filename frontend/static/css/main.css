@@ -1,5 +1,16 @@
 /* Custom styles for SP404MK2 Sample Manager */
 
+/* Force dark theme globally */
+:root {
+    color-scheme: dark;
+}
+
+html,
+body {
+    background-color: #1d232a !important;
+    color: #a6adbb !important;
+}
+
 /* HTMX Loading Indicators */
 .htmx-indicator {
     display: none;
@@ -39,14 +50,17 @@
     transform: scale(0.95);
 }
 
-/* Sample card hover effects */
+/* Sample card hover effects - Enhanced for dark theme */
 .sample-card {
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    background-color: #1f2937 !important;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .sample-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 8px 30px rgba(31, 199, 255, 0.15), 0 4px 12px rgba(0, 0, 0, 0.3);
+    border-color: rgba(31, 199, 255, 0.3);
 }
 
 /* Waveform visualization */
@@ -99,8 +113,367 @@
     .pad-grid {
         max-width: 300px;
     }
-    
+
     .navbar .menu {
         flex-direction: column;
     }
 }
+
+/* Professional Dark Theme Enhancements */
+
+/* Cards and stats get subtle depth */
+.card,
+.stats {
+    background-color: #1f2937 !important;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.stats .stat {
+    color: #e5e7eb;
+}
+
+/* Base colors for dark sections */
+.bg-base-200,
+.bg-base-300 {
+    background-color: #131920 !important;
+}
+
+/* Primary accent color - cyan for SP-404 vibe */
+.text-primary,
+.btn-primary {
+    color: #1fc7ff !important;
+}
+
+.btn-primary {
+    background-color: #1fc7ff;
+    border-color: #1fc7ff;
+}
+
+.btn-primary:hover {
+    background-color: #0ea5db;
+    border-color: #0ea5db;
+    box-shadow: 0 0 20px rgba(31, 199, 255, 0.4);
+}
+
+/* Accent color - orange for highlights */
+.btn-accent {
+    background-color: #ff6b00;
+    border-color: #ff6b00;
+    color: white;
+}
+
+.btn-accent:hover {
+    background-color: #e66000;
+    border-color: #e66000;
+    box-shadow: 0 0 20px rgba(255, 107, 0, 0.4);
+}
+
+/* Badges with better contrast */
+.badge {
+    background-color: rgba(31, 199, 255, 0.15);
+    border: 1px solid rgba(31, 199, 255, 0.3);
+    color: #1fc7ff;
+}
+
+.badge-primary {
+    background-color: rgba(31, 199, 255, 0.2);
+    border-color: rgba(31, 199, 255, 0.4);
+    color: #1fc7ff;
+}
+
+.badge-accent {
+    background-color: rgba(255, 107, 0, 0.2);
+    border-color: rgba(255, 107, 0, 0.4);
+    color: #ff9447;
+}
+
+/* Input fields with better visibility */
+.input,
+.select,
+.textarea {
+    background-color: #131920 !important;
+    border-color: rgba(255, 255, 255, 0.15);
+    color: #e5e7eb;
+}
+
+.input:focus,
+.select:focus,
+.textarea:focus {
+    border-color: #1fc7ff;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(31, 199, 255, 0.1);
+}
+
+/* Modals with proper dark background */
+.modal-box {
+    background-color: #1f2937 !important;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+/* Drawer sidebar */
+.drawer-side {
+    background-color: #131920;
+}
+
+.menu {
+    background-color: #131920 !important;
+}
+
+.menu a:hover {
+    background-color: rgba(31, 199, 255, 0.1);
+    color: #1fc7ff;
+}
+
+.menu a.active {
+    background-color: #1fc7ff !important;
+    color: #131920 !important;
+}
+
+/* Progress bars */
+.progress {
+    background-color: #131920;
+}
+
+.progress-primary::-webkit-progress-value {
+    background-color: #1fc7ff;
+}
+
+.progress-primary::-moz-progress-bar {
+    background-color: #1fc7ff;
+}
+
+/* Alerts with better visibility */
+.alert {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.alert-info {
+    background-color: rgba(31, 199, 255, 0.15);
+    border-color: rgba(31, 199, 255, 0.3);
+    color: #1fc7ff;
+}
+
+.alert-error {
+    background-color: rgba(255, 51, 51, 0.15);
+    border-color: rgba(255, 51, 51, 0.3);
+    color: #ff6b6b;
+}
+
+.alert-success {
+    background-color: rgba(0, 255, 102, 0.15);
+    border-color: rgba(0, 255, 102, 0.3);
+    color: #00ff66;
+}
+
+/* Better text contrast */
+.text-base-content {
+    color: #e5e7eb !important;
+}
+
+.text-base-content\/70 {
+    color: rgba(229, 231, 235, 0.7) !important;
+}
+
+.text-base-content\/60 {
+    color: rgba(229, 231, 235, 0.6) !important;
+}
+
+/* Navbar styling */
+.navbar {
+    background-color: #131920 !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Professional waveform styling */
+.waveform-container {
+    background: linear-gradient(135deg, #131920 0%, #1f2937 100%) !important;
+    border: 1px solid rgba(31, 199, 255, 0.2);
+}
+
+.waveform-progress {
+    background: linear-gradient(90deg, rgba(31, 199, 255, 0.3) 0%, rgba(255, 107, 0, 0.3) 100%);
+    box-shadow: 0 0 15px rgba(31, 199, 255, 0.5);
+}
+
+/* Loading spinner */
+.loading {
+    color: #1fc7ff;
+}
+
+/* ========================================
+   VIBE SEARCH SPECIFIC STYLES
+   ======================================== */
+
+/* Vibe search textarea focus effect */
+.vibe-search-page .textarea:focus {
+    border-color: #1fc7ff;
+    box-shadow: 0 0 0 4px rgba(31, 199, 255, 0.15);
+}
+
+/* Quick suggestion badges */
+.vibe-search-page .badge-outline:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(31, 199, 255, 0.3);
+}
+
+/* Advanced filters collapse animation */
+.collapse-content {
+    transition: all 0.3s ease;
+}
+
+/* Range slider styling */
+.range-primary::-webkit-slider-thumb {
+    background-color: #1fc7ff;
+    box-shadow: 0 0 8px rgba(31, 199, 255, 0.5);
+}
+
+.range-primary::-moz-range-thumb {
+    background-color: #1fc7ff;
+    box-shadow: 0 0 8px rgba(31, 199, 255, 0.5);
+}
+
+.range-accent::-webkit-slider-thumb {
+    background-color: #ff6b00;
+}
+
+.range-success::-webkit-slider-thumb {
+    background-color: #00ff66;
+}
+
+/* Vibe sample card enhancements */
+.vibe-search-page .sample-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.vibe-search-page .sample-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #1fc7ff 0%, #ff6b00 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.vibe-search-page .sample-card:hover::before {
+    opacity: 1;
+}
+
+/* Similarity badge pulse animation */
+@keyframes pulse-glow {
+    0%, 100% {
+        box-shadow: 0 0 8px rgba(31, 199, 255, 0.4);
+    }
+    50% {
+        box-shadow: 0 0 16px rgba(31, 199, 255, 0.7);
+    }
+}
+
+.vibe-search-page .badge-primary {
+    animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Energy/Danceability progress bars */
+.progress-primary::-webkit-progress-value {
+    background: linear-gradient(90deg, #1fc7ff 0%, #0ea5db 100%);
+    transition: width 0.5s ease;
+}
+
+.progress-accent::-webkit-progress-value {
+    background: linear-gradient(90deg, #ff6b00 0%, #e66000 100%);
+}
+
+/* Results stats cards */
+#results-stats .stat {
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+#results-stats .stat:last-child {
+    border-right: none;
+}
+
+#results-stats .stat-value {
+    background: linear-gradient(135deg, #1fc7ff 0%, #0ea5db 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Waveform container for vibe cards */
+.vibe-search-page .waveform-container {
+    background: linear-gradient(135deg, #131920 0%, #1f2937 100%);
+    border-bottom: 1px solid rgba(31, 199, 255, 0.2);
+}
+
+/* Audio player in vibe cards */
+.vibe-search-page audio {
+    display: none;
+}
+
+/* Keyboard shortcut badges */
+.kbd {
+    background-color: rgba(31, 199, 255, 0.1);
+    border: 1px solid rgba(31, 199, 255, 0.3);
+    color: #1fc7ff;
+    font-family: 'Monaco', 'Courier New', monospace;
+}
+
+/* Recent searches badges */
+.vibe-search-page .badge-ghost:hover {
+    background-color: rgba(31, 199, 255, 0.15);
+    border-color: rgba(31, 199, 255, 0.3);
+    cursor: pointer;
+    transform: translateY(-1px);
+}
+
+/* Empty state icon animation */
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+
+.vibe-search-page .empty-state svg {
+    animation: float 3s ease-in-out infinite;
+}
+
+/* Line clamp utility */
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Feeling Lucky button special effect */
+.btn-accent:hover {
+    animation: pulse-glow 1s ease-in-out;
+}
+
+/* Results grid animation */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.vibe-search-page #search-results > div {
+    animation: fadeInUp 0.4s ease-out;
+    animation-fill-mode: both;
+}
+
+.vibe-search-page #search-results > div:nth-child(1) { animation-delay: 0.05s; }
+.vibe-search-page #search-results > div:nth-child(2) { animation-delay: 0.1s; }
+.vibe-search-page #search-results > div:nth-child(3) { animation-delay: 0.15s; }
+.vibe-search-page #search-results > div:nth-child(4) { animation-delay: 0.2s; }
+.vibe-search-page #search-results > div:nth-child(5) { animation-delay: 0.25s; }
+.vibe-search-page #search-results > div:nth-child(6) { animation-delay: 0.3s; }

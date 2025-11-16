@@ -3,7 +3,7 @@ API v1 router aggregation
 """
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import auth, samples, public, batch, usage
+from app.api.v1.endpoints import auth, samples, public, batch, usage, preferences, sp404_export, kits, vibe_search
 
 api_router = APIRouter()
 
@@ -15,3 +15,8 @@ api_router.include_router(batch.public_router, prefix="/public/batch", tags=["pu
 api_router.include_router(public.router, prefix="/public", tags=["public"])
 api_router.include_router(samples.public_router, prefix="/public/samples", tags=["public-samples"])
 api_router.include_router(usage.router, prefix="/usage", tags=["usage"])
+api_router.include_router(usage.public_router, prefix="/public/usage", tags=["public-usage"])
+api_router.include_router(preferences.router, prefix="/preferences", tags=["preferences"])
+api_router.include_router(sp404_export.router, prefix="/sp404", tags=["sp404-export"])
+api_router.include_router(kits.router, prefix="/kits", tags=["kits"])
+api_router.include_router(vibe_search.router, prefix="/search", tags=["vibe-search"])

@@ -5,19 +5,33 @@ FROM python:3.11-slim as backend-builder
 
 WORKDIR /app/backend
 
-# Install system dependencies for audio processing
+# Install system dependencies for audio processing and Essentia
 RUN apt-get update && apt-get install -y \
+    build-essential \
     gcc \
     g++ \
     libsndfile1 \
     libsndfile1-dev \
     ffmpeg \
+    libyaml-dev \
+    libfftw3-dev \
+    libavcodec-dev \
+    libavformat-dev \
+    libavutil-dev \
+    libsamplerate0-dev \
+    libtag1-dev \
+    python3-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy backend requirements
 COPY backend/requirements.txt .
+
+# Install requirements, making Essentia optional in Docker
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+    pip install --no-cache-dir -r requirements.txt || \
+    (echo "Warning: Some packages failed to install" && \
+     pip install --no-cache-dir $(grep -v essentia requirements.txt | grep -v '^#' | grep -v '^$') && \
+     echo "Continuing without Essentia - will use librosa fallback")
 
 # Stage 2: Frontend builder
 FROM node:20-alpine as frontend-builder
@@ -35,11 +49,18 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install runtime dependencies for audio processing
+# Install runtime dependencies for audio processing and Essentia
 RUN apt-get update && apt-get install -y \
     ffmpeg \
     curl \
     libsndfile1 \
+    libyaml-0-2 \
+    libfftw3-3 \
+    libavcodec58 \
+    libavformat58 \
+    libavutil56 \
+    libsamplerate0 \
+    libtag1v5 \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy Python dependencies from builder

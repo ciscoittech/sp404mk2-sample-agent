@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  frontend:
+    build: .
+    ports:
+      - "3000:80"
+    environment:
+      - API_URL=http://backend:8100
+    depends_on:
+      - backend
+
+  backend:
+    build: ../backend
+    ports:
+      - "8100:8100"
+    environment:
+      - DATABASE_URL=postgresql://user:pass@db:5432/sp404
+    depends_on:
+      - db
+
+  db:
+    image: postgres:15
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=pass
+      - POSTGRES_DB=sp404
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

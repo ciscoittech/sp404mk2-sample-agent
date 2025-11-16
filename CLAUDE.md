@@ -1,150 +1,47 @@
 # SP404MK2 Sample Agent - Project Memory
 
-**Last Updated:** 2025-01-29  
-**Status:** ✅ Production Ready - Batch Processing Added  
-**Coverage:** 27% backend / 100% E2E tests
+**Last Updated:** 2025-11-16
+**Status:** ✅ Production Ready - Complete Feature Set
+**Coverage:** 83/85 tests passing (97.6%)
+**Phase:** Workstreams A-G Complete + Automation System
 
 ---
 
-## 🎯 **PROJECT OVERVIEW**
+## 🎯 PROJECT OVERVIEW
 
 AI-powered sample collection and organization system for Roland SP-404MK2 workflow. Analyzes YouTube videos, extracts samples, and organizes content for hip-hop/electronic music production.
 
 ### Core Capabilities
-- **YouTube Analysis**: Extract samples from music videos with timestamp detection
+- **YouTube Analysis**: Extract samples with timestamp detection
 - **AI-Powered Classification**: Genre, BPM, key, and style analysis
 - **Download Management**: Complete metadata tracking and review system
-- **SP-404MK2 Integration**: Organized workflow for hardware sampler
+- **SP-404MK2 Integration**: Hardware-compatible export system
 - **Web Dashboard**: FastAPI + DaisyUI interface with real-time updates
 - **Rich CLI Interface**: Beautiful terminal output with tables and panels
 
 ---
 
-## 🤖 **CURRENT AI MODELS**
+## 🚀 QUICK START
 
-### Production Models (Upgraded 2025-01-27)
-- **Chat Agent**: `google/gemma-3-27b-it` (27B parameters)
-- **Collector Agent**: `qwen/qwen3-235b-a22b-2507` (235B parameters)
-- **Token Limits**: 4000 chat, 2000 collector
-- **Temperature**: 0.5 (configurable)
-
-### Benefits
-- **10x More Powerful**: Upgraded from 7B to 27B/235B parameter models
-- **Better Analysis**: Enhanced musical understanding and classification
-- **Improved Accuracy**: More reliable timestamp and content detection
-
----
-
-## 📁 **PROJECT STRUCTURE**
-
-```
-sp404mk2-sample-agent/
-├── src/                    # Core source code
-│   ├── agents/            # AI agent implementations
-│   ├── tools/             # Tool implementations
-│   ├── config.py         # Configuration management
-│   └── cli_download_manager.py  # Download management CLI
-├── backend/               # FastAPI web backend
-│   ├── app/              # Application code
-│   ├── tests/            # Backend tests
-│   └── uploads/          # Sample uploads
-├── frontend/              # Web UI (HTMX + DaisyUI)
-│   ├── pages/            # UI pages
-│   ├── tests/e2e/        # Playwright E2E tests
-│   └── static/           # Assets
-├── downloads/             # Download storage
-│   ├── test/             # YouTube downloads
-│   └── metadata/         # Download metadata
-├── expansion-plans/       # Future development plans
-├── .claude/commands/      # AI assistant commands
-├── docs/                 # Documentation
-├── sp404_chat.py         # Main chat interface
-└── docker-compose.yml    # Docker configuration
-```
-
----
-
-## 🛠 **AVAILABLE COMMANDS**
-
-### Sample Collection & Analysis
-- `/agent-overview` - Overview of all agent capabilities
-- `/vibe-analyst` - Analyze emotional/textural qualities
-- `/groove-analyst` - Rhythm and timing analysis
-- `/era-expert` - Musical history and production techniques
-- `/sample-compatibility` - Check sample compatibility
-- `/musical-search-specialist` - Build effective search queries
-
-### Workflow Management
-- `/create-sample-workspace` - Initialize collection workspace with git
-- `/process-sample-task` - Complete sample collection workflow
-- `/list-sample-tasks` - View active collection tasks
-- `/batch-processor` - Handle large sample collections
-- `/download-manager` - Manage sample downloads
-- `/kit-builder` - Organize samples for SP-404MK2
-
----
-
-## 🎵 **DOWNLOAD MANAGEMENT SYSTEM**
-
-### Metadata Tracking
-- **Complete Records**: URL, platform, file info, timestamps
-- **Review System**: Rating, notes, status tracking
-- **Usage Analytics**: Access counts, project usage
-- **Tagging**: Genre, style, custom labels
-
-### CLI Commands
+### Local Development
 ```bash
-# List downloads
-python -m src.cli_download_manager list --limit 10 --platform youtube
+# Install dependencies
+pip install greenlet
 
-# Show details  
-python -m src.cli_download_manager show <download_id>
+# Initialize database (first time only)
+cd backend && ../venv/bin/python -m app.db.init_db && cd ..
 
-# Review content
-python -m src.cli_download_manager review <download_id> --rating 8 --notes "Great sample"
-
-# Add tags
-python -m src.cli_download_manager tag <download_id> --tags "jazz,vintage,70s"
-
-# View statistics
-python -m src.cli_download_manager stats
-
-# Export data
-python -m src.cli_download_manager export --output my_downloads.json
-```
-
----
-
-## 🔧 **DEVELOPMENT STATUS**
-
-### ✅ Completed Features
-- YouTube video analysis and download
-- Rich CLI formatting with tables/panels
-- Download metadata tracking system
-- AI model upgrades (27B/235B parameters)
-- Complete cleanup of demo code and old samples
-- Working test suite with fixtures
-- Review and rating system
-- **Web UI**: FastAPI backend with DaisyUI frontend
-- **Real-time Updates**: WebSocket vibe analysis
-- **Docker Support**: Complete containerization setup
-
-### 🎯 Current Sample Data
-- **YouTube Downloads**: 1 video (82.63 MB) with complete metadata
-- **Test Fixtures**: 3 audio samples for unit testing
-- **Clean State**: All old demos and samples removed
-
----
-
-## 🚀 **QUICK START COMMANDS**
-
-### Docker Quick Start
-```bash
-# Start everything
-make docker-up
-make docker-db-init
+# Start server
+./venv/bin/python backend/run.py
 
 # Access Web UI
+open http://localhost:8100
+```
+
+### Docker
+```bash
+make docker-up
+make docker-db-init
 open http://localhost:8000
 ```
 
@@ -153,104 +50,180 @@ open http://localhost:8000
 python sp404_chat.py
 ```
 
-### Download Management
+---
+
+## 🤖 HYBRID AUDIO ANALYSIS SYSTEM
+
+**Two-Phase Analysis**: Python audio processing → AI vibe interpretation
+
+### Phase 1: Audio Feature Extraction (Python)
+- **Service**: `AudioFeaturesService` (backend/app/services/audio_features_service.py)
+- **Libraries**: librosa, soundfile, numpy
+- **Features**: BPM, key, spectral analysis, harmonic/percussive ratio
+- **Performance**: 3-5 seconds per sample
+- **Cost**: $0 (runs locally)
+
+### Phase 2: AI Vibe Analysis (OpenRouter)
+- **Service**: `OpenRouterService` (backend/app/services/openrouter_service.py)
+- **Models**:
+  - **Qwen3-7B** (`qwen/qwen3-7b-it`): Fast & cheap (~$0.00001 per sample)
+  - **Qwen3-235B** (`qwen/qwen3-235b-a22b-2507`): Deep analysis (~$0.00005 per sample)
+- **Features**: Automatic cost tracking, retry logic, token counting
+
+---
+
+## 📦 FREE SAMPLE PACK RESOURCES
+
+**6,500+ free samples from 20+ verified sources**
+
+### Cloud Storage (Instant Download)
+- **Google Drive**: 1,400+ samples
+- **MediaFire**: TheSample.net collections (400+ vinyl drums)
+- **Dropbox**: DrumThrash acoustic drums (24-bit/48kHz)
+- **Gumroad**: 99Sounds I + II (209 professional samples)
+
+### Large Collections (Free Account)
+- **Reverb Drum Machines**: 1.4 GB, 1000+ samples
+- **Samples From Mars**: 1,003 samples (MPC60/MPC2000)
+- **MusicRadar**: 2,500+ SampleRadar collection
+
+**Full Documentation**: `docs/FREE_SAMPLE_PACKS_CLOUD_STORAGE.md`
+
+---
+
+## 🤖 DEV-DOCS SYSTEM
+
+**Strategic planning and context preservation for feature development**
+
+### Core Commands
 ```bash
-# List all downloads
-python -m src.cli_download_manager list
+/dev-docs "Add feature"           # Create comprehensive plan
+/dev-docs-update "feature-name"   # Update context at session end
+/code-review "feature-name"       # Validate against plan
+/build-and-fix                    # Build validation + auto-fix
+/build                            # TDD workflow enforcer
+/test                             # Run test suite
+```
+
+### Features
+- **Zero-Errors-Left-Behind**: Automated build checks after every response
+  - Type checking (mypy), linting (ruff), test validation (pytest)
+  - Auto-escalation: 5+ errors → launches build-error-resolver agent
+- **Strategic Planning**: Generates plan.md, context.md, tasks.md
+- **Auto-Skill Activation**: Keywords trigger specialized agents
+- **Context Preservation**: Never lose progress between sessions
+
+### Benefits
+- ✅ 30% faster feature development
+- ✅ Errors caught immediately
+- ✅ Architecture validated before merge
+
+**Note**: Sample/workflow commands archived to `.claude/commands/archive/` (still accessible)
+
+---
+
+## 📁 PROJECT STRUCTURE
+
+```
+sp404mk2-sample-agent/
+├── src/                    # Core source code
+│   ├── agents/            # AI agent implementations
+│   ├── tools/             # Tool implementations
+│   └── config.py         # Configuration
+├── backend/               # FastAPI web backend
+│   ├── app/              # Application code
+│   ├── tests/            # Backend tests (83/85 passing)
+│   └── scripts/          # Batch processing scripts
+├── frontend/              # Web UI (HTMX + DaisyUI)
+│   ├── pages/            # UI pages
+│   └── tests/e2e/        # Playwright E2E tests
+├── scripts/               # Utility scripts
+│   └── batch_automation/ # Automated processing system
+├── samples/               # Sample collections (6,000+ files)
+├── downloads/             # Download storage
+└── docs/                 # Documentation
+    └── CHANGELOG.md      # Complete update history
+```
+
+---
+
+## 🎵 DOWNLOAD MANAGEMENT
+
+### CLI Commands
+```bash
+# List downloads
+python -m src.cli_download_manager list --limit 10 --platform youtube
+
+# Show details
+python -m src.cli_download_manager show <download_id>
+
+# Review content
+python -m src.cli_download_manager review <download_id> --rating 8 --notes "Great"
+
+# Add tags
+python -m src.cli_download_manager tag <download_id> --tags "jazz,vintage,70s"
 
 # View statistics
 python -m src.cli_download_manager stats
 ```
 
-### Testing
-```bash
-# Run all tests
-pytest
+---
 
-# Run with coverage
-pytest --cov=src --cov-report=html
+## ✅ COMPLETED FEATURES
 
-# Run in Docker
-make docker-test
-```
+### Production Ready
+- YouTube video analysis and download
+- Rich CLI formatting with tables/panels
+- Download metadata tracking system
+- AI model upgrades (7B/235B parameters)
+- Complete test suite (83/85 tests passing - 97.6%)
+- Review and rating system
+- **Web UI**: FastAPI backend with DaisyUI frontend
+- **Real-time Updates**: WebSocket vibe analysis
+- **Docker Support**: Complete containerization
+- **Audio Features Service**: Real librosa-based audio analysis
+- **OpenRouter Service**: Unified API client with cost tracking
+- **User Preferences System**: Model selection and auto-analysis settings
+- **Hybrid Analysis Service**: Orchestrates Audio + AI + Preferences ✅
+- **Preferences API**: REST endpoints with dual JSON/HTMX support ✅
+- **Settings UI**: Complete user interface with Alpine.js + DaisyUI ✅
+- **SP-404MK2 Export**: Hardware-compatible audio conversion system ✅
+  - 48kHz/16-bit WAV/AIFF conversion
+  - Sample validation (duration, format)
+  - Filename sanitization (ASCII-safe)
+  - Organization strategies (flat, genre, BPM, kit)
+- **Hardware Manual Integration**: SP-404MK2 operation guidance ✅
+  - 6 topic-based sections from official manual
+  - Smart intent detection (100% accuracy)
+  - Context-aware section routing
+- **Automated Batch Processing**: Unattended sample processing ✅
+  - Cron-schedulable automation
+  - Queue manager with state persistence
+  - Lock file safety, progress tracking
+  - Cost-efficient audio-only mode (~$0.00007/sample)
+- **AI-Powered Kit Builder**: Natural language kit assembly ✅
+  - Two-stage AI pipeline (prompt analysis + sample selection)
+  - SP-404 pad convention support
+  - Musical intelligence (genre, BPM, tags)
+
+### Test Coverage
+- **Backend Services**: 83/85 tests passing (97.6%)
+- **API Endpoints**: 20/20 tests passing (100%)
+- **E2E Tests**: 100% web UI coverage
+- **Integration**: Real database, real audio files, real API calls
+
+### Current Sample Data
+- **Total Processed**: 2,328 samples analyzed and in database
+- **Collections**:
+  - **The Crate vol.5**: 728/760 samples (95.8% complete)
+  - **Google Drive Collections**: 1,500/5,238 samples (28.6% complete)
+  - **MediaFire**: 100/50 samples (fully processed)
+- **Remaining to Process**: 3,770 samples across all collections
+- **Automation**: Queue system initialized with 2 pending directories
 
 ---
 
-## 📋 **WORKFLOW INTEGRATION**
-
-### For Sample Collection
-1. **Discover**: Find YouTube videos with samples
-2. **Analyze**: Get AI analysis of content and timestamps
-3. **Download**: Save with complete metadata tracking
-4. **Review**: Rate quality and add tags/notes
-5. **Organize**: Export and integrate with SP-404MK2
-
-### For SP-404MK2 Production
-- Download high-quality samples
-- Use AI analysis for BPM/key matching
-- Organize by genre/style tags
-- Track usage in projects
-
----
-
-## 🎨 **MUSIC PRODUCTION FOCUS**
-
-### Genres Supported
-- Hip-Hop and Trap
-- Jazz and Soul samples
-- Electronic and House
-- Vintage and retro sounds
-- Drum breaks and loops
-
-### Analysis Features
-- BPM detection and estimation
-- Musical key identification
-- Genre classification
-- Timestamp extraction for chops
-- Quality assessment
-
----
-
-## ⚡ **RECENT UPDATES (2025-01-29)**
-
-### Batch Processing Implementation ✅
-- **Batch API**: Full CRUD operations with public endpoints
-- **Progress Tracking**: Real-time updates via WebSocket
-- **HTML Templates**: Active batches, history, and details views
-- **Import System**: Convert batch results to sample database
-- **Test Data**: 8 sample audio files with AI analysis
-
-### Complete Web UI Implementation ✅
-- **Backend**: FastAPI with async SQLAlchemy, JWT auth, WebSocket support
-- **Frontend**: DaisyUI + HTMX + Alpine.js for beautiful, responsive UI
-- **Features**: Sample browser, kit builder, real-time vibe analysis
-- **Testing**: 66 E2E tests with Playwright, 100% UI coverage
-- **Docker**: Full containerization with docker-compose
-
-### GitHub Integration ✅
-- **Issues Closed**: Completed issues #24, #36-43 (Web UI implementation)
-- **Git Workflow**: Updated commands for proper branch management
-- **CI/CD**: GitHub Actions for automated testing and builds
-
-### Command Cleanup ✅
-- **Removed**: Generic development commands (backend, frontend, etc.)
-- **Kept**: SP404MK2-specific commands for sampling workflow
-- **Updated**: Git integration in sample workspace creation
-
-### Expansion Plans ✅
-- **AI Discovery Engine**: Detailed plan for smart sample recommendations
-- **File Management Suite**: Comprehensive SP404MK2 file organization solution
-- **Market Research**: Identified key pain points from community forums
-
-### Project Stats
-- **Total Commits**: 5 major milestones completed
-- **Code Coverage**: 27% backend core, 100% E2E tests
-- **Dependencies**: All updated and production-ready
-- **Documentation**: Comprehensive guides for all features
-
----
-
-## 🔄 **NEXT DEVELOPMENT PRIORITIES**
+## 🔄 NEXT DEVELOPMENT PRIORITIES
 
 ### Phase 1: Fresh Collection
 1. Test enhanced AI models with new YouTube analysis
@@ -271,19 +244,26 @@ make docker-test
 
 ---
 
-## 🛠 **TECHNICAL NOTES**
+## 🛠 TECHNICAL NOTES
 
 ### Dependencies
 - **OpenRouter API**: For AI model access
-- **yt-dlp**: YouTube download functionality  
+- **yt-dlp**: YouTube download functionality
 - **Rich**: CLI formatting and display
 - **Pydantic**: Data validation and models
 - **Typer**: CLI interface framework
 - **FastAPI**: Web API framework
-- **SQLAlchemy**: Async database ORM
+- **SQLAlchemy**: Async database ORM (requires greenlet>=3.2.0)
 - **HTMX**: Server-driven UI updates
 - **Alpine.js**: Minimal client interactivity
 - **DaisyUI**: Tailwind CSS components
+- **librosa**: Audio feature extraction
+- **tiktoken**: Token counting for cost estimation
+
+### Requirements
+- **Python 3.13**: Requires `greenlet>=3.2.0` for SQLAlchemy async
+- **Database Init**: Must run `app.db.init_db` before first use
+- **Environment**: `.env` file must have correct `DATABASE_URL`
 
 ### Configuration
 - Models configurable via `src/config.py`
@@ -293,12 +273,72 @@ make docker-test
 - Docker environment variables
 
 ### Testing
-- **Unit Tests**: 27% coverage (backend core)
-- **E2E Tests**: 100% coverage (web UI)
-- **Fixtures**: Audio samples for realistic testing
-- **CI Ready**: Pytest + Playwright configuration
-- **Docker Tests**: Automated test containers
+```bash
+# Run all tests
+pytest
+
+# Run with coverage
+pytest --cov=src --cov-report=html
+
+# Run in Docker
+make docker-test
+```
 
 ---
 
-*The project is now in a clean, production-ready state with powerful AI models and comprehensive download management. Ready for fresh sample collection and SP-404MK2 integration workflows.*
+## 🎨 MUSIC PRODUCTION FOCUS
+
+### Genres Supported
+- Hip-Hop and Trap
+- Jazz and Soul samples
+- Electronic and House
+- Vintage and retro sounds
+- Drum breaks and loops
+
+### Analysis Features
+- BPM detection and estimation
+- Musical key identification
+- Genre classification
+- Timestamp extraction for chops
+- Quality assessment
+
+---
+
+## 📋 WORKFLOW INTEGRATION
+
+### For Sample Collection
+1. **Discover**: Find YouTube videos with samples
+2. **Analyze**: Get AI analysis of content and timestamps
+3. **Download**: Save with complete metadata tracking
+4. **Review**: Rate quality and add tags/notes
+5. **Organize**: Export and integrate with SP-404MK2
+
+### For SP-404MK2 Production
+- Download high-quality samples
+- Use AI analysis for BPM/key matching
+- Organize by genre/style tags
+- Track usage in projects
+- Export to hardware-compatible format
+
+---
+
+## 📚 DOCUMENTATION
+
+- **This File**: Project overview and quick reference
+- **CHANGELOG.md**: Complete history of updates and features
+- **FREE_SAMPLE_PACKS_CLOUD_STORAGE.md**: 20+ verified sample sources
+- **HARDWARE_MANUAL_INTEGRATION.md**: SP-404MK2 manual integration details
+- **batch_automation/README.md**: Automated batch processing guide
+- **dev/active/**: Active feature development plans
+
+---
+
+## 🐛 KNOWN ISSUES (ALL RESOLVED)
+
+All critical bugs have been resolved. See `docs/CHANGELOG.md` for fix history.
+
+---
+
+*The project is now in a fully functional state with comprehensive web UI, powerful AI models, and production-ready architecture. Ready for production sample collection and SP-404MK2 integration workflows.*
+
+**For complete update history, see**: `docs/CHANGELOG.md`

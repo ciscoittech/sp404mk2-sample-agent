@@ -31,6 +31,14 @@ from src.agents.base import AgentStatus
 from src.config import settings
 from src.context import IntelligentContextManager
 
+# Usage tracking imports
+try:
+    from backend.app.services.usage_tracking_service import UsageTrackingService
+    from backend.app.db.base import AsyncSessionLocal
+    TRACKING_AVAILABLE = True
+except ImportError:
+    TRACKING_AVAILABLE = False
+
 # Load environment
 load_dotenv()
 console = Console()
@@ -173,18 +181,20 @@ You have access to the following specialist knowledge:
         }
         
         full_response = ""
-        
+        input_tokens = 0
+        output_tokens = 0
+
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.post(
-                    self.api_url, 
-                    headers=headers, 
+                    self.api_url,
+                    headers=headers,
                     json=payload
                 ) as response:
                     if response.status != 200:
                         error_text = await response.text()
                         return f"API Error: {response.status} - {error_text}"
-                    
+
                     # Stream response
                     async for line in response.content:
                         line_text = line.decode('utf-8').strip()
@@ -192,7 +202,7 @@ You have access to the following specialist knowledge:
                             data_str = line_text[6:]
                             if data_str == "[DONE]":
                                 break
-                            
+
                             try:
                                 data = json.loads(data_str)
                                 if "choices" in data and len(data["choices"]) > 0:
@@ -201,9 +211,33 @@ You have access to the following specialist knowledge:
                                     if content:
                                         full_response += content
                                         # Don't print during streaming to avoid formatting issues
+
+                                # Extract usage data from streaming response (if available)
+                                if "usage" in data:
+                                    usage_data = data["usage"]
+                                    input_tokens = usage_data.get("prompt_tokens", 0)
+                                    output_tokens = usage_data.get("completion_tokens", 0)
+
                             except json.JSONDecodeError:
                                 continue
-            
+
+            # Track API usage after completion
+            if TRACKING_AVAILABLE and (input_tokens > 0 or output_tokens > 0):
+                try:
+                    async with AsyncSessionLocal() as db:
+                        service = UsageTrackingService(db)
+                        await service.track_api_call(
+                            model=self.model,
+                            operation="chat",
+                            input_tokens=input_tokens,
+                            output_tokens=output_tokens,
+                            user_id=None,  # Could be passed in from UI
+                            extra_metadata={"user_input_length": len(user_input)}
+                        )
+                except Exception as e:
+                    # Silently fail - don't disrupt chat experience
+                    pass
+
             return full_response
             
         except Exception as e:
@@ -244,6 +278,90 @@ You have access to the following specialist knowledge:
             'youtube.com/embed/'
         ]
         return any(pattern in text.lower() for pattern in youtube_patterns)
+
+    def detect_hardware_intent(self, user_input: str) -> bool:
+        """Detect if user is asking about SP-404MK2 hardware operations."""
+        hardware_indicators = [
+            'how do i', 'how to', 'how can i',
+            'sp-404', 'sp404', 'sp 404',
+            'pad', 'pads', 'bank', 'banks',
+            'pattern', 'patterns', 'sequence',
+            'effect', 'effects', 'fx',
+            'resample', 'resampling',
+            'record', 'recording', 'sample',
+            'save', 'load', 'export', 'import',
+            'looper', 'loop mode',
+            'button', 'press', 'hold', 'combination',
+            'setting', 'settings', 'configure',
+            'project', 'projects'
+        ]
+
+        input_lower = user_input.lower()
+
+        # Check for hardware operation questions
+        if any(indicator in input_lower for indicator in hardware_indicators):
+            # Extra confidence check: questions or instructions
+            question_words = ['how', 'what', 'where', 'when', 'can', 'do', 'does', 'is']
+            if any(word in input_lower.split()[:5] for word in question_words):  # Check first 5 words
+                return True
+            # Or direct mentions of hardware with '?'
+            if '?' in user_input and any(hw in input_lower for hw in ['sp-404', 'sp404', 'pad', 'effect', 'resample', 'button', 'looper']):
+                return True
+            # Or direct mentions of hardware operations
+            if any(hw in input_lower for hw in ['sp-404', 'sp404', 'resample', 'looper']):
+                return True
+
+        return False
+
+    def _route_to_manual_sections(self, query: str) -> List[str]:
+        """Map user query to relevant hardware manual sections."""
+        sections = []
+        query_lower = query.lower()
+
+        # Sampling operations
+        if any(kw in query_lower for kw in [
+            'sample', 'record', 'resample', 'looper', 'loop',
+            'sampling', 'input', 'mic', 'audio in'
+        ]):
+            sections.append('hardware/sp404-sampling.md')
+
+        # Effects
+        if any(kw in query_lower for kw in [
+            'effect', 'fx', 'reverb', 'delay', 'filter',
+            'distortion', 'chorus', 'compressor', 'eq'
+        ]):
+            sections.append('hardware/sp404-effects.md')
+
+        # Pattern sequencer
+        if any(kw in query_lower for kw in [
+            'pattern', 'sequence', 'sequencer', 'beat',
+            'drum', 'program', 'tr-rec', 'microscope'
+        ]):
+            sections.append('hardware/sp404-sequencer.md')
+
+        # Performance features
+        if any(kw in query_lower for kw in [
+            'play', 'playback', 'perform', 'live',
+            'gate', 'velocity', 'chromatic', 'dj mode',
+            'bpm sync', 'reverse', 'roll'
+        ]):
+            sections.append('hardware/sp404-performance.md')
+
+        # File management
+        if any(kw in query_lower for kw in [
+            'save', 'load', 'export', 'import', 'backup',
+            'project', 'bank', 'sd card', 'file', 'organize'
+        ]):
+            sections.append('hardware/sp404-file-mgmt.md')
+
+        # Quick reference for general questions
+        if any(kw in query_lower for kw in [
+            'button', 'shortcut', 'combination', 'press',
+            'spec', 'specification', 'parameter'
+        ]) or not sections:
+            sections.append('hardware/sp404-quick-ref.md')
+
+        return sections
     
     async def execute_sample_search(self, user_input: str) -> Dict[str, Any]:
         """Execute sample search based on user request."""
@@ -563,7 +681,42 @@ You have access to the following specialist knowledge:
                             self.context.add_exchange(user_input, f"Failed to analyze video: {analysis_result['error']}")
                     else:
                         console.print("[red]Could not extract YouTube URL from input[/red]")
-                
+
+                # Check if user is asking about hardware operations
+                elif self.detect_hardware_intent(user_input):
+                    console.print("\n[bold green]Agent:[/bold green] I'll help you with that SP-404MK2 operation...\n")
+
+                    # Route to relevant manual sections
+                    relevant_sections = self._route_to_manual_sections(user_input)
+
+                    # Register hardware manual as active tool
+                    self.context.register_active_tool("hardware_manual")
+
+                    # Load hardware documentation into context
+                    if relevant_sections:
+                        console.print(f"[dim]📖 Loading manual sections: {', '.join([s.split('/')[-1] for s in relevant_sections])}[/dim]\n")
+
+                        # The context manager will load these sections automatically
+                        # when building context in process_request()
+                        self.context.specialist_sections = relevant_sections
+
+                    # Process with hardware context
+                    with console.status("[dim]🎛️  Consulting hardware manual...[/dim]", spinner="dots"):
+                        response = await self.process_request(user_input)
+
+                    # Display response
+                    console.print(f"\n[bold green]Agent:[/bold green]\n")
+                    console.print(Markdown(response))
+
+                    # Save to context
+                    self.context.add_exchange(user_input, response)
+
+                    # Clear specialist sections for next interaction
+                    self.context.specialist_sections = []
+
+                    # Add helpful tip
+                    console.print("\n[dim]💡 Tip: I can help with sampling, effects, sequencing, and more![/dim]")
+
                 # Check if user wants to search for samples
                 elif await self.detect_search_intent(user_input, ""):
                     console.print("\n[bold green]Agent:[/bold green] I understand you're looking for samples. Let me analyze your request...\n")

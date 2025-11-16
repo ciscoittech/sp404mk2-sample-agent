@@ -130,36 +130,71 @@ class SampleService:
         genre: Optional[str] = None,
         bpm_min: Optional[float] = None,
         bpm_max: Optional[float] = None,
+        instrument_type: Optional[str] = None,
+        sample_type: Optional[str] = None,
         skip: int = 0,
         limit: int = 50
     ) -> List[Sample]:
         """Search samples with filters."""
         query = select(Sample)
-        
+
         # Only filter by user if user_id provided
         if user_id is not None:
             query = query.where(Sample.user_id == user_id)
-        
+
         # Apply filters
         conditions = []
-        
+
         if search:
             conditions.append(Sample.title.ilike(f"%{search}%"))
-        
+
         if genre:
             conditions.append(Sample.genre == genre)
-        
+
         if bpm_min is not None:
             conditions.append(Sample.bpm >= bpm_min)
-        
+
         if bpm_max is not None:
             conditions.append(Sample.bpm <= bpm_max)
-        
+
+        # Filter by instrument type based on file path
+        if instrument_type:
+            if instrument_type == "kick":
+                conditions.append(or_(Sample.file_path.ilike(f"%kick%"), Sample.file_path.ilike(f"%Kick%")))
+            elif instrument_type == "snare":
+                conditions.append(or_(Sample.file_path.ilike(f"%snare%"), Sample.file_path.ilike(f"%Snare%")))
+            elif instrument_type == "hihat":
+                conditions.append(or_(
+                    Sample.file_path.ilike(f"%hihat%"),
+                    Sample.file_path.ilike(f"%hi%hat%"),
+                    Sample.file_path.ilike(f"%HH%"),
+                    Sample.file_path.ilike(f"%Hi%Hat%")
+                ))
+            elif instrument_type == "clap":
+                conditions.append(or_(Sample.file_path.ilike(f"%clap%"), Sample.file_path.ilike(f"%Clap%")))
+            elif instrument_type == "tom":
+                conditions.append(or_(Sample.file_path.ilike(f"%tom%"), Sample.file_path.ilike(f"%Tom%")))
+            elif instrument_type == "crash":
+                conditions.append(or_(Sample.file_path.ilike(f"%crash%"), Sample.file_path.ilike(f"%Crash%")))
+            elif instrument_type == "percussion":
+                conditions.append(or_(Sample.file_path.ilike(f"%perc%"), Sample.file_path.ilike(f"%Perc%")))
+
+        # Filter by sample type (loops vs one-shots)
+        if sample_type:
+            if sample_type == "loop":
+                conditions.append(or_(Sample.file_path.ilike(f"%loop%"), Sample.file_path.ilike(f"%Loop%")))
+            elif sample_type == "oneshot":
+                # One-shots are samples that don't have "loop" in the path
+                conditions.append(and_(
+                    ~Sample.file_path.ilike(f"%loop%"),
+                    ~Sample.file_path.ilike(f"%Loop%")
+                ))
+
         if conditions:
             query = query.where(and_(*conditions))
-        
+
         query = query.order_by(Sample.created_at.desc()).offset(skip).limit(limit)
-        
+
         result = await self.db.execute(query)
         return result.scalars().all()
     

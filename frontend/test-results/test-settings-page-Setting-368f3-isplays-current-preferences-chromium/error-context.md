@@ -1,0 +1,151 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - main [ref=e6]:
+    - generic [ref=e8]:
+      - generic [ref=e9]:
+        - heading "User Settings" [level=1] [ref=e10]
+        - paragraph [ref=e11]: Configure AI analysis preferences and cost controls
+      - generic [ref=e12]:
+        - generic [ref=e14]:
+          - heading "Auto-Analysis Settings" [level=2] [ref=e15]:
+            - img [ref=e16]
+            - text: Auto-Analysis Settings
+          - paragraph [ref=e18]: Configure automatic AI analysis for uploaded samples
+          - generic [ref=e20] [cursor=pointer]:
+            - checkbox "Enable Auto Vibe Analysis Automatically analyze emotional and textural qualities" [checked] [ref=e21]
+            - generic [ref=e22]:
+              - text: Enable Auto Vibe Analysis
+              - paragraph [ref=e23]: Automatically analyze emotional and textural qualities
+          - generic [ref=e25]:
+            - generic [ref=e27]: Vibe Analysis Model
+            - combobox [ref=e28] [cursor=pointer]:
+              - option "Select a model..." [disabled]
+              - option "Qwen 7B (Fast)" [selected]
+              - option "Qwen 235B (Deep)"
+            - generic [ref=e30]:
+              - generic [ref=e31]: "Input: $0.10/M tokens"
+              - text: •
+              - generic [ref=e32]: "Output: $0.10/M tokens"
+          - generic [ref=e35] [cursor=pointer]:
+            - checkbox "Enable Auto Audio Features Extract BPM, key, and musical characteristics" [checked] [ref=e36]
+            - generic [ref=e37]:
+              - text: Enable Auto Audio Features
+              - paragraph [ref=e38]: Extract BPM, key, and musical characteristics
+        - generic [ref=e40]:
+          - heading "Batch Processing Settings" [level=2] [ref=e41]:
+            - img [ref=e42]
+            - text: Batch Processing Settings
+          - paragraph [ref=e44]: Configure settings for bulk sample analysis
+          - generic [ref=e45]:
+            - generic [ref=e47]: Batch Processing Model
+            - combobox [ref=e48] [cursor=pointer]:
+              - option "Select a model..." [disabled]
+              - option "Qwen 7B (Fast)"
+              - option "Qwen 235B (Deep)" [selected]
+            - generic [ref=e50]:
+              - generic [ref=e51]: "Input: $0.80/M tokens"
+              - text: •
+              - generic [ref=e52]: "Output: $0.80/M tokens"
+          - generic [ref=e55] [cursor=pointer]:
+            - checkbox "Auto-Analyze Batch Uploads Automatically analyze all samples in batch uploads" [checked] [ref=e56]
+            - generic [ref=e57]:
+              - text: Auto-Analyze Batch Uploads
+              - paragraph [ref=e58]: Automatically analyze all samples in batch uploads
+          - generic [ref=e60]:
+            - img [ref=e61]
+            - generic [ref=e63]:
+              - heading "Batch Cost Estimate" [level=3] [ref=e64]
+              - generic [ref=e65]: "Estimated: 500 samples × 1000 tokens ≈ $0.00"
+        - generic [ref=e67]:
+          - heading "Cost Controls" [level=2] [ref=e68]:
+            - img [ref=e69]
+            - text: Cost Controls
+          - paragraph [ref=e71]: Set spending limits for AI operations
+          - generic [ref=e72]:
+            - generic [ref=e74]: Maximum Cost Per Request (USD)
+            - spinbutton [ref=e75]: "0.1"
+            - generic [ref=e77]: Leave empty for no limit
+          - generic [ref=e80]:
+            - img [ref=e82]
+            - generic [ref=e84]: Current Month Usage
+            - generic [ref=e85]: $0.0000
+            - generic [ref=e86]: 0 API calls
+          - link "View Detailed Usage Report" [ref=e88] [cursor=pointer]:
+            - /url: /pages/usage.html
+            - img [ref=e89]
+            - text: View Detailed Usage Report
+        - generic [ref=e92]:
+          - heading "About These Settings" [level=2] [ref=e93]:
+            - img [ref=e94]
+            - text: About These Settings
+          - generic [ref=e96]:
+            - generic [ref=e97]:
+              - img [ref=e99]
+              - generic [ref=e101]:
+                - strong [ref=e102]: "Auto-Analysis:"
+                - text: When enabled, samples are automatically analyzed upon upload using AI models. This provides instant insights but incurs API costs.
+            - generic [ref=e103]:
+              - img [ref=e105]
+              - generic [ref=e107]:
+                - strong [ref=e108]: "Model Selection:"
+                - text: Different models offer different capabilities and costs. Larger models (235B) provide more accurate analysis but cost more per token.
+            - generic [ref=e109]:
+              - img [ref=e111]
+              - generic [ref=e113]:
+                - strong [ref=e114]: "Cost Controls:"
+                - text: Set maximum costs to prevent unexpected spending. Requests exceeding your limit will be blocked until you increase it.
+          - button "Reset to Defaults" [ref=e117] [cursor=pointer]:
+            - img [ref=e118]
+            - text: Reset to Defaults
+  - generic [ref=e120]:
+    - generic "close sidebar"
+    - complementary "Main navigation" [ref=e121]:
+      - generic [ref=e122]:
+        - heading "SP404MK2" [level=1] [ref=e123]
+        - paragraph [ref=e124]: Sample Agent
+      - searchbox "Global sample search" [ref=e126]
+      - list [ref=e128]:
+        - listitem [ref=e129]:
+          - link "Dashboard" [ref=e130] [cursor=pointer]:
+            - /url: /
+            - img [ref=e131]
+            - generic [ref=e133]: Dashboard
+        - listitem [ref=e134]:
+          - link "Samples library" [ref=e135] [cursor=pointer]:
+            - /url: /pages/samples.html
+            - img [ref=e136]
+            - generic [ref=e138]: Samples
+            - generic [ref=e139]: "0"
+        - listitem [ref=e140]:
+          - link "Sample kits" [ref=e141] [cursor=pointer]:
+            - /url: /pages/kits.html
+            - img [ref=e142]
+            - generic [ref=e144]: Kits
+            - generic [ref=e145]: "0"
+        - listitem [ref=e146]:
+          - link "Batch processing" [ref=e147] [cursor=pointer]:
+            - /url: /pages/batch.html
+            - img [ref=e148]
+            - generic [ref=e150]: Batch
+      - list [ref=e152]:
+        - listitem [ref=e153]:
+          - link "API usage and costs" [ref=e154] [cursor=pointer]:
+            - /url: /pages/usage.html
+            - img [ref=e155]
+            - generic [ref=e157]: Usage
+        - listitem [ref=e158]:
+          - link "Application settings" [ref=e159] [cursor=pointer]:
+            - /url: /pages/settings.html
+            - img [ref=e160]
+            - generic [ref=e163]: Settings
+      - generic [ref=e165]:
+        - generic [ref=e167]:
+          - generic [ref=e168]: Budget
+          - generic [ref=e169]: $0.00
+          - generic [ref=e170]: of $10.00
+        - button "Upload new sample" [ref=e171] [cursor=pointer]:
+          - img [ref=e172]
+          - generic [ref=e174]: Upload Sample
+```

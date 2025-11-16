@@ -1,0 +1,72 @@
+<!-- SP-404 Export History List Template -->
+<div class="overflow-x-auto">
+    <table class="table table-zebra w-full">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Type</th>
+                <th>Samples</th>
+                <th>Format</th>
+                <th>Organization</th>
+                <th>Size</th>
+                <th>Created</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if exports %}
+                {% for export in exports %}
+                <tr>
+                    <td>{{ export.id }}</td>
+                    <td>
+                        <span class="badge badge-sm">{{ export.export_type }}</span>
+                    </td>
+                    <td>{{ export.sample_count }}</td>
+                    <td>{{ export.format }}</td>
+                    <td>{{ export.organized_by }}</td>
+                    <td>{{ (export.total_size_bytes / 1024 / 1024)|round(2) }} MB</td>
+                    <td>{{ export.created_at }}</td>
+                    <td>
+                        <a href="/api/v1/sp404/exports/{{ export.id }}/download"
+                           class="btn btn-xs btn-primary">
+                            Download
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="8" class="text-center text-gray-500">
+                        No exports found
+                    </td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+
+    {% if total > limit %}
+    <div class="mt-4 flex justify-center">
+        <div class="join">
+            {% if offset > 0 %}
+            <button class="join-item btn btn-sm"
+                    hx-get="/api/v1/sp404/exports?limit={{ limit }}&offset={{ offset - limit }}"
+                    hx-target="#export-list">
+                Previous
+            </button>
+            {% endif %}
+
+            <button class="join-item btn btn-sm btn-disabled">
+                {{ (offset // limit) + 1 }} / {{ ((total - 1) // limit) + 1 }}
+            </button>
+
+            {% if offset + limit < total %}
+            <button class="join-item btn btn-sm"
+                    hx-get="/api/v1/sp404/exports?limit={{ limit }}&offset={{ offset + limit }}"
+                    hx-target="#export-list">
+                Next
+            </button>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>

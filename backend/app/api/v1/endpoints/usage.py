@@ -15,6 +15,7 @@ from app.services.usage_tracking_service import UsageTrackingService
 
 
 router = APIRouter()
+public_router = APIRouter()
 
 
 @router.get("/summary")
@@ -205,8 +206,8 @@ async def export_usage_csv(
     )
 
 
-# Public endpoint (for demo user)
-@router.get("/public/summary")
+# Public endpoints (for demo user, no auth required)
+@public_router.get("/summary")
 async def get_public_usage_summary(
     db: AsyncSession = Depends(get_db)
 ):
@@ -232,4 +233,68 @@ async def get_public_usage_summary(
     return {
         "summary": summary,
         "budget": budget
+    }
+
+
+@public_router.get("/budget")
+async def get_public_budget_status(
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Check current budget status and limits for public/demo user (user_id=1).
+
+    Does not require authentication.
+    """
+    service = UsageTrackingService(db)
+    budget_status = await service.check_budget_limits(user_id=1)
+    return budget_status
+
+
+@public_router.get("/daily")
+async def get_public_daily_usage(
+    days: int = Query(30, ge=1, le=365, description="Number of days to retrieve"),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get daily usage totals for the last N days for public/demo user (user_id=1).
+
+    Does not require authentication.
+    """
+    service = UsageTrackingService(db)
+    daily_totals = await service.get_daily_totals(user_id=1, days=days)
+    return {"days": days, "data": daily_totals}
+
+
+@public_router.get("/recent")
+async def get_public_recent_calls(
+    limit: int = Query(50, ge=1, le=500, description="Number of recent calls to retrieve"),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get recent API calls with details for public/demo user (user_id=1).
+
+    Does not require authentication.
+    """
+    service = UsageTrackingService(db)
+    recent = await service.get_recent_calls(user_id=1, limit=limit)
+
+    # Convert to dict for JSON serialization
+    return {
+        "limit": limit,
+        "count": len(recent),
+        "calls": [
+            {
+                "id": call.id,
+                "model": call.model,
+                "operation": call.operation,
+                "input_tokens": call.input_tokens,
+                "output_tokens": call.output_tokens,
+                "total_tokens": call.total_tokens,
+                "total_cost": call.total_cost,
+                "created_at": call.created_at.isoformat(),
+                "sample_id": call.sample_id,
+                "batch_id": call.batch_id
+            }
+            for call in recent
+        ]
     }

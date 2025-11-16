@@ -1,0 +1,38 @@
+{
+  "project_root": "/Users/bhunt/development/claude/personal/sp404mk2-sample-agent",
+  "database_path": "backend/sp404_samples.db",
+  "venv_python": "./venv/bin/python",
+  "batch_script": "backend/scripts/batch_import_samples.py",
+
+  "processing": {
+    "max_samples_per_run": 100,
+    "batch_size": 50,
+    "parallel_audio": 6,
+    "audio_only": true,
+    "enable_monitor": false
+  },
+
+  "directories": {
+    "queue": [
+      "samples/gumroad/The Crate vol.5",
+      "samples/google_drive/Wanns Wavs 1 2"
+    ],
+    "completed": [],
+    "failed": []
+  },
+
+  "notifications": {
+    "enable_desktop": true,
+    "enable_completion": true,
+    "enable_errors": true
+  },
+
+  "logging": {
+    "log_dir": "logs/batch_automation",
+    "keep_logs_days": 30,
+    "enable_detailed": false
+  },
+
+  "state_file": "scripts/batch_automation/automation_state.json",
+  "lock_file": "/tmp/sp404_batch_automation.lock"
+}

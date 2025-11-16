@@ -1,47 +1,52 @@
 # Page snapshot
 
 ```yaml
-- navigation:
-  - link "SP404MK2":
-    - /url: /
-  - list:
-    - listitem:
-      - link "Samples":
-        - /url: /pages/samples.html
-    - listitem:
-      - link "Kits":
-        - /url: /pages/kits.html
-    - listitem:
-      - link "Batch":
-        - /url: /pages/batch.html
-    - listitem:
-      - link "Vibe":
-        - /url: /pages/vibe-analysis.html
-- main:
-  - heading "Vibe Analysis" [level=1]
-  - paragraph: Real-time sample vibe analysis with WebSocket updates
-  - heading "Select Sample for Analysis" [level=2]
-  - combobox:
-    - option "Choose a sample..." [selected]
-    - option "Sample 1 - energetic - jazz"
-    - option "Sample 2 - dark - electronic"
-    - option "Sample 3 - uplifting - soul"
-    - option "Sample 4 - mysterious - trap"
-    - option "Sample 5 - chill - hip-hop"
-    - option "Sample 6 - energetic - jazz"
-    - option "Sample 7 - dark - electronic"
-    - option "Sample 8 - uplifting - soul"
-    - option "Sample 9 - mysterious - trap"
-    - option "Sample 10 - chill - hip-hop"
-    - option "Sample 11 - energetic - jazz"
-    - option "Sample 12 - dark - electronic"
-    - option "Sample 13 - uplifting - soul"
-    - option "Sample 14 - mysterious - trap"
-    - option "Sample 15 - chill - hip-hop"
-    - option "Sample 16 - energetic - jazz"
-    - option "Sample 17 - dark - electronic"
-    - option "Sample 18 - uplifting - soul"
-    - option "Sample 19 - mysterious - trap"
-    - option "Sample 20 - chill - hip-hop"
-  - button "Start Analysis" [disabled]
+- generic [active] [ref=e1]:
+  - navigation [ref=e2]:
+    - link "SP404MK2" [ref=e4] [cursor=pointer]:
+      - /url: /
+    - list [ref=e6]:
+      - listitem [ref=e7]:
+        - link "Samples" [ref=e8] [cursor=pointer]:
+          - /url: /pages/samples.html
+      - listitem [ref=e9]:
+        - link "Kits" [ref=e10] [cursor=pointer]:
+          - /url: /pages/kits.html
+      - listitem [ref=e11]:
+        - link "Batch" [ref=e12] [cursor=pointer]:
+          - /url: /pages/batch.html
+      - listitem [ref=e13]:
+        - link "Vibe" [ref=e14] [cursor=pointer]:
+          - /url: /pages/vibe-analysis.html
+  - main [ref=e15]:
+    - generic [ref=e16]:
+      - generic [ref=e17]:
+        - heading "Vibe Analysis" [level=1] [ref=e18]
+        - paragraph [ref=e19]: Real-time sample vibe analysis with WebSocket updates
+      - generic [ref=e21]:
+        - heading "Select Sample for Analysis" [level=2] [ref=e22]
+        - combobox [ref=e24] [cursor=pointer]:
+          - option "Choose a sample..." [selected]
+          - option "Kick 398 - percussion"
+          - option "Kick 429 - percussion"
+          - option "Kick 373 - percussion"
+          - option "Kick 415 - percussion"
+          - option "Kick 401 - percussion"
+          - option "Kick 367 - percussion"
+          - option "Kick 159 - percussion"
+          - option "Kick 171 - percussion"
+          - option "Kick 165 - percussion"
+          - option "Kick 80 - percussion"
+          - option "Kick 94 - percussion"
+          - option "Kick 43 - percussion"
+          - option "Kick 57 - percussion"
+          - option "Kick 207 - percussion"
+          - option "Kick 213 - percussion"
+          - option "Kick 212 - percussion"
+          - option "Kick 206 - percussion"
+          - option "Kick 56 - percussion"
+          - option "Kick 42 - percussion"
+          - option "Kick 95 - percussion"
+        - generic [ref=e25]:
+          - button "Start Analysis" [disabled]
 ```

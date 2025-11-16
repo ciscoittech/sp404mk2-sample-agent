@@ -34,18 +34,18 @@ class Kit(Base):
 class KitSample(Base):
     """Association table for kit-sample relationships with additional properties."""
     __tablename__ = "kit_samples"
-    
-    kit_id = Column(Integer, ForeignKey("kits.id"), primary_key=True)
+
+    kit_id = Column(Integer, ForeignKey("kits.id", ondelete="CASCADE"), primary_key=True)
     sample_id = Column(Integer, ForeignKey("samples.id"), primary_key=True)
-    
+
     # Pad assignment
-    pad_bank = Column(String, nullable=False)  # A, B, C, or D
-    pad_number = Column(Integer, nullable=False)  # 1-16
-    
+    pad_bank = Column(String, nullable=False, primary_key=True)  # A, B, C, or D
+    pad_number = Column(Integer, nullable=False, primary_key=True)  # 1-16
+
     # Performance settings
     volume = Column(Float, default=1.0)  # 0.0 to 1.0
     pitch_shift = Column(Integer, default=0)  # semitones
-    
+
     # Relationships
     kit = relationship("Kit", back_populates="samples")
     sample = relationship("Sample", back_populates="kit_associations")
