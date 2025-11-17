@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { PadGrid, SampleBrowser } from '@/components/kits';
 import { Button } from '@/components/ui/button';
@@ -32,6 +32,30 @@ export function KitsPage() {
   const assignSample = useAssignSample();
   const removeSample = useRemoveSample();
 
+  // DEBUG: Track kits data changes
+  useEffect(() => {
+    console.log('[QUERY] Kits data changed:', {
+      kitsCount: kits?.items?.length || 0,
+      isLoading,
+      timestamp: new Date().toISOString(),
+      kitIds: kits?.items?.map(k => k.id) || []
+    });
+  }, [kits, isLoading]);
+
+  // DEBUG: Track selectedKit state changes
+  useEffect(() => {
+    console.log('[STATE] selectedKit changed:', {
+      newValue: selectedKit,
+      timestamp: new Date().toISOString(),
+      kitsAvailable: kits?.items?.length || 0,
+      currentKitExists: !!kits?.items?.find((k) => k.id === selectedKit)
+    });
+
+    if (selectedKit === undefined) {
+      console.log('[STATE] WARNING: selectedKit is undefined! This will unmount the builder.');
+    }
+  }, [selectedKit, kits]);
+
   const currentKit = kits?.items?.find((k) => k.id === selectedKit);
 
   const handleCreateKit = async () => {
@@ -64,7 +88,7 @@ export function KitsPage() {
         kitId: selectedKit,
         assignment: {
           sample_id: sample.id,
-          pad_bank: padBank as 'A' | 'B' | 'C' | 'D',
+          pad_bank: padBank as 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'I' | 'J',
           pad_number: padNumber,
         },
       });
@@ -166,8 +190,12 @@ export function KitsPage() {
                   {kits.items.map((kit) => (
                     <div key={kit.id} className="relative">
                       <Button
+                        type="button"
                         variant={selectedKit === kit.id ? 'default' : 'outline'}
-                        onClick={() => setSelectedKit(kit.id)}
+                        onClick={() => {
+                          console.log('[KIT] Kit button clicked: kitId=', kit.id, 'kitName=', kit.name, 'timestamp=', new Date().toISOString());
+                          setSelectedKit(kit.id);
+                        }}
                         className="pr-8"
                       >
                         {kit.name}
@@ -207,14 +235,21 @@ export function KitsPage() {
         <div className="flex-1 flex overflow-hidden">
           {/* Pad Grid */}
           <div className="flex-1 p-6 overflow-auto">
-            {currentKit ? (
-              <PadGrid
-                kit={currentKit}
-                onAssignSample={handleAssignSample}
-                onRemoveSample={handleRemoveSample}
-              />
-            ) : (
-              <div className="h-full flex items-center justify-center">
+            {(() => {
+              console.log('[RENDER] Conditional render check:', {
+                hasCurrentKit: !!currentKit,
+                selectedKit,
+                timestamp: new Date().toISOString(),
+                decision: currentKit ? 'SHOWING PadGrid' : 'SHOWING empty state'
+              });
+              return currentKit ? (
+                <PadGrid
+                  kit={currentKit}
+                  onAssignSample={handleAssignSample}
+                  onRemoveSample={handleRemoveSample}
+                />
+              ) : (
+                <div className="h-full flex items-center justify-center">
                 <div className="text-center max-w-md">
                   <h3 className="text-lg font-semibold mb-2">No Kit Selected</h3>
                   <p className="text-muted-foreground mb-4">
@@ -230,12 +265,19 @@ export function KitsPage() {
                   )}
                 </div>
               </div>
-            )}
+              );
+            })()}
           </div>
 
           {/* Sample Browser Sidebar */}
-          {currentKit && (
-            <div className="w-96 flex-shrink-0">
+          {(() => {
+            console.log('[RENDER] SampleBrowser conditional:', {
+              hasCurrentKit: !!currentKit,
+              timestamp: new Date().toISOString(),
+              decision: currentKit ? 'SHOWING SampleBrowser' : 'HIDING SampleBrowser'
+            });
+            return currentKit && (
+              <div className="w-96 flex-shrink-0">
               <SampleBrowser onAddToKit={(sample) => {
                 // Quick add to first available pad
                 const firstEmptyPad = findFirstEmptyPad();
@@ -245,8 +287,9 @@ export function KitsPage() {
                   toast.warning('All pads are full. Drag sample onto a pad to replace.');
                 }
               }} />
-            </div>
-          )}
+              </div>
+            );
+          })()}
         </div>
       </div>
     </PageLayout>
@@ -255,9 +298,9 @@ export function KitsPage() {
   function findFirstEmptyPad() {
     if (!currentKit) return null;
 
-    const banks = ['A', 'B', 'C', 'D'] as const;
+    const banks = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'] as const;
     for (const bank of banks) {
-      for (let number = 1; number <= 12; number++) {
+      for (let number = 1; number <= 16; number++) {
         const assignment = currentKit.samples.find(
           (a) => a.pad_bank === bank && a.pad_number === number
         );

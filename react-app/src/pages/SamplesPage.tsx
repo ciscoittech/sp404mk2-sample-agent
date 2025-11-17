@@ -33,12 +33,12 @@ export function SamplesPage() {
   const queryParams = useMemo(() => {
     return {
       search: search || undefined,
-      genre: filters.genres?.[0], // API accepts single genre
+      genre: filters.genres?.[0]?.toLowerCase(), // Convert to lowercase for API (database stores lowercase)
       bpm_min: filters.bpm_min,
       bpm_max: filters.bpm_max,
       key: filters.key,
       tags: filters.tags,
-      limit: 50,
+      limit: 10000,
     };
   }, [search, filters]);
 
@@ -74,6 +74,23 @@ export function SamplesPage() {
     return data?.items || [];
   }, [showOnlyRecommended, recommendedSamples, data]);
 
+  // Calculate sample count text based on filters
+  const sampleCountText = useMemo(() => {
+    if (!data?.total) {
+      return 'Browse your audio samples';
+    }
+
+    // Check if any filters are active
+    const hasActiveFilters = search || activeFilterCount > 0 || showOnlyRecommended;
+
+    if (hasActiveFilters) {
+      const displayedCount = samplesToDisplay.length;
+      return `${displayedCount} sample${displayedCount !== 1 ? 's' : ''} found`;
+    }
+
+    return `${data.total} sample${data.total !== 1 ? 's' : ''} available`;
+  }, [data?.total, search, activeFilterCount, showOnlyRecommended, samplesToDisplay.length]);
+
   return (
     <div className="container mx-auto px-4 py-6 max-w-[1800px]">
       {/* Header */}
@@ -81,7 +98,7 @@ export function SamplesPage() {
         <div>
           <h2 className="text-3xl font-bold">Sample Library</h2>
           <p className="text-muted-foreground mt-2">
-            {data?.total ? `${data.total} samples available` : 'Browse your audio samples'}
+            {sampleCountText}
           </p>
         </div>
         <Button className="gap-2">

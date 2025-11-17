@@ -250,6 +250,7 @@ export function FilterPanel({
                 {GENRES.map((genre) => (
                   <button
                     key={genre}
+                    type="button"
                     onClick={() => handleGenreToggle(genre)}
                     className={cn(
                       'w-full flex items-center justify-between px-3 py-2 rounded-md text-sm transition-colors',

@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { kitsApi } from '@/api';
 import { queryKeys } from '@/lib/queryClient';
 import type { Kit } from '@/types/api';
@@ -8,6 +8,7 @@ export function useKits(params?: { skip?: number; limit?: number }) {
   return useQuery({
     queryKey: queryKeys.kits.list(params),
     queryFn: () => kitsApi.list(params),
+    placeholderData: keepPreviousData,
   });
 }
 
@@ -27,8 +28,14 @@ export function useCreateKit() {
   return useMutation({
     mutationFn: (kit: { name: string; description?: string; is_public?: boolean }) =>
       kitsApi.create(kit),
-    onSuccess: () => {
+    onSuccess: (newKit) => {
+      console.log('[MUTATION] createKit success:', {
+        newKitId: newKit.id,
+        timestamp: new Date().toISOString()
+      });
+      console.log('[MUTATION] Invalidating kits lists query - WARNING: This will refetch ALL kits');
       queryClient.invalidateQueries({ queryKey: queryKeys.kits.lists() });
+      console.log('[MUTATION] Query invalidation complete');
     },
   });
 }
@@ -83,7 +90,13 @@ export function useAssignSample() {
       };
     }) => kitsApi.assignSample(kitId, assignment),
     onSuccess: (_, { kitId }) => {
+      console.log('[MUTATION] assignSample success - invalidating queries:', {
+        kitId,
+        timestamp: new Date().toISOString(),
+        queryKey: queryKeys.kits.detail(kitId)
+      });
       queryClient.invalidateQueries({ queryKey: queryKeys.kits.detail(kitId) });
+      console.log('[MUTATION] Query invalidation complete');
     },
   });
 }
@@ -103,7 +116,12 @@ export function useRemoveSample() {
       padNumber: number;
     }) => kitsApi.removeSample(kitId, padBank, padNumber),
     onSuccess: (_, { kitId }) => {
+      console.log('[MUTATION] removeSample success - invalidating queries:', {
+        kitId,
+        timestamp: new Date().toISOString()
+      });
       queryClient.invalidateQueries({ queryKey: queryKeys.kits.detail(kitId) });
+      console.log('[MUTATION] Query invalidation complete');
     },
   });
 }
@@ -124,5 +142,14 @@ export function useBuildKitWithAI() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.kits.lists() });
     },
+  });
+}
+
+// Get recommendations for a pad
+export function useRecommendations(kitId: number, padNumber: number) {
+  return useQuery({
+    queryKey: ['kits', kitId, 'recommendations', padNumber],
+    queryFn: () => kitsApi.getRecommendations(kitId, padNumber),
+    enabled: !!kitId && !!padNumber,
   });
 }
