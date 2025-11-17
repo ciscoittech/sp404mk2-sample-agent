@@ -94,9 +94,13 @@ export function useAssignSample() {
         kitId,
         timestamp: new Date().toISOString(),
       });
-      // Invalidate and immediately refetch to update UI
+      // Invalidate both detail and list queries to update UI
       queryClient.invalidateQueries({
         queryKey: queryKeys.kits.detail(kitId),
+        refetchType: 'active',
+      });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.kits.lists(),
         refetchType: 'active',
       });
       console.log('[MUTATION] Query refetch triggered');
@@ -123,9 +127,13 @@ export function useRemoveSample() {
         kitId,
         timestamp: new Date().toISOString()
       });
-      // Invalidate and immediately refetch to update UI
+      // Invalidate both detail and list queries to update UI
       queryClient.invalidateQueries({
         queryKey: queryKeys.kits.detail(kitId),
+        refetchType: 'active',
+      });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.kits.lists(),
         refetchType: 'active',
       });
       console.log('[MUTATION] Query refetch triggered');
