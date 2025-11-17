@@ -72,7 +72,7 @@ class PadAssignmentInfo(BaseModel):
 
     kit_id: int = Field(..., description="Kit ID")
     sample_id: int = Field(..., description="Sample ID")
-    pad_bank: str = Field(..., description="Pad bank (A, B, C, or D)")
+    pad_bank: str = Field(..., description="Pad bank (A-J, 10 banks on SP-404MK2)")
     pad_number: int = Field(..., description="Pad number (1-16)")
     volume: float = Field(..., description="Playback volume (0.0-1.0)")
     pitch_shift: int = Field(..., description="Pitch shift in semitones")
@@ -115,7 +115,7 @@ class PadAssignmentRequest(BaseModel):
     """Schema for assigning a sample to a pad."""
 
     sample_id: int = Field(..., description="Sample ID to assign")
-    pad_bank: str = Field(..., description="Pad bank (A, B, C, or D)")
+    pad_bank: str = Field(..., description="Pad bank (A-J, 10 banks on SP-404MK2)")
     pad_number: int = Field(..., description="Pad number (1-16)")
     volume: float = Field(1.0, description="Playback volume (0.0-1.0)", ge=0.0, le=1.0)
     pitch_shift: int = Field(0, description="Pitch shift in semitones", ge=-12, le=12)
@@ -123,9 +123,9 @@ class PadAssignmentRequest(BaseModel):
     @field_validator('pad_bank')
     @classmethod
     def validate_bank(cls, v: str) -> str:
-        """Validate pad bank is A, B, C, or D."""
-        if v not in ['A', 'B', 'C', 'D']:
-            raise ValueError("Pad bank must be A, B, C, or D")
+        """Validate pad bank is A-J (10 banks on SP-404MK2)."""
+        if v not in ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J']:
+            raise ValueError("Pad bank must be A-J")
         return v
 
     @field_validator('pad_number')
@@ -142,7 +142,7 @@ class PadAssignmentResponse(BaseModel):
 
     kit_id: int = Field(..., description="Kit ID")
     sample_id: int = Field(..., description="Sample ID")
-    pad_bank: str = Field(..., description="Pad bank (A, B, C, or D)")
+    pad_bank: str = Field(..., description="Pad bank (A-J, 10 banks on SP-404MK2)")
     pad_number: int = Field(..., description="Pad number (1-16)")
     volume: float = Field(..., description="Playback volume (0.0-1.0)")
     pitch_shift: int = Field(..., description="Pitch shift in semitones")
@@ -191,7 +191,7 @@ class ExportSampleInfo(BaseModel):
     sample_id: int = Field(..., description="Sample database ID")
     original_filename: str = Field(..., description="Original filename")
     export_filename: str = Field(..., description="Sanitized export filename")
-    pad_bank: str = Field(..., description="Pad bank (A, B, C, or D)")
+    pad_bank: str = Field(..., description="Pad bank (A-J, 10 banks on SP-404MK2)")
     pad_number: int = Field(..., description="Pad number (1-16)")
     volume: float = Field(..., description="Playback volume (0.0-1.0)")
     pitch_shift: int = Field(..., description="Pitch shift in semitones")

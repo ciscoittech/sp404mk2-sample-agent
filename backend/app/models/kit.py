@@ -39,7 +39,7 @@ class KitSample(Base):
     sample_id = Column(Integer, ForeignKey("samples.id"), primary_key=True)
 
     # Pad assignment
-    pad_bank = Column(String, nullable=False, primary_key=True)  # A, B, C, or D
+    pad_bank = Column(String, nullable=False, primary_key=True)  # A-J (10 banks, SP-404MK2)
     pad_number = Column(Integer, nullable=False, primary_key=True)  # 1-16
 
     # Performance settings

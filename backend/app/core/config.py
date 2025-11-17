@@ -1,6 +1,7 @@
 """
 Application configuration using Pydantic Settings
 """
+import os
 from typing import Optional, List
 from pydantic_settings import BaseSettings
 from pydantic import validator
@@ -36,7 +37,7 @@ class Settings(BaseSettings):
         raise ValueError(v)
     
     # File Storage
-    UPLOAD_DIR: str = "uploads"
+    UPLOAD_DIR: str = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../uploads"))
     MAX_FILE_SIZE: int = 50 * 1024 * 1024  # 50MB
     ALLOWED_AUDIO_TYPES: List[str] = [
         "audio/wav",
@@ -135,7 +136,7 @@ class Settings(BaseSettings):
     EMBEDDING_MODEL: str = "openai/text-embedding-3-small"
     EMBEDDING_DIMENSIONS: int = 1536
     DEFAULT_SIMILARITY_THRESHOLD: float = 0.7
-    MAX_SEARCH_RESULTS: int = 100
+    MAX_SEARCH_RESULTS: int = 10000
 
     # OpenRouter API Usage Tracking & Cost Management
     model_pricing: dict = {

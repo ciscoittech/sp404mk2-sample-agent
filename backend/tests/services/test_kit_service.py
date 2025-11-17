@@ -397,20 +397,20 @@ async def test_assign_sample_invalid_pad_number(db_session: AsyncSession, test_s
 
 @pytest.mark.asyncio
 async def test_assign_sample_invalid_pad_bank(db_session: AsyncSession, test_sample: Sample):
-    """Test validation: bank must be A, B, C, or D."""
+    """Test validation: bank must be A-J (10 banks on SP-404MK2)."""
     from app.services.kit_service import KitService, InvalidPadBankError
 
     kit_service = KitService()
 
     kit = await kit_service.create_kit(db_session, user_id=1, name="Test Kit")
 
-    # Test invalid bank 'E'
+    # Test invalid bank 'K' (only A-J are valid)
     with pytest.raises(InvalidPadBankError):
         await kit_service.assign_sample_to_pad(
             db=db_session,
             kit_id=kit.id,
             sample_id=test_sample.id,
-            pad_bank="E",
+            pad_bank="K",
             pad_number=1,
             user_id=1
         )

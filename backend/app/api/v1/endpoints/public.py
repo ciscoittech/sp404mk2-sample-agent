@@ -20,7 +20,7 @@ router = APIRouter()
 async def list_public_samples(
     request: Request,
     page: int = 1,
-    limit: int = 16,
+    limit: int = 100,
     search: Optional[str] = None,
     genre: Optional[str] = None,
     bpm_min: Optional[float] = None,
@@ -33,8 +33,8 @@ async def list_public_samples(
     """List all samples without authentication (for development)."""
     if page < 1:
         page = 1
-    if limit < 1 or limit > 100:
-        limit = 16
+    if limit < 1 or limit > 10000:
+        limit = 100
 
     skip = (page - 1) * limit
 
@@ -59,55 +59,61 @@ async def list_public_samples(
             skip=skip,
             limit=limit
         )
-    
+
     total = await sample_service.count_user_samples(None)
-    
-    # Add file URLs (use public endpoint)
+
+    # Convert ORM models to dicts to avoid lazy loading issues with Pydantic
+    sample_dicts = []
     for sample in samples:
-        sample.file_url = f"/api/v1/public/samples/{sample.id}/download"
-    
+        # Extract vibe analysis from extra_metadata to avoid lazy-load relationships
+        vibe_analysis = None
+        if sample.extra_metadata and isinstance(sample.extra_metadata, dict):
+            vibe_data = sample.extra_metadata.get('vibe_analysis')
+            if vibe_data:
+                vibe_analysis = vibe_data
+
+        # Convert ORM object to dict, handling NULL values
+        sample_dict = {
+            "id": sample.id,
+            "user_id": sample.user_id,
+            "title": sample.title,
+            "genre": sample.genre,
+            "bpm": sample.bpm,
+            "musical_key": sample.musical_key,
+            "tags": sample.tags if sample.tags is not None else [],  # Handle NULL tags
+            "file_path": sample.file_path,
+            "file_size": sample.file_size,
+            "duration": sample.duration,
+            "created_at": sample.created_at,
+            "analyzed_at": sample.analyzed_at,
+            "last_accessed_at": sample.last_accessed_at,
+            "bpm_confidence": sample.bpm_confidence,
+            "genre_confidence": sample.genre_confidence,
+            "key_confidence": sample.key_confidence,
+            "file_url": f"/api/v1/public/samples/{sample.id}/download",
+            "vibe_analysis": vibe_analysis
+        }
+        sample_dicts.append(sample_dict)
+
     # Calculate pages
     pages = (total + limit - 1) // limit
     has_more = page < pages
-    
+
     # Return HTML for HTMX requests
     if hx_request:
         from app.templates_config import templates
-        
-        # Convert SQLAlchemy models to simple dicts to avoid lazy loading issues
-        sample_dicts = []
-        for s in samples:
-            # Extract vibe analysis from extra_metadata
-            vibe_analysis = None
-            if s.extra_metadata and isinstance(s.extra_metadata, dict):
-                vibe_data = s.extra_metadata.get('vibe_analysis')
-                if vibe_data:
-                    vibe_analysis = vibe_data
-            
-            sample_dict = {
-                "id": s.id,
-                "title": s.title,
-                "genre": s.genre,
-                "bpm": s.bpm,
-                "musical_key": s.musical_key,
-                "tags": s.tags,
-                "file_url": s.file_url,
-                "created_at": s.created_at,
-                "analyzed_at": s.analyzed_at,
-                "vibe_analysis": vibe_analysis
-            }
-            sample_dicts.append(sample_dict)
-        
+
         return templates.TemplateResponse("partials/sample-grid.html", {
             "request": request,
             "samples": sample_dicts,
             "has_more": has_more,
             "next_page": page + 1
         })
-    
-    # Return JSON for API requests - FastAPI will handle serialization via response_model
+
+    # Return JSON for API requests - create Sample objects from dicts for Pydantic validation
+    sample_objects = [Sample(**d) for d in sample_dicts]
     return SampleListResponse(
-        items=samples,
+        items=sample_objects,
         total=total,
         page=page,
         pages=pages,

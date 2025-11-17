@@ -4,8 +4,13 @@ import type { Kit, PadAssignment } from '@/types/api';
 export const kitsApi = {
   // List kits
   list: async (params?: { skip?: number; limit?: number }) => {
-    const { data } = await apiClient.get<{ items: Kit[]; total: number }>('/kits', { params });
-    return data;
+    const { data } = await apiClient.get<any>('/kits', { params });
+    return {
+      items: data.kits,
+      total: data.total,
+      skip: data.skip,
+      limit: data.limit
+    };
   },
 
   // Get kit by ID
@@ -62,6 +67,14 @@ export const kitsApi = {
   // Build kit with AI
   buildWithAI: async (prompt: string) => {
     const { data } = await apiClient.post<Kit>('/kits/build', { prompt });
+    return data;
+  },
+
+  // Get recommendations for a specific pad
+  getRecommendations: async (kitId: number, padNumber: number, limit = 15) => {
+    const { data } = await apiClient.get(`/kits/${kitId}/recommendations/${padNumber}`, {
+      params: { limit }
+    });
     return data;
   },
 };

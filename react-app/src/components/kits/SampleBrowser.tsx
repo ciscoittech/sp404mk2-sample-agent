@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Search, Filter } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -16,6 +16,20 @@ export function SampleBrowser({ onAddToKit }: SampleBrowserProps) {
   const [search, setSearch] = useState('');
   const [selectedGenre, setSelectedGenre] = useState<string>();
   const [bpmRange, setBpmRange] = useState<[number, number]>();
+
+  // DEBUG: Track component lifecycle
+  useEffect(() => {
+    console.log('[SAMPLEBROWSER] Component MOUNTED:', {
+      timestamp: new Date().toISOString()
+    });
+
+    return () => {
+      console.log('[SAMPLEBROWSER] Component UNMOUNTING:', {
+        timestamp: new Date().toISOString(),
+        reason: 'Component being removed from DOM'
+      });
+    };
+  }, []);
 
   const { data: samples, isLoading } = useSamples({
     limit: 50,

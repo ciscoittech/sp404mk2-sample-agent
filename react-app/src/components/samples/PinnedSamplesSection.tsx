@@ -97,12 +97,12 @@ export function PinnedSamplesSection({ allSamples, onRecommendedSamplesFilter }:
         currentKit.samples.map(s => `${s.pad_bank}${s.pad_number}`)
       );
 
-      const availablePads: Array<{ bank: 'A' | 'B' | 'C' | 'D'; number: number }> = [];
-      const banks: Array<'A' | 'B' | 'C' | 'D'> = ['A', 'B', 'C', 'D'];
+      const availablePads: Array<{ bank: 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'I' | 'J'; number: number }> = [];
+      const banks: Array<'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'I' | 'J'> = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
 
       // Find available pads
       for (const bank of banks) {
-        for (let padNumber = 1; padNumber <= 12; padNumber++) {
+        for (let padNumber = 1; padNumber <= 16; padNumber++) {
           if (!usedPads.has(`${bank}${padNumber}`)) {
             availablePads.push({ bank, number: padNumber });
             if (availablePads.length >= pinnedSamples.length) break;

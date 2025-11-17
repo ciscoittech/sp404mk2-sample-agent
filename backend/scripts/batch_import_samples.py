@@ -180,7 +180,8 @@ class BatchImporter:
         for wav_file in directory.rglob("*.wav"):
             # Extract tags from folder name
             folder_name = wav_file.parent.name.lower()
-            tags = FOLDER_TAG_MAP.get(folder_name, ["sample"])
+            # Make a copy of tags to avoid mutating shared list from FOLDER_TAG_MAP
+            tags = list(FOLDER_TAG_MAP.get(folder_name, ["sample"]))
 
             # Add collection tag
             tags.append("the-crate-vol5")
@@ -302,6 +303,7 @@ class BatchImporter:
                     user_id=self.user_id,
                     title=title,
                     file_path=str(file_path.absolute()),
+                    file_size=file_path.stat().st_size,
                     tags=tags,
                     genre="percussion" if any(t in ["kick", "snare", "hihat", "tom"] for t in tags) else "misc"
                 )

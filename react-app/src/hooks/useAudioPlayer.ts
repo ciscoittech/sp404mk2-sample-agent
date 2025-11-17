@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, useId } from 'react';
 import WaveSurfer from 'wavesurfer.js';
+import { useAudioContext } from '@/contexts/AudioContext';
 
 export interface AudioPlayerState {
   isPlaying: boolean;
@@ -49,6 +50,8 @@ export function useAudioPlayer({
   onFinish,
   onError,
 }: UseAudioPlayerOptions): [AudioPlayerState, AudioPlayerControls, WaveSurfer | null] {
+  const playerId = useId();
+  const audioContext = useAudioContext();
   const wavesurferRef = useRef<WaveSurfer | null>(null);
   const [state, setState] = useState<AudioPlayerState>({
     isPlaying: false,
@@ -131,8 +134,10 @@ export function useAudioPlayer({
 
       wavesurfer.load(audioUrl);
       wavesurferRef.current = wavesurfer;
+      audioContext.registerPlayer(wavesurfer, playerId);
 
       return () => {
+        audioContext.unregisterPlayer(playerId);
         wavesurfer.destroy();
         wavesurferRef.current = null;
       };
@@ -144,12 +149,13 @@ export function useAudioPlayer({
       }));
       onError?.(error instanceof Error ? error : new Error('Failed to initialize audio player'));
     }
-  }, [audioUrl, containerRef, height, waveColor, progressColor, cursorColor, onReady, onPlay, onPause, onFinish, onError]);
+  }, [audioUrl, containerRef, height, waveColor, progressColor, cursorColor, onReady, onPlay, onPause, onFinish, onError, audioContext, playerId]);
 
   // Control functions
   const play = useCallback(() => {
+    audioContext.stopAllExcept(playerId);
     wavesurferRef.current?.play();
-  }, []);
+  }, [audioContext, playerId]);
 
   const pause = useCallback(() => {
     wavesurferRef.current?.pause();

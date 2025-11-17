@@ -94,7 +94,7 @@ async def create_sample(
 async def list_samples(
     request: Request,
     page: int = 1,
-    limit: int = 20,
+    limit: int = 100,
     search: Optional[str] = None,
     genre: Optional[str] = None,
     bpm_min: Optional[float] = None,
@@ -106,8 +106,8 @@ async def list_samples(
     """List user's samples with pagination."""
     if page < 1:
         page = 1
-    if limit < 1 or limit > 100:
-        limit = 20
+    if limit < 1 or limit > 10000:
+        limit = 100
     
     skip = (page - 1) * limit
     
@@ -168,7 +168,7 @@ async def search_samples(
     genre: Optional[str] = None,
     bpm_min: Optional[float] = None,
     bpm_max: Optional[float] = None,
-    limit: int = 50,
+    limit: int = 100,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
@@ -360,32 +360,55 @@ async def download_sample(
     """Download sample file."""
     from fastapi.responses import FileResponse
     import os
-    
+    from app.core.config import settings
+
     sample_service = SampleService(db)
-    
+
     # Get sample
     sample = await sample_service.get_sample_by_id(
         sample_id=sample_id,
         user_id=current_user.id
     )
-    
+
     if not sample:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Sample not found"
         )
-    
-    # Check if file exists
-    if not os.path.exists(sample.file_path):
+
+    # Resolve file path - try multiple possible locations
+    file_path = sample.file_path
+
+    # List of places to look for the file
+    possible_paths = []
+
+    if os.path.isabs(file_path):
+        possible_paths.append(file_path)
+    else:
+        # Try relative to UPLOAD_DIR
+        possible_paths.append(os.path.join(settings.UPLOAD_DIR, file_path))
+
+        # Try relative to project root (parent of backend)
+        project_root = os.path.dirname(os.path.dirname(settings.UPLOAD_DIR))
+        possible_paths.append(os.path.join(project_root, file_path))
+
+    # Find the first path that exists
+    resolved_path = None
+    for path in possible_paths:
+        if os.path.exists(path):
+            resolved_path = path
+            break
+
+    if not resolved_path:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Sample file not found"
+            detail=f"Sample file not found at any of: {', '.join(possible_paths)}"
         )
-    
+
     # Return file
     return FileResponse(
-        path=sample.file_path,
-        filename=f"{sample.title}{os.path.splitext(sample.file_path)[1]}",
+        path=resolved_path,
+        filename=f"{sample.title}{os.path.splitext(resolved_path)[1]}",
         media_type="audio/*"
     )
 
@@ -395,7 +418,7 @@ async def download_sample(
 async def list_samples_public(
     request: Request,
     page: int = 1,
-    limit: int = 20,
+    limit: int = 100,
     search: Optional[str] = None,
     genre: Optional[str] = None,
     bpm_min: Optional[float] = None,
@@ -406,8 +429,8 @@ async def list_samples_public(
     """List all samples without authentication (public endpoint)."""
     if page < 1:
         page = 1
-    if limit < 1 or limit > 100:
-        limit = 20
+    if limit < 1 or limit > 10000:
+        limit = 100
     
     skip = (page - 1) * limit
     
@@ -468,6 +491,7 @@ async def download_sample_public(
     """Download sample file without authentication (public endpoint). Supports both GET and HEAD requests."""
     from fastapi.responses import FileResponse
     import os
+    from app.core.config import settings
 
     sample_service = SampleService(db)
 
@@ -483,16 +507,38 @@ async def download_sample_public(
             detail="Sample not found"
         )
 
-    # Check if file exists
-    if not os.path.exists(sample.file_path):
+    # Resolve file path - try multiple possible locations
+    file_path = sample.file_path
+
+    # List of places to look for the file
+    possible_paths = []
+
+    if os.path.isabs(file_path):
+        possible_paths.append(file_path)
+    else:
+        # Try relative to UPLOAD_DIR
+        possible_paths.append(os.path.join(settings.UPLOAD_DIR, file_path))
+
+        # Try relative to project root (parent of backend)
+        project_root = os.path.dirname(os.path.dirname(settings.UPLOAD_DIR))
+        possible_paths.append(os.path.join(project_root, file_path))
+
+    # Find the first path that exists
+    resolved_path = None
+    for path in possible_paths:
+        if os.path.exists(path):
+            resolved_path = path
+            break
+
+    if not resolved_path:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Sample file not found"
+            detail=f"Sample file not found at any of: {', '.join(possible_paths)}"
         )
 
     # Return file (FileResponse handles both GET and HEAD automatically)
     return FileResponse(
-        path=sample.file_path,
-        filename=f"{sample.title}{os.path.splitext(sample.file_path)[1]}",
+        path=resolved_path,
+        filename=f"{sample.title}{os.path.splitext(resolved_path)[1]}",
         media_type="audio/*"
     )

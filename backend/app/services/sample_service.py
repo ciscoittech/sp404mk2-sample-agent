@@ -91,7 +91,7 @@ class SampleService:
         self,
         user_id: Optional[int] = None,
         skip: int = 0,
-        limit: int = 20
+        limit: int = 100
     ) -> List[Sample]:
         """Get samples for a user with pagination."""
         query = select(Sample)
@@ -133,7 +133,7 @@ class SampleService:
         instrument_type: Optional[str] = None,
         sample_type: Optional[str] = None,
         skip: int = 0,
-        limit: int = 50
+        limit: int = 100
     ) -> List[Sample]:
         """Search samples with filters."""
         query = select(Sample)

@@ -50,7 +50,7 @@ class InvalidPadNumberError(Exception):
 
 
 class InvalidPadBankError(Exception):
-    """Raised when pad bank is invalid (must be A, B, C, or D)."""
+    """Raised when pad bank is invalid (must be A-J, 10 banks on SP-404MK2)."""
     pass
 
 
@@ -95,7 +95,8 @@ class KitService:
     """
     Service for managing SP-404MK2 kits and pad assignments.
 
-    Handles:
+    Supports full SP-404MK2 configuration:
+    - 10 banks (A-J), 16 pads per bank = 160 total pads
     - Kit creation, retrieval, update, and deletion
     - Pad assignment management with validation
     - Smart sample recommendations based on pad purpose
@@ -360,7 +361,7 @@ class KitService:
             db: Database session
             kit_id: Kit ID
             sample_id: Sample ID to assign
-            pad_bank: Pad bank (A, B, C, or D)
+            pad_bank: Pad bank (A-J, 10 banks on SP-404MK2)
             pad_number: Pad number (1-16)
             user_id: User ID (for access control)
             volume: Playback volume (0.0-1.0), default 1.0
@@ -382,8 +383,8 @@ class KitService:
         )
 
         # Validate pad bank
-        if pad_bank not in ['A', 'B', 'C', 'D']:
-            raise InvalidPadBankError(f"Invalid pad bank '{pad_bank}'. Must be A, B, C, or D")
+        if pad_bank not in ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J']:
+            raise InvalidPadBankError(f"Invalid pad bank '{pad_bank}'. Must be A-J")
 
         # Validate pad number
         if pad_number < 1 or pad_number > 16:
@@ -452,7 +453,7 @@ class KitService:
         Args:
             db: Database session
             kit_id: Kit ID
-            pad_bank: Pad bank (A, B, C, or D)
+            pad_bank: Pad bank (A-J, 10 banks on SP-404MK2)
             pad_number: Pad number (1-16)
             user_id: User ID (for access control)
 
@@ -504,7 +505,7 @@ class KitService:
         Args:
             db: Database session
             kit_id: Kit ID
-            pad_bank: Pad bank (A, B, C, or D)
+            pad_bank: Pad bank (A-J, 10 banks on SP-404MK2)
             pad_number: Pad number (1-16)
 
         Returns:
@@ -556,7 +557,7 @@ class KitService:
         kit_id: int,
         pad_number: int,
         user_id: int,
-        limit: int = 10,
+        limit: int = 15,
     ) -> List[Sample]:
         """
         Get smart sample recommendations for a specific pad.

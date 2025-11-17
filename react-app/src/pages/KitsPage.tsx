@@ -18,7 +18,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useKits, useCreateKit, useAssignSample, useRemoveSample } from '@/hooks/useKits';
+import { useKits, useKit, useCreateKit, useAssignSample, useRemoveSample } from '@/hooks/useKits';
 import type { Sample } from '@/types/api';
 import { Plus, Loader2, Download, MoreVertical, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -58,6 +58,7 @@ export function KitsPage() {
   }, [setSearchParams]);
 
   const { data: kits, isLoading } = useKits();
+  const { data: detailedKit } = useKit(selectedKit || 0);
   const createKit = useCreateKit();
   const assignSample = useAssignSample();
   const removeSample = useRemoveSample();

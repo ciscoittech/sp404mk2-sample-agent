@@ -3,18 +3,21 @@ import { Play, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { RecommendationDropdown } from './RecommendationDropdown';
 import type { Sample } from '@/types/api';
 
 interface PadProps {
-  bank: 'A' | 'B' | 'C' | 'D';
+  kitId: number;
+  bank: 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'I' | 'J';
   number: number;
   sample?: Sample;
   onRemove: () => void;
   onDrop: (sample: Sample) => void;
 }
 
-export function Pad({ bank, number, sample, onRemove, onDrop }: PadProps) {
+export function Pad({ kitId, bank, number, sample, onRemove, onDrop }: PadProps) {
   const [isDragOver, setIsDragOver] = useState(false);
+  const [showRecommendations, setShowRecommendations] = useState(false);
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -35,6 +38,11 @@ export function Pad({ bank, number, sample, onRemove, onDrop }: PadProps) {
       if (sampleData) {
         const droppedSample = JSON.parse(sampleData) as Sample;
         onDrop(droppedSample);
+
+        // Show recommendations only for pad 1 (main melodic pad)
+        if (number === 1) {
+          setShowRecommendations(true);
+        }
       }
     } catch (error) {
       console.error('Error parsing dropped sample:', error);
@@ -108,6 +116,18 @@ export function Pad({ bank, number, sample, onRemove, onDrop }: PadProps) {
           Preview
         </Button>
       </CardContent>
+
+      {showRecommendations && number === 1 && (
+        <RecommendationDropdown
+          kitId={kitId}
+          padNumber={number}
+          onSelectSample={(selectedSample) => {
+            onDrop(selectedSample);
+            setShowRecommendations(false);
+          }}
+          onClose={() => setShowRecommendations(false)}
+        />
+      )}
     </Card>
   );
 }

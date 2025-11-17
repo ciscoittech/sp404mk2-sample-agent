@@ -83,20 +83,23 @@ export function useAssignSample() {
       kitId: number;
       assignment: {
         sample_id: number;
-        pad_bank: 'A' | 'B' | 'C' | 'D';
+        pad_bank: 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'I' | 'J';
         pad_number: number;
         volume?: number;
         pitch_shift?: number;
       };
     }) => kitsApi.assignSample(kitId, assignment),
     onSuccess: (_, { kitId }) => {
-      console.log('[MUTATION] assignSample success - invalidating queries:', {
+      console.log('[MUTATION] assignSample success - refetching kit data:', {
         kitId,
         timestamp: new Date().toISOString(),
-        queryKey: queryKeys.kits.detail(kitId)
       });
-      queryClient.invalidateQueries({ queryKey: queryKeys.kits.detail(kitId) });
-      console.log('[MUTATION] Query invalidation complete');
+      // Invalidate and immediately refetch to update UI
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.kits.detail(kitId),
+        refetchType: 'active',
+      });
+      console.log('[MUTATION] Query refetch triggered');
     },
   });
 }
@@ -116,12 +119,16 @@ export function useRemoveSample() {
       padNumber: number;
     }) => kitsApi.removeSample(kitId, padBank, padNumber),
     onSuccess: (_, { kitId }) => {
-      console.log('[MUTATION] removeSample success - invalidating queries:', {
+      console.log('[MUTATION] removeSample success - refetching kit data:', {
         kitId,
         timestamp: new Date().toISOString()
       });
-      queryClient.invalidateQueries({ queryKey: queryKeys.kits.detail(kitId) });
-      console.log('[MUTATION] Query invalidation complete');
+      // Invalidate and immediately refetch to update UI
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.kits.detail(kitId),
+        refetchType: 'active',
+      });
+      console.log('[MUTATION] Query refetch triggered');
     },
   });
 }

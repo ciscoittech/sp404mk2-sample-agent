@@ -30,6 +30,7 @@ from app.services.kit_service import (
     PadAlreadyAssignedError,
 )
 from app.services.sp404_export_service import SP404ExportService
+from app.services.smart_kit_completion_service import SmartKitCompletionService
 from app.schemas.kit import (
     KitCreate,
     KitUpdate,
@@ -451,7 +452,7 @@ async def get_recommendations_for_pad(
     kit_id: int,
     pad_number: int,
     request: Request,
-    limit: int = Query(10, ge=1, le=50, description="Maximum recommendations"),
+    limit: int = Query(15, ge=1, le=50, description="Maximum recommendations"),
     db: AsyncSession = Depends(get_db),
     hx_request: Optional[str] = Header(None),
 ):
@@ -735,3 +736,90 @@ async def build_kit_from_prompt(
 
     # Return result without creating kit
     return JSONResponse(content=result)
+
+
+# ===========================
+# Smart Kit Completion
+# ===========================
+
+@router.post("/{kit_id}/complete-from-sample/{sample_id}")
+async def complete_kit_from_sample(
+    kit_id: int,
+    sample_id: int,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Complete a kit with intelligent sample selection.
+
+    Analyzes a seed sample (melodic loop) and automatically selects:
+    - 8 complementary drum sounds (kicks, snares, toms, hats, percussion)
+    - 7 melodic/harmonic samples matching BPM and key
+
+    Returns the suggested samples for review before assignment.
+    """
+    DEFAULT_USER_ID = 1
+
+    logger.info(f"Completing kit {kit_id} from sample {sample_id}")
+
+    kit_service = KitService()
+    completion_service = SmartKitCompletionService()
+
+    try:
+        # Verify kit exists and user has access
+        kit = await kit_service.get_kit_by_id(db, kit_id, DEFAULT_USER_ID)
+        if not kit:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Kit {kit_id} not found",
+            )
+
+        # Run smart completion
+        completion_result = await completion_service.complete_kit(
+            db=db,
+            seed_sample_id=sample_id,
+            user_id=DEFAULT_USER_ID,
+            exclude_assigned=True,
+        )
+
+        # Return suggested samples with metadata
+        return JSONResponse(
+            status_code=status.HTTP_200_OK,
+            content={
+                "kit_id": kit_id,
+                "seed_sample": completion_result["seed_sample"],
+                "drum_suggestions": [
+                    {
+                        "id": s["id"],
+                        "title": s["title"],
+                        "tags": s["tags"],
+                        "category": s["category"],
+                    }
+                    for s in completion_result["drum_sounds"]
+                ],
+                "melodic_suggestions": [
+                    {
+                        "id": s["id"],
+                        "title": s["title"],
+                        "bpm": s["bpm"],
+                        "musical_key": s["musical_key"],
+                        "tags": s["tags"],
+                    }
+                    for s in completion_result["melodic_samples"]
+                ],
+                "notes": completion_result["completion_notes"],
+                "total_samples": len(completion_result["drum_sounds"])
+                + len(completion_result["melodic_samples"]),
+            },
+        )
+
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
+    except Exception as e:
+        logger.error(f"Error completing kit: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to complete kit: {str(e)}",
+        )

@@ -30,11 +30,13 @@ export const samplesApi = {
     if (metadata) {
       Object.entries(metadata).forEach(([key, value]) => {
         if (value !== undefined && value !== null) {
-          formData.append(key, String(value));
+          // Convert arrays to JSON strings for form submission
+          const stringValue = Array.isArray(value) ? JSON.stringify(value) : String(value);
+          formData.append(key, stringValue);
         }
       });
     }
-    const { data } = await apiClient.post<Sample>('/samples', formData, {
+    const { data } = await apiClient.post<Sample>('/public/samples/', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
     return data;
