@@ -6,11 +6,16 @@ import { useAudioContext } from '@/contexts/AudioContext';
  * Handles audio isolation (only one sample plays at a time)
  */
 export function useAudioPreview(audioUrl: string) {
-  const audioContext = useAudioContext();
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // Create or get audio element on mount
   useEffect(() => {
+    // Only create audio element if we have a valid URL
+    if (!audioUrl) {
+      audioRef.current = null;
+      return;
+    }
+
     const audio = new Audio(audioUrl);
     audio.preload = 'auto';
     audioRef.current = audio;
@@ -23,18 +28,9 @@ export function useAudioPreview(audioUrl: string) {
 
   const play = useCallback(() => {
     const audio = audioRef.current;
-    if (!audio) return;
+    if (!audio || !audioUrl) return;
 
     // Stop all other audio for isolation
-    // Create a dummy WaveSurfer-like object for context management
-    const player = {
-      isPlaying: () => !audio.paused,
-      pause: () => audio.pause(),
-    };
-
-    // This is a workaround since we're using native Audio API
-    // In a real implementation, we'd register with AudioContext
-    // For now, manually stop all other audio elements on page
     const audioElements = document.querySelectorAll('audio');
     audioElements.forEach((el) => {
       if (el !== audio && !el.paused) {
@@ -45,7 +41,7 @@ export function useAudioPreview(audioUrl: string) {
     audio.play().catch((err) => {
       console.error('Failed to play audio:', err);
     });
-  }, []);
+  }, [audioUrl]);
 
   const pause = useCallback(() => {
     audioRef.current?.pause();
@@ -60,13 +56,13 @@ export function useAudioPreview(audioUrl: string) {
 
   const togglePlay = useCallback(() => {
     const audio = audioRef.current;
-    if (!audio) return;
+    if (!audio || !audioUrl) return;
     if (audio.paused) {
       play();
     } else {
       pause();
     }
-  }, [play, pause]);
+  }, [audioUrl, play, pause]);
 
   return {
     play,
