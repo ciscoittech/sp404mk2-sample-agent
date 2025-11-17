@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from '@/lib/queryClient';
 import { ThemeProvider } from '@/components/ThemeProvider';
+import { AudioProvider } from '@/contexts/AudioContext';
 import { AppShell } from '@/components/layout/AppShell';
 import { DashboardPage } from '@/pages/DashboardPage';
 import { SamplesPage } from '@/pages/SamplesPage';
@@ -38,21 +39,23 @@ function App() {
   return (
     <ThemeProvider defaultTheme="dark" storageKey="sp404-ui-theme">
       <QueryClientProvider client={queryClient}>
-        <BrowserRouter>
-          <AppShell>
-            <Routes>
-              <Route path="/" element={<DashboardPage />} />
-              <Route path="/samples" element={<SamplesPage />} />
-              <Route path="/vibe-search" element={<VibeSearchPage />} />
-              <Route path="/kits" element={<KitsPage />} />
-              <Route path="/upload" element={<UploadPage />} />
-              <Route path="/settings" element={<SettingsPage />} />
-              <Route path="/demo" element={<ComponentsDemo />} />
-              <Route path="/debug/colors" element={<ColorsDebugPage />} />
-              <Route path="/test/audio" element={<AudioPlayerTest />} />
-            </Routes>
-          </AppShell>
-        </BrowserRouter>
+        <AudioProvider>
+          <BrowserRouter>
+            <AppShell>
+              <Routes>
+                <Route path="/" element={<DashboardPage />} />
+                <Route path="/samples" element={<SamplesPage />} />
+                <Route path="/vibe-search" element={<VibeSearchPage />} />
+                <Route path="/kits" element={<KitsPage />} />
+                <Route path="/upload" element={<UploadPage />} />
+                <Route path="/settings" element={<SettingsPage />} />
+                <Route path="/demo" element={<ComponentsDemo />} />
+                <Route path="/debug/colors" element={<ColorsDebugPage />} />
+                <Route path="/test/audio" element={<AudioPlayerTest />} />
+              </Routes>
+            </AppShell>
+          </BrowserRouter>
+        </AudioProvider>
       </QueryClientProvider>
     </ThemeProvider>
   );

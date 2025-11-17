@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { RecommendationDropdown } from './RecommendationDropdown';
+import { useAudioPreview } from '@/hooks/useAudioPreview';
 import type { Sample } from '@/types/api';
 
 interface PadProps {
@@ -18,6 +19,7 @@ interface PadProps {
 export function Pad({ kitId, bank, number, sample, onRemove, onDrop }: PadProps) {
   const [isDragOver, setIsDragOver] = useState(false);
   const [showRecommendations, setShowRecommendations] = useState(false);
+  const audioPreview = useAudioPreview(sample?.file_url || '');
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -111,7 +113,12 @@ export function Pad({ kitId, bank, number, sample, onRemove, onDrop }: PadProps)
           )}
         </div>
 
-        <Button variant="outline" size="sm" className="w-full">
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full"
+          onClick={() => audioPreview.play()}
+        >
           <Play className="h-3 w-3 mr-1" />
           Preview
         </Button>

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Play, Music, Plus } from 'lucide-react';
 import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
 import { PinButton } from './PinButton';
+import { useAudioPreview } from '@/hooks/useAudioPreview';
 import type { Sample } from '@/types/api';
 
 // Lazy load waveform component for better initial render performance
@@ -54,6 +55,7 @@ function SampleCardComponent({ sample, onPlay, onAddToKit, draggable = false }: 
   const [isHovered, setIsHovered] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
+  const audioPreview = useAudioPreview(sample.file_url);
 
   const handleDragStart = (e: React.DragEvent) => {
     setIsDragging(true);
@@ -119,7 +121,10 @@ function SampleCardComponent({ sample, onPlay, onAddToKit, draggable = false }: 
               variant="ghost"
               size="icon"
               className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
-              onClick={() => onPlay?.(sample)}
+              onClick={() => {
+                audioPreview.play();
+                onPlay?.(sample);
+              }}
             >
               <Play className="h-4 w-4" />
             </Button>
