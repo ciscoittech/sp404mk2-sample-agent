@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { PadGrid, SampleBrowser } from '@/components/kits';
 import { Button } from '@/components/ui/button';
@@ -22,39 +23,53 @@ import type { Sample } from '@/types/api';
 import { Plus, Loader2, Download, MoreVertical, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
+const SELECTED_KIT_STORAGE_KEY = 'sp404mk2_selected_kit';
+
 export function KitsPage() {
-  const [selectedKit, setSelectedKit] = useState<number>();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [selectedKit, setSelectedKitState] = useState<number | undefined>(() => {
+    // Initialize from URL params or localStorage
+    const kitIdParam = searchParams.get('kit');
+    if (kitIdParam) {
+      const id = parseInt(kitIdParam, 10);
+      if (!isNaN(id)) return id;
+    }
+    const stored = localStorage.getItem(SELECTED_KIT_STORAGE_KEY);
+    if (stored) {
+      const id = parseInt(stored, 10);
+      if (!isNaN(id)) return id;
+    }
+    return undefined;
+  });
   const [newKitName, setNewKitName] = useState('');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+
+  // Persist selectedKit to both localStorage and URL params
+  const setSelectedKit = useCallback((kitId: number | undefined) => {
+    console.log('[STATE] Updating selectedKit:', { kitId, timestamp: new Date().toISOString() });
+    setSelectedKitState(kitId);
+    if (kitId !== undefined) {
+      localStorage.setItem(SELECTED_KIT_STORAGE_KEY, kitId.toString());
+      setSearchParams({ kit: kitId.toString() });
+    } else {
+      localStorage.removeItem(SELECTED_KIT_STORAGE_KEY);
+      setSearchParams({});
+    }
+  }, [setSearchParams]);
 
   const { data: kits, isLoading } = useKits();
   const createKit = useCreateKit();
   const assignSample = useAssignSample();
   const removeSample = useRemoveSample();
 
-  // DEBUG: Track kits data changes
+  // Validate selectedKit when kits load - clear if kit no longer exists
   useEffect(() => {
-    console.log('[QUERY] Kits data changed:', {
-      kitsCount: kits?.items?.length || 0,
-      isLoading,
-      timestamp: new Date().toISOString(),
-      kitIds: kits?.items?.map(k => k.id) || []
-    });
-  }, [kits, isLoading]);
-
-  // DEBUG: Track selectedKit state changes
-  useEffect(() => {
-    console.log('[STATE] selectedKit changed:', {
-      newValue: selectedKit,
-      timestamp: new Date().toISOString(),
-      kitsAvailable: kits?.items?.length || 0,
-      currentKitExists: !!kits?.items?.find((k) => k.id === selectedKit)
-    });
-
-    if (selectedKit === undefined) {
-      console.log('[STATE] WARNING: selectedKit is undefined! This will unmount the builder.');
+    if (!kits?.items) return;
+    if (selectedKit && !kits.items.find(k => k.id === selectedKit)) {
+      console.log('[STATE] Selected kit no longer exists, clearing selection');
+      setSelectedKit(undefined);
     }
-  }, [selectedKit, kits]);
+  }, [kits?.items, selectedKit, setSelectedKit]);
 
   const currentKit = kits?.items?.find((k) => k.id === selectedKit);
 
@@ -235,21 +250,14 @@ export function KitsPage() {
         <div className="flex-1 flex overflow-hidden">
           {/* Pad Grid */}
           <div className="flex-1 p-6 overflow-auto">
-            {(() => {
-              console.log('[RENDER] Conditional render check:', {
-                hasCurrentKit: !!currentKit,
-                selectedKit,
-                timestamp: new Date().toISOString(),
-                decision: currentKit ? 'SHOWING PadGrid' : 'SHOWING empty state'
-              });
-              return currentKit ? (
-                <PadGrid
-                  kit={currentKit}
-                  onAssignSample={handleAssignSample}
-                  onRemoveSample={handleRemoveSample}
-                />
-              ) : (
-                <div className="h-full flex items-center justify-center">
+            {currentKit ? (
+              <PadGrid
+                kit={currentKit}
+                onAssignSample={handleAssignSample}
+                onRemoveSample={handleRemoveSample}
+              />
+            ) : (
+              <div className="h-full flex items-center justify-center">
                 <div className="text-center max-w-md">
                   <h3 className="text-lg font-semibold mb-2">No Kit Selected</h3>
                   <p className="text-muted-foreground mb-4">
@@ -265,19 +273,12 @@ export function KitsPage() {
                   )}
                 </div>
               </div>
-              );
-            })()}
+            )}
           </div>
 
           {/* Sample Browser Sidebar */}
-          {(() => {
-            console.log('[RENDER] SampleBrowser conditional:', {
-              hasCurrentKit: !!currentKit,
-              timestamp: new Date().toISOString(),
-              decision: currentKit ? 'SHOWING SampleBrowser' : 'HIDING SampleBrowser'
-            });
-            return currentKit && (
-              <div className="w-96 flex-shrink-0">
+          {currentKit && (
+            <div className="w-96 flex-shrink-0">
               <SampleBrowser onAddToKit={(sample) => {
                 // Quick add to first available pad
                 const firstEmptyPad = findFirstEmptyPad();
@@ -287,9 +288,8 @@ export function KitsPage() {
                   toast.warning('All pads are full. Drag sample onto a pad to replace.');
                 }
               }} />
-              </div>
-            );
-          })()}
+            </div>
+          )}
         </div>
       </div>
     </PageLayout>
