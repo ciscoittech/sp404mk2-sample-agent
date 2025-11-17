@@ -67,14 +67,13 @@ function SampleCardComponent({ sample, onPlay, onAddToKit, draggable = false }: 
     setIsDragging(false);
   };
 
-  // Intersection observer for lazy loading waveforms
+  // Intersection observer for lazy loading/unloading waveforms
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsInView(true);
-          observer.disconnect();
-        }
+        // Load waveform when entering viewport (with 100px margin)
+        // Unload waveform when leaving viewport to free audio resources
+        setIsInView(entry.isIntersecting);
       },
       { rootMargin: '100px' }
     );
@@ -83,7 +82,11 @@ function SampleCardComponent({ sample, onPlay, onAddToKit, draggable = false }: 
       observer.observe(cardRef.current);
     }
 
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      // Ensure waveform is unloaded when component unmounts
+      setIsInView(false);
+    };
   }, []);
 
   const formatDuration = (seconds?: number) => {
