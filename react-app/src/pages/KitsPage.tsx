@@ -249,15 +249,9 @@ export function KitsPage() {
         {/* Main content */}
         <div className="flex-1 flex overflow-hidden">
           {/* Pad Grid */}
-          <div className="flex-1 p-6 overflow-auto">
-            {currentKit ? (
-              <PadGrid
-                kit={currentKit}
-                onAssignSample={handleAssignSample}
-                onRemoveSample={handleRemoveSample}
-              />
-            ) : (
-              <div className="h-full flex items-center justify-center">
+          <div className="flex-1 p-6 overflow-auto relative">
+            {!currentKit && (
+              <div className="absolute inset-0 flex items-center justify-center bg-background/50 z-10">
                 <div className="text-center max-w-md">
                   <h3 className="text-lg font-semibold mb-2">No Kit Selected</h3>
                   <p className="text-muted-foreground mb-4">
@@ -274,6 +268,11 @@ export function KitsPage() {
                 </div>
               </div>
             )}
+            <PadGrid
+              kit={currentKit || { id: 0, name: '', samples: [], created_at: '', updated_at: '' }}
+              onAssignSample={handleAssignSample}
+              onRemoveSample={handleRemoveSample}
+            />
           </div>
 
           {/* Sample Browser Sidebar */}
