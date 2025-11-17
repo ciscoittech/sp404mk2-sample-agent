@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { PageLayout } from '@/components/layout/PageLayout';
-import { PadGrid, SampleBrowser } from '@/components/kits';
+import { PadGrid, SampleBrowser, ProjectBuilderDialog } from '@/components/kits';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useKits, useKit, useCreateKit, useAssignSample, useRemoveSample } from '@/hooks/useKits';
 import type { Sample } from '@/types/api';
-import { Plus, Loader2, Download, MoreVertical, Trash2 } from 'lucide-react';
+import { Plus, Loader2, Download, MoreVertical, Trash2, Zap } from 'lucide-react';
 import { toast } from 'sonner';
 
 const SELECTED_KIT_STORAGE_KEY = 'sp404mk2_selected_kit';
@@ -43,6 +43,7 @@ export function KitsPage() {
   });
   const [newKitName, setNewKitName] = useState('');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isProjectBuilderOpen, setIsProjectBuilderOpen] = useState(false);
 
   // Persist selectedKit to both localStorage and URL params
   const setSelectedKit = useCallback((kitId: number | undefined) => {
@@ -228,6 +229,10 @@ export function KitsPage() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent>
+                            <DropdownMenuItem onClick={() => setIsProjectBuilderOpen(true)}>
+                              <Zap className="h-4 w-4 mr-2" />
+                              Generate SP-404 Project
+                            </DropdownMenuItem>
                             <DropdownMenuItem>
                               <Download className="h-4 w-4 mr-2" />
                               Export
@@ -291,6 +296,17 @@ export function KitsPage() {
             </div>
           )}
         </div>
+
+        {/* Project Builder Dialog */}
+        {currentKit && (
+          <ProjectBuilderDialog
+            kitId={currentKit.id}
+            kitName={currentKit.name}
+            sampleCount={currentKit.samples?.length || 0}
+            isOpen={isProjectBuilderOpen}
+            onOpenChange={setIsProjectBuilderOpen}
+          />
+        )}
       </div>
     </PageLayout>
   );

@@ -235,12 +235,30 @@ python -m src.cli_download_manager stats
 2. **Batch Processing**: Multiple video analysis
 3. **Project Integration**: Link samples to SP-404MK2 projects
 4. **Auto-tagging**: AI-powered genre classification
+5. **🎛️ MIDI Controller Integration**: Physical pad triggering (PLANNED - see docs/MIDI_INTEGRATION_PLAN.md)
 
 ### Phase 3: Production Tools
 1. **Export Workflows**: Direct SP-404MK2 format support
 2. **Quality Filtering**: Automatic high-quality detection
 3. **Collaboration**: Share sample collections
 4. **Performance**: Real-time analysis optimization
+
+---
+
+## 🎛️ UPCOMING: MIDI CONTROLLER SUPPORT
+
+**Status:** Planned - Research Complete - Not Yet Implemented
+**Feasibility:** ✅ EASY (1-2 days)
+**Browser Support:** Chrome/Edge (70% coverage)
+
+**Features:**
+- Trigger kit samples with physical MIDI pads (Akai MPD, Novation Launchpad, SP-404MK2)
+- Velocity-sensitive playback (hit harder = louder)
+- Low-latency Web Audio API
+- Visual feedback on pad hits
+
+**Documentation:** See `docs/MIDI_INTEGRATION_PLAN.md` for complete implementation plan
+**Technology:** webmidi.js v3.1.13 + Web Audio API
 
 ---
 

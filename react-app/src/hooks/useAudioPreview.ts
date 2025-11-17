@@ -1,5 +1,4 @@
 import { useEffect, useRef, useCallback } from 'react';
-import { useAudioContext } from '@/contexts/AudioContext';
 
 /**
  * Simple hook for quick audio preview without UI

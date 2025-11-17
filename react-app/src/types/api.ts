@@ -126,3 +126,21 @@ export interface APIError {
   detail: string;
   status_code: number;
 }
+
+// SP-404MK2 Project Builder types
+export interface ProjectBuildRequest {
+  project_name: string;
+  project_bpm?: number | null;
+  audio_format: 'wav' | 'aiff';
+  include_bank_layout: boolean;
+}
+
+export interface ProjectBuildResult {
+  success: boolean;
+  export_id?: string;
+  project_name?: string;
+  sample_count: number;
+  file_size_bytes: number;
+  download_url?: string;
+  error_message?: string;
+}

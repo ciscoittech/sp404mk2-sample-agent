@@ -58,6 +58,7 @@ class SampleInfo(BaseModel):
     id: int = Field(..., description="Sample database ID")
     title: str = Field(..., description="Sample title")
     file_path: str = Field(..., description="Path to audio file")
+    file_url: Optional[str] = Field(None, description="URL for downloading/streaming audio")
     duration: Optional[float] = Field(None, description="Duration in seconds")
     bpm: Optional[float] = Field(None, description="Detected BPM")
     genre: Optional[str] = Field(None, description="Musical genre")

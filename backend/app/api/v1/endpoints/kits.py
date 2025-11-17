@@ -62,6 +62,7 @@ def kit_to_response(kit: Kit) -> KitResponse:
             id=assignment.sample.id,
             title=assignment.sample.title,
             file_path=assignment.sample.file_path,
+            file_url=None,  # TODO: Generate download URL from file_path
             duration=assignment.sample.duration,
             bpm=assignment.sample.bpm,
             genre=assignment.sample.genre,
@@ -367,6 +368,7 @@ async def assign_sample_to_pad(
         id=assignment.sample.id,
         title=assignment.sample.title,
         file_path=assignment.sample.file_path,
+        file_url=assignment.sample.file_url,
         duration=assignment.sample.duration,
         bpm=assignment.sample.bpm,
         genre=assignment.sample.genre,
