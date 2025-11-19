@@ -1,0 +1,32 @@
+import CodeDialog from '../../../../shared/CodeDialog';
+import React from 'react';
+const FABCode = () => {
+  return (
+    <>
+      <CodeDialog>
+        {`
+import React from 'react';
+import { Fab, Tooltip, Stack } from '@mui/material';
+import { IconClipboard, IconPlus, IconSend } from '@tabler/icons';
+
+<Stack spacing={1} direction="row" justifyContent="center">
+    <Tooltip title="Send">
+      <Fab color="primary" aria-label="send">
+        <IconSend width={20} />
+      </Fab>
+    </Tooltip>
+    <Tooltip title="Add">
+      <Fab color="secondary" aria-label="plus">
+        <IconPlus width={20} />
+      </Fab>
+    </Tooltip>
+    <Fab disabled aria-label="clipboard">
+      <IconClipboard width={20} />
+    </Fab>
+</Stack>`}
+      </CodeDialog>
+    </>
+  );
+};
+
+export default FABCode;

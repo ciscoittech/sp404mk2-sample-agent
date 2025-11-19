@@ -7,7 +7,10 @@ import {
   Upload,
   Settings,
   User,
-  ChevronUp
+  ChevronUp,
+  FolderOpen,
+  DollarSign,
+  Layers
 } from 'lucide-react';
 import {
   Sidebar,
@@ -56,14 +59,29 @@ const navigation: NavItem[] = [
     icon: Music,
   },
   {
+    title: 'Collections',
+    href: '/collections',
+    icon: FolderOpen,
+  },
+  {
     title: 'Kits',
     href: '/kits',
     icon: Grid3x3,
   },
   {
+    title: 'Batches',
+    href: '/batches',
+    icon: Layers,
+  },
+  {
     title: 'Upload',
     href: '/upload',
     icon: Upload,
+  },
+  {
+    title: 'Usage',
+    href: '/usage',
+    icon: DollarSign,
   },
   {
     title: 'Settings',

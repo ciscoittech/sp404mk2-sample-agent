@@ -1,10 +1,10 @@
 """
 FastAPI application entry point
 """
-from fastapi import FastAPI, WebSocket, Request
+from fastapi import FastAPI, WebSocket, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
+from fastapi.responses import FileResponse
 from contextlib import asynccontextmanager
 import os
 
@@ -66,9 +66,6 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 # Include API router
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
-# Import templates and paths from shared config to avoid circular imports
-from app.templates_config import templates, frontend_dir
-
 
 @app.get("/health")
 async def health_check():
@@ -76,26 +73,23 @@ async def health_check():
     return {"status": "healthy", "version": settings.VERSION}
 
 
-# Template routes for pages that use Jinja2
-@app.get("/pages/usage.html")
-async def usage_page(request: Request):
-    """Render usage page with Jinja2 template."""
-    return templates.TemplateResponse("pages/usage.html", {"request": request})
+# Serve React app from react-app/dist (Vite build output)
+import os
+react_dist = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "react-app", "dist")
+if os.path.exists(react_dist):
+    # Mount static assets
+    assets_path = os.path.join(react_dist, "assets")
+    if os.path.exists(assets_path):
+        app.mount("/assets", StaticFiles(directory=assets_path), name="assets")
 
-
-@app.get("/pages/settings.html")
-async def settings_page(request: Request):
-    """Render settings page with Jinja2 template."""
-    return templates.TemplateResponse("pages/settings.html", {"request": request})
-
-
-# Mount static files from frontend (after specific routes)
-# Try local path first, then Docker path
-if os.path.exists(frontend_dir):
-    app.mount("/static", StaticFiles(directory=os.path.join(frontend_dir, "static")), name="static")
-    # Serve other frontend pages as static files
-    app.mount("/pages", StaticFiles(directory=os.path.join(frontend_dir, "pages"), html=True), name="pages")
-    app.mount("/", StaticFiles(directory=frontend_dir, html=True), name="root")
+    # Serve index.html for all other routes (React Router will handle routing)
+    @app.get("/{full_path:path}")
+    async def serve_react(full_path: str):
+        """Serve React app for all routes (SPA)."""
+        index_path = os.path.join(react_dist, "index.html")
+        if os.path.exists(index_path):
+            return FileResponse(index_path)
+        raise HTTPException(status_code=404, detail="React app not found")
 
 
 # WebSocket endpoint

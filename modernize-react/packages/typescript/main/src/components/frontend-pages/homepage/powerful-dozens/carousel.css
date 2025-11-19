@@ -1,0 +1,18 @@
+.dozenscarousel .slick-track {
+  display: flex;
+  gap: 70px;
+}
+.dozenscarousel .slick-list {
+  max-height: 340px;
+}
+.dozenscarousel .slick-slide {
+  margin-bottom: 20px;
+}
+
+.dozenscarousel.slick-slider .slick-list {
+  margin: 0 0 0 -15px;
+}
+
+.dozenscarousel {
+  margin-left: 15px;
+}

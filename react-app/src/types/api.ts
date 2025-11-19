@@ -144,3 +144,86 @@ export interface ProjectBuildResult {
   download_url?: string;
   error_message?: string;
 }
+
+// Similarity search types
+export interface SimilarityResult {
+  id: number;
+  title: string;
+  bpm?: number;
+  musical_key?: string;
+  genre?: string;
+  duration?: number;
+  similarity: number; // 0.0-1.0
+  mood?: string;
+  mood_secondary?: string;
+  energy_level?: number;
+  danceability?: number;
+  vibe_tags: string[];
+  acousticness?: number;
+  instrumentalness?: number;
+  preview_url: string;
+  full_url: string;
+}
+
+export interface SimilarSamplesResponse {
+  reference_sample_id: number;
+  results: SimilarityResult[];
+  count: number;
+}
+
+// Batch processing types
+export enum BatchStatus {
+  PENDING = 'pending',
+  PROCESSING = 'processing',
+  COMPLETED = 'completed',
+  FAILED = 'failed',
+  CANCELLED = 'cancelled',
+}
+
+export interface Batch {
+  id: string;
+  name: string;
+  collection_path: string;
+  status: BatchStatus;
+  total_samples: number;
+  processed_samples: number;
+  success_count: number;
+  error_count: number;
+  progress_percentage: number;
+  options: Record<string, any>;
+  created_at: string;
+  started_at?: string;
+  completed_at?: string;
+  processing_time: number;
+  success_rate: number;
+  cache_dir?: string;
+  export_path?: string;
+  error_log: string[];
+}
+
+export interface BatchListResponse {
+  items: Batch[];
+  total: number;
+  page: number;
+  pages: number;
+}
+
+export interface BatchProgress {
+  batch_id: string;
+  status: BatchStatus;
+  total_samples: number;
+  processed_samples: number;
+  success_count: number;
+  error_count: number;
+  percentage: number;
+  current_sample?: string;
+  eta_minutes?: number;
+  message?: string;
+}
+
+export interface BatchCreateRequest {
+  collection_path: string;
+  name?: string;
+  batch_size?: number;
+  options?: Record<string, any>;
+}

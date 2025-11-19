@@ -11,6 +11,10 @@ import { VibeSearchPage } from '@/pages/VibeSearchPage';
 import { KitsPage } from '@/pages/KitsPage';
 import { UploadPage } from '@/pages/UploadPage';
 import { SettingsPage } from '@/pages/SettingsPage';
+import { UsagePage } from '@/pages/UsagePage';
+import { CollectionsPage } from '@/pages/CollectionsPage';
+import { CollectionDetailView } from '@/components/collections/CollectionDetailView';
+import { BatchPage } from '@/pages/BatchPage';
 import { ComponentsDemo } from '@/pages/ComponentsDemo';
 import { ColorsDebugPage } from '@/pages/ColorsDebugPage';
 import { AudioPlayerTest } from '@/pages/AudioPlayerTest';
@@ -47,7 +51,11 @@ function App() {
                 <Route path="/samples" element={<SamplesPage />} />
                 <Route path="/vibe-search" element={<VibeSearchPage />} />
                 <Route path="/kits" element={<KitsPage />} />
+                <Route path="/collections" element={<CollectionsPage />} />
+                <Route path="/collections/:id" element={<CollectionDetailView />} />
+                <Route path="/batches" element={<BatchPage />} />
                 <Route path="/upload" element={<UploadPage />} />
+                <Route path="/usage" element={<UsagePage />} />
                 <Route path="/settings" element={<SettingsPage />} />
                 <Route path="/demo" element={<ComponentsDemo />} />
                 <Route path="/debug/colors" element={<ColorsDebugPage />} />

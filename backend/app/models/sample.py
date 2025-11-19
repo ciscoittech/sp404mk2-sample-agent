@@ -54,8 +54,32 @@ class Sample(Base):
         back_populates="sample",
         cascade="all, delete-orphan"
     )
+    collections = relationship(
+        "Collection",
+        secondary="collection_samples",
+        back_populates="samples",
+        lazy="selectin"
+    )
     api_usage = relationship(
         "ApiUsage",
         back_populates="sample",
         cascade="all, delete-orphan"
     )
+    source = relationship(
+        "SampleSource",
+        back_populates="sample",
+        uselist=False,
+        cascade="all, delete-orphan",
+        lazy="selectin"
+    )
+
+    # Helper properties
+    @property
+    def has_source(self) -> bool:
+        """Check if sample has source metadata."""
+        return self.source is not None
+
+    @property
+    def source_attribution(self) -> str:
+        """Get attribution text from source metadata."""
+        return self.source.attribution_text if self.source else "Unknown"

@@ -2,8 +2,7 @@
 Public endpoints (no auth required) - for development/testing
 """
 from typing import Optional
-from fastapi import APIRouter, Depends, Request, Header, HTTPException, status, UploadFile, File, Form
-from fastapi.responses import HTMLResponse
+from fastapi import APIRouter, Depends, Request, HTTPException, status, UploadFile, File, Form
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_db
@@ -18,7 +17,6 @@ router = APIRouter()
 
 @router.get("/samples/", response_model=SampleListResponse)
 async def list_public_samples(
-    request: Request,
     page: int = 1,
     limit: int = 100,
     search: Optional[str] = None,
@@ -27,8 +25,7 @@ async def list_public_samples(
     bpm_max: Optional[float] = None,
     instrument_type: Optional[str] = None,
     sample_type: Optional[str] = None,
-    db: AsyncSession = Depends(get_db),
-    hx_request: Optional[str] = Header(None)
+    db: AsyncSession = Depends(get_db)
 ):
     """List all samples without authentication (for development)."""
     if page < 1:
@@ -98,17 +95,6 @@ async def list_public_samples(
     # Calculate pages
     pages = (total + limit - 1) // limit
     has_more = page < pages
-
-    # Return HTML for HTMX requests
-    if hx_request:
-        from app.templates_config import templates
-
-        return templates.TemplateResponse("partials/sample-grid.html", {
-            "request": request,
-            "samples": sample_dicts,
-            "has_more": has_more,
-            "next_page": page + 1
-        })
 
     # Return JSON for API requests - create Sample objects from dicts for Pydantic validation
     sample_objects = [Sample(**d) for d in sample_dicts]
@@ -204,9 +190,7 @@ async def upload_sample_public(
 @router.post("/samples/{sample_id}/analyze")
 async def analyze_sample_public(
     sample_id: int,
-    request: Request,
-    db: AsyncSession = Depends(get_db),
-    hx_request: Optional[str] = Header(None)
+    db: AsyncSession = Depends(get_db)
 ):
     """Trigger AI analysis on a sample without authentication (for demo purposes)."""
     from app.services.sample_service import SampleService
@@ -227,26 +211,7 @@ async def analyze_sample_public(
     
     # Queue analysis
     job_id = await sample_service.analyze_sample(sample_id)
-    
-    # Return appropriate response for HTMX
-    if hx_request:
-        from fastapi.templating import Jinja2Templates
-        from fastapi.responses import HTMLResponse
-        templates = Jinja2Templates(directory="/app/backend/templates")
-        
-        # Return a processing button that will be replaced
-        html_content = f"""
-        <button class="btn btn-sm btn-disabled" disabled>
-            Processing...
-            <span class="loading loading-spinner loading-xs"></span>
-        </button>
-        <div class="text-xs text-base-content/60 mt-1">
-            Analysis started (Job: {job_id[:8]}...)
-        </div>
-        """
-        
-        return HTMLResponse(content=html_content)
-    
+
     # Return JSON for API requests
     return {
         "status": "processing",

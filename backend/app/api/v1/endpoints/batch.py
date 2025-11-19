@@ -16,7 +16,6 @@ from app.schemas.batch import (
     BatchProgress, BatchListResponse
 )
 from app.services.batch_service import BatchService
-from app.templates_config import templates
 
 router = APIRouter()
 public_router = APIRouter()

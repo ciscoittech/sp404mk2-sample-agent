@@ -2,9 +2,7 @@
 Sample management endpoints
 """
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form, Request, Header
-from fastapi.responses import HTMLResponse
-from fastapi.templating import Jinja2Templates
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
 from sqlalchemy.ext.asyncio import AsyncSession
 import json
 
@@ -16,9 +14,6 @@ from app.schemas.sample import (
 )
 from app.schemas.audio_features import AnalysisDebugResponse, BPMDebugInfo, GenreDebugInfo
 from app.services.sample_service import SampleService
-
-templates = Jinja2Templates(directory="templates")
-
 
 router = APIRouter()
 public_router = APIRouter()
@@ -92,7 +87,6 @@ async def create_sample(
 
 @router.get("/")
 async def list_samples(
-    request: Request,
     page: int = 1,
     limit: int = 100,
     search: Optional[str] = None,
@@ -101,20 +95,19 @@ async def list_samples(
     bpm_max: Optional[float] = None,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
-    hx_request: Optional[str] = Header(None)
 ):
     """List user's samples with pagination."""
     if page < 1:
         page = 1
     if limit < 1 or limit > 10000:
         limit = 100
-    
+
     skip = (page - 1) * limit
-    
+
     sample_service = SampleService(db)
-    
+
     user_id = current_user.id
-    
+
     # Get samples with filters
     if search or genre or bpm_min or bpm_max:
         samples = await sample_service.search_samples(
@@ -132,26 +125,17 @@ async def list_samples(
             skip=skip,
             limit=limit
         )
-    
+
     total = await sample_service.count_user_samples(user_id)
-    
+
     # Add file URLs
     for sample in samples:
         sample.file_url = f"/api/v1/samples/{sample.id}/download"
-    
+
     # Calculate pages
     pages = (total + limit - 1) // limit
     has_more = page < pages
-    
-    # Return HTML for HTMX requests
-    if hx_request:
-        return templates.TemplateResponse("partials/sample-grid.html", {
-            "request": request,
-            "samples": samples,
-            "has_more": has_more,
-            "next_page": page + 1
-        })
-    
+
     # Return JSON for API requests
     return {
         "items": samples,
@@ -416,7 +400,6 @@ async def download_sample(
 # Public endpoints (no authentication required)
 @public_router.get("/")
 async def list_samples_public(
-    request: Request,
     page: int = 1,
     limit: int = 100,
     search: Optional[str] = None,
@@ -424,18 +407,17 @@ async def list_samples_public(
     bpm_min: Optional[float] = None,
     bpm_max: Optional[float] = None,
     db: AsyncSession = Depends(get_db),
-    hx_request: Optional[str] = Header(None)
 ):
     """List all samples without authentication (public endpoint)."""
     if page < 1:
         page = 1
     if limit < 1 or limit > 10000:
         limit = 100
-    
+
     skip = (page - 1) * limit
-    
+
     sample_service = SampleService(db)
-    
+
     # Get samples with filters (all users)
     if search or genre or bpm_min or bpm_max:
         samples = await sample_service.search_samples(
@@ -453,26 +435,17 @@ async def list_samples_public(
             skip=skip,
             limit=limit
         )
-    
+
     total = await sample_service.count_all_samples()
-    
+
     # Add file URLs
     for sample in samples:
         sample.file_url = f"/api/v1/public/samples/{sample.id}/download"
-    
+
     # Calculate pages
     pages = (total + limit - 1) // limit
     has_more = page < pages
-    
-    # Return HTML for HTMX requests
-    if hx_request:
-        return templates.TemplateResponse("partials/sample-grid.html", {
-            "request": request,
-            "samples": samples,
-            "has_more": has_more,
-            "next_page": page + 1
-        })
-    
+
     # Return JSON for API requests
     return {
         "items": samples,

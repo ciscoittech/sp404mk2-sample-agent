@@ -9,6 +9,10 @@ Welcome to the SP404MK2 Sample Agent documentation! This index provides a compre
 
 ## 📖 Core Features
 
+### User Journeys & Workflows
+- **[USER_JOURNEYS.md](USER_JOURNEYS.md)** - Complete user journey documentation (5 personas)
+- **[USER_JOURNEY_TESTING.md](USER_JOURNEY_TESTING.md)** - Testing specifications for all journeys
+
 ### Sample Discovery & Collection
 - **[CONVERSATIONAL_CLI.md](CONVERSATIONAL_CLI.md)** - Natural language interface for sample discovery
 - **[YOUTUBE_DISCOVERY.md](YOUTUBE_DISCOVERY.md)** - Enhanced YouTube search with quality scoring
@@ -28,6 +32,14 @@ Welcome to the SP404MK2 Sample Agent documentation! This index provides a compre
 - **[IMPLEMENTATION_ROADMAP.md](IMPLEMENTATION_ROADMAP.md)** - Development plan and future features
 
 ## 📚 Documentation by Use Case
+
+### "Which user journey am I?"
+Start with **[USER_JOURNEYS.md](USER_JOURNEYS.md)** to identify your workflow:
+1. **Crate Digger** - YouTube discovery and sample curation
+2. **Kit Builder** - Rapid beat preparation with AI recommendations
+3. **Batch Processor** - Large collection management
+4. **Live Performer** - Quick kit assembly for gigs
+5. **Sound Designer** - Deep analysis and sonic exploration
 
 ### "I want to find specific types of samples"
 1. Start with [CONVERSATIONAL_CLI.md](CONVERSATIONAL_CLI.md) to learn the chat interface

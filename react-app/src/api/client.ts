@@ -8,14 +8,13 @@ export const apiClient = axios.create({
   },
 });
 
-// Request interceptor (for auth later)
+// Request interceptor (add auth token)
 apiClient.interceptors.request.use(
   (config) => {
-    // Add auth token here when implemented
-    // const token = localStorage.getItem('auth_token');
-    // if (token) {
-    //   config.headers.Authorization = `Bearer ${token}`;
-    // }
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
     return config;
   },
   (error) => Promise.reject(error)

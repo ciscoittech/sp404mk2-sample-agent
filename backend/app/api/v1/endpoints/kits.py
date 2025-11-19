@@ -6,19 +6,17 @@ Provides REST API for:
 - Pad assignment management
 - Sample recommendations
 - Kit export (ZIP download)
-
-Supports both JSON and HTMX responses.
 """
 import logging
 import tempfile
 import zipfile
 from pathlib import Path
-from typing import Optional
 from io import BytesIO
 
-from fastapi import APIRouter, Depends, Request, Header, HTTPException, status, Query
-from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
+from fastapi import APIRouter, Depends, Request, HTTPException, status, Query, Header
+from fastapi.responses import JSONResponse, StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
+from typing import Optional
 
 from app.api.deps import get_db
 from app.services.kit_service import (
@@ -98,17 +96,11 @@ def kit_to_response(kit: Kit) -> KitResponse:
 
 @router.get("", response_model=KitListResponse)
 async def list_kits(
-    request: Request,
     skip: int = Query(0, ge=0, description="Number of kits to skip"),
     limit: int = Query(100, ge=1, le=1000, description="Maximum kits to return"),
     db: AsyncSession = Depends(get_db),
-    hx_request: Optional[str] = Header(None),
 ):
-    """
-    List all kits for the user with pagination.
-
-    Returns JSON by default, HTML template for HTMX requests.
-    """
+    """List all kits for the user with pagination."""
     logger.info(f"Listing kits (skip={skip}, limit={limit})")
 
     kit_service = KitService()
@@ -124,28 +116,6 @@ async def list_kits(
     count_query = select(func.count()).select_from(Kit).where(Kit.user_id == DEFAULT_USER_ID)
     result = await db.execute(count_query)
     total = result.scalar() or 0
-
-    # HTMX response
-    if hx_request:
-        from app.templates_config import templates
-
-        kit_dicts = []
-        for kit in kits:
-            kit_dict = {
-                "id": kit.id,
-                "name": kit.name,
-                "description": kit.description,
-                "is_public": kit.is_public,
-                "created_at": kit.created_at,
-                "sample_count": len(kit.samples),
-            }
-            kit_dicts.append(kit_dict)
-
-        return templates.TemplateResponse("kits/kit-list.html", {
-            "request": request,
-            "kits": kit_dicts,
-            "total": total,
-        })
 
     # JSON response
     kit_responses = [kit_to_response(kit) for kit in kits]
@@ -191,15 +161,9 @@ async def create_kit(
 @router.get("/{kit_id}", response_model=KitResponse)
 async def get_kit(
     kit_id: int,
-    request: Request,
     db: AsyncSession = Depends(get_db),
-    hx_request: Optional[str] = Header(None),
 ):
-    """
-    Get kit details by ID.
-
-    Returns JSON by default, HTML template for HTMX requests.
-    """
+    """Get kit details by ID."""
     logger.info(f"Getting kit {kit_id}")
 
     kit_service = KitService()
@@ -214,36 +178,6 @@ async def get_kit(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Kit {kit_id} not found",
         )
-
-    # HTMX response
-    if hx_request:
-        from app.templates_config import templates
-
-        # Convert to dict for template
-        kit_dict = {
-            "id": kit.id,
-            "name": kit.name,
-            "description": kit.description,
-            "is_public": kit.is_public,
-            "created_at": kit.created_at,
-            "samples": []
-        }
-
-        for assignment in kit.samples:
-            sample_dict = {
-                "id": assignment.sample.id,
-                "title": assignment.sample.title,
-                "pad_bank": assignment.pad_bank,
-                "pad_number": assignment.pad_number,
-                "volume": assignment.volume,
-                "pitch_shift": assignment.pitch_shift,
-            }
-            kit_dict["samples"].append(sample_dict)
-
-        return templates.TemplateResponse("kits/kit-detail.html", {
-            "request": request,
-            "kit": kit_dict,
-        })
 
     # JSON response
     return kit_to_response(kit)
@@ -320,15 +254,9 @@ async def delete_kit(
 async def assign_sample_to_pad(
     kit_id: int,
     assignment_data: PadAssignmentRequest,
-    request: Request,
     db: AsyncSession = Depends(get_db),
-    hx_request: Optional[str] = Header(None),
 ):
-    """
-    Assign a sample to a pad in the kit.
-
-    Returns JSON by default, HTML template for HTMX requests.
-    """
+    """Assign a sample to a pad in the kit."""
     logger.info(
         f"Assigning sample {assignment_data.sample_id} to kit {kit_id} "
         f"pad {assignment_data.pad_bank}{assignment_data.pad_number}"
@@ -385,25 +313,6 @@ async def assign_sample_to_pad(
         sample=sample_info,
     )
 
-    # HTMX response
-    if hx_request:
-        from app.templates_config import templates
-
-        assignment_dict = {
-            "pad_bank": assignment.pad_bank,
-            "pad_number": assignment.pad_number,
-            "sample_title": assignment.sample.title,
-            "volume": assignment.volume,
-            "pitch_shift": assignment.pitch_shift,
-        }
-
-        response = templates.TemplateResponse("kits/pad-assignment.html", {
-            "request": request,
-            "assignment": assignment_dict,
-        })
-        response.status_code = status.HTTP_201_CREATED
-        return response
-
     # JSON response
     return response
 
@@ -453,16 +362,10 @@ async def remove_sample_from_pad(
 async def get_recommendations_for_pad(
     kit_id: int,
     pad_number: int,
-    request: Request,
     limit: int = Query(15, ge=1, le=50, description="Maximum recommendations"),
     db: AsyncSession = Depends(get_db),
-    hx_request: Optional[str] = Header(None),
 ):
-    """
-    Get smart sample recommendations for a pad.
-
-    Returns JSON by default, HTML template for HTMX requests.
-    """
+    """Get smart sample recommendations for a pad."""
     logger.info(f"Getting recommendations for kit {kit_id} pad {pad_number}")
 
     kit_service = KitService()
@@ -513,27 +416,6 @@ async def get_recommendations_for_pad(
             recommendation_reason=reason,
         )
         recommendations.append(rec)
-
-    # HTMX response
-    if hx_request:
-        from app.templates_config import templates
-
-        rec_dicts = []
-        for rec in recommendations:
-            rec_dict = {
-                "id": rec.id,
-                "title": rec.title,
-                "bpm": rec.bpm,
-                "genre": rec.genre,
-                "reason": rec.recommendation_reason,
-            }
-            rec_dicts.append(rec_dict)
-
-        return templates.TemplateResponse("kits/recommendations-dropdown.html", {
-            "request": request,
-            "recommendations": rec_dicts,
-            "pad_number": pad_number,
-        })
 
     # JSON response
     return RecommendationsResponse(

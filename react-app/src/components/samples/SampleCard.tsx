@@ -2,9 +2,11 @@ import { memo, useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Play, Music, Plus } from 'lucide-react';
+import { Play, Music, Plus, Search } from 'lucide-react';
 import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
 import { PinButton } from './PinButton';
+import { AddToCollectionMenu } from '@/components/collections/AddToCollectionMenu';
+import { SimilarSamplesPanel } from '@/components/similarity';
 import { useAudioPreview } from '@/hooks/useAudioPreview';
 import type { Sample } from '@/types/api';
 
@@ -54,6 +56,7 @@ function SampleCardComponent({ sample, onPlay, onAddToKit, draggable = false }: 
   const [isInView, setIsInView] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [similarPanelOpen, setSimilarPanelOpen] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
   const audioPreview = useAudioPreview(sample.file_url);
 
@@ -120,6 +123,21 @@ function SampleCardComponent({ sample, onPlay, onAddToKit, draggable = false }: 
           </div>
           <div className="flex items-center gap-1">
             <PinButton sample={sample} />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+              onClick={() => setSimilarPanelOpen(true)}
+              title="Find similar samples"
+            >
+              <Search className="h-4 w-4" />
+            </Button>
+            <AddToCollectionMenu
+              sampleId={sample.id}
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+            />
             <Button
               variant="ghost"
               size="icon"
@@ -203,6 +221,17 @@ function SampleCardComponent({ sample, onPlay, onAddToKit, draggable = false }: 
           Add to Kit
         </Button>
       </CardContent>
+
+      {/* Similar Samples Panel */}
+      <SimilarSamplesPanel
+        isOpen={similarPanelOpen}
+        onClose={() => setSimilarPanelOpen(false)}
+        sampleId={sample.id}
+        onSelect={(sampleId) => {
+          // Could potentially load the sample and call onPlay here
+          console.log('Selected similar sample:', sampleId);
+        }}
+      />
     </Card>
   );
 }

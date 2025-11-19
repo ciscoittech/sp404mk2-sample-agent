@@ -64,4 +64,16 @@ export const samplesApi = {
     const { data } = await apiClient.get(`/samples/${id}/audio-features`);
     return data;
   },
+
+  // Find similar samples
+  findSimilar: async (id: number, options?: { limit?: number }) => {
+    const params = new URLSearchParams();
+    if (options?.limit) {
+      params.append('limit', String(options.limit));
+    }
+    const { data } = await apiClient.get<import('@/types/api').SimilarSamplesResponse>(
+      `/search/similar/${id}?${params}`
+    );
+    return data.results;
+  },
 };
