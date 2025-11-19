@@ -2,16 +2,13 @@
 SP-404MK2 Export API endpoints.
 
 Provides REST endpoints for exporting samples to SP-404MK2 compatible format.
-Follows dual JSON/HTMX response pattern used throughout the application.
 """
 import logging
-import os
-from typing import Optional, List
+from typing import List
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, BackgroundTasks, HTTPException, status, Header, Request
+from fastapi import APIRouter, Depends, BackgroundTasks, HTTPException, status
 from fastapi.responses import FileResponse, StreamingResponse
-from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 import zipfile
@@ -31,28 +28,12 @@ from app.models.kit import Kit
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-# Initialize templates using same pattern as preferences.py
-backend_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
-local_templates = os.path.join(backend_dir, "templates")
-docker_templates = "/app/backend/templates"
-
-if os.path.exists(local_templates):
-    templates_dir = local_templates
-elif os.path.exists(docker_templates):
-    templates_dir = docker_templates
-else:
-    templates_dir = os.path.join(backend_dir, "templates")
-
-templates = Jinja2Templates(directory=templates_dir)
-
 
 @router.post("/samples/{sample_id}/export", response_model=ExportResult)
 async def export_single_sample(
     sample_id: int,
     config: ExportConfig,
-    request: Request,
     background_tasks: BackgroundTasks,
-    hx_request: Optional[str] = Header(None),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -60,8 +41,6 @@ async def export_single_sample(
 
     Converts audio file to 48kHz/16-bit WAV or AIFF format with proper
     validation and filename sanitization.
-
-    Returns JSON for API clients and HTML partial for HTMX requests.
     """
     # Verify sample exists
     stmt = select(Sample).where(Sample.id == sample_id)
@@ -86,13 +65,6 @@ async def export_single_sample(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 detail=export_result.error or "Export failed"
             )
-
-        # Return HTMX response if requested
-        if hx_request:
-            return templates.TemplateResponse("sp404/export-result.html", {
-                "request": request,
-                "result": export_result
-            })
 
         return export_result
 
@@ -126,12 +98,6 @@ async def export_single_sample(
             download_url=f"/api/v1/sp404/exports/{export_record.id}/download"
         )
 
-        if hx_request:
-            return templates.TemplateResponse("sp404/export-result.html", {
-                "request": request,
-                "result": mock_result
-            })
-
         return mock_result
     except Exception as e:
         logger.error(f"Export error for sample {sample_id}: {e}", exc_info=True)
@@ -144,9 +110,7 @@ async def export_single_sample(
 @router.post("/samples/export-batch", response_model=BatchExportResult)
 async def export_batch(
     batch_request: BatchExportRequest,
-    request: Request,
     background_tasks: BackgroundTasks,
-    hx_request: Optional[str] = Header(None),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -156,8 +120,6 @@ async def export_batch(
     - flat: All samples in one folder
     - genre: Samples organized by genre
     - bpm: Samples organized by BPM range
-
-    Returns JSON for API clients and HTML partial for HTMX requests.
     """
     sample_ids = batch_request.sample_ids
     config = batch_request.config
@@ -188,12 +150,6 @@ async def export_batch(
 
         # Process batch
         batch_result = await service.export_batch(sample_ids, config, db)
-
-        if hx_request:
-            return templates.TemplateResponse("sp404/export-progress.html", {
-                "request": request,
-                "result": batch_result
-            })
 
         return batch_result
 
@@ -241,12 +197,6 @@ async def export_batch(
             export_id=export_record.id
         )
 
-        if hx_request:
-            return templates.TemplateResponse("sp404/export-progress.html", {
-                "request": request,
-                "result": mock_result
-            })
-
         return mock_result
     except Exception as e:
         logger.error(f"Batch export error: {e}", exc_info=True)
@@ -260,9 +210,7 @@ async def export_batch(
 async def export_kit(
     kit_id: int,
     config: ExportConfig,
-    request: Request,
     background_tasks: BackgroundTasks,
-    hx_request: Optional[str] = Header(None),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -270,8 +218,6 @@ async def export_kit(
 
     Creates organized folder structure maintaining SP-404MK2 pad layout
     for easy hardware loading.
-
-    Returns JSON for API clients and HTML partial for HTMX requests.
     """
     # Verify kit exists
     stmt = select(Kit).where(Kit.id == kit_id)
@@ -303,12 +249,6 @@ async def export_kit(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 detail=export_result.error or "Kit export failed"
             )
-
-        if hx_request:
-            return templates.TemplateResponse("sp404/export-result.html", {
-                "request": request,
-                "result": export_result
-            })
 
         return export_result
 
@@ -346,12 +286,6 @@ async def export_kit(
                 download_url=f"/api/v1/sp404/exports/{export_record.id}/download"
             )
 
-            if hx_request:
-                return templates.TemplateResponse("sp404/export-result.html", {
-                    "request": request,
-                    "result": empty_result
-                })
-
             return empty_result
 
         # For other export errors, return 422
@@ -388,12 +322,6 @@ async def export_kit(
             export_id=export_record.id,
             download_url=f"/api/v1/sp404/exports/{export_record.id}/download"
         )
-
-        if hx_request:
-            return templates.TemplateResponse("sp404/export-result.html", {
-                "request": request,
-                "result": mock_result
-            })
 
         return mock_result
     except HTTPException:
@@ -480,18 +408,14 @@ async def download_export(
 
 @router.get("/exports")
 async def list_exports(
-    request: Request,
     limit: int = 20,
     offset: int = 0,
-    hx_request: Optional[str] = Header(None),
     db: AsyncSession = Depends(get_db)
 ):
     """
     List export history with pagination.
 
     Provides access to past exports for re-download and analytics.
-
-    Returns JSON list for API clients and HTML table for HTMX requests.
     """
     # Query exports with pagination
     stmt = (
@@ -523,15 +447,6 @@ async def list_exports(
             "export_duration_seconds": export.export_duration_seconds,
             "created_at": export.created_at.isoformat() if export.created_at else None,
             "timestamp": export.created_at.isoformat() if export.created_at else None
-        })
-
-    if hx_request:
-        return templates.TemplateResponse("sp404/export-list.html", {
-            "request": request,
-            "exports": export_list,
-            "total": total,
-            "limit": limit,
-            "offset": offset
         })
 
     # Return JSON in format expected by tests

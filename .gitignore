@@ -181,3 +181,16 @@ service-account.json
 # Audio processing
 *.asd
 *.als
+# Database files (too large for GitHub)
+*.db
+*.db.backup*
+*.sqlite
+*.sqlite3
+
+# Build artifacts
+react-app/dist/
+node_modules/
+
+# Environment
+.env
+.env.local

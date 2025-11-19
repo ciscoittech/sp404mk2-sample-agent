@@ -1,8 +1,11 @@
 # React App Deployment Guide
 
-**Application**: SP-404MK2 Sample Matching UI
+**Application**: SP-404MK2 Sample Agent - React 19 SPA
 **Status**: Production Ready
-**Version**: 1.0.0
+**Version**: 1.0.0 (Post-HTMX Migration)
+**Last Updated**: 2025-11-18
+
+**Note**: This React app is served by FastAPI. The backend automatically serves the production build from `react-app/dist/`. See main deployment guide at `docs/REACT_DEPLOYMENT_GUIDE.md` for complete details.
 
 ---
 
@@ -11,23 +14,21 @@
 ### Option 1: Docker (Recommended)
 
 ```bash
-# Navigate to react-app directory
-cd react-app
-
-# Start all services (frontend + backend + database)
+# From project root
 docker-compose up -d
 
 # View logs
 docker-compose logs -f
 
 # Access application
-open http://localhost:3000
+open http://localhost:8100
 ```
 
 **Services**:
-- Frontend: http://localhost:3000 (Nginx)
-- Backend API: http://localhost:8100 (FastAPI)
+- Full Stack: http://localhost:8100 (FastAPI serves React SPA)
 - Database: PostgreSQL on port 5432
+
+**Note**: The React app is built during Docker build and served by FastAPI
 
 ### Option 2: Local Development
 
@@ -44,7 +45,9 @@ open http://localhost:5173
 
 **Requirements**:
 - Node.js 20+
-- Backend running on http://127.0.0.1:8100
+- Backend running on http://127.0.0.1:8100 (FastAPI server)
+
+**Important**: In production, FastAPI serves the React build from `react-app/dist/`. Dev mode uses Vite dev server with proxy.
 
 ---
 

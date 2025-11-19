@@ -14,14 +14,15 @@ This project uses Pydantic AI to create specialized agents that:
 ## 🚀 Features
 
 ### Core Features
-- **Web UI Dashboard**: Full-featured web interface with HTMX + DaisyUI
-- **Batch Processing**: Process multiple samples at once with AI analysis
+- **React 19 SPA**: Modern single-page application with client-side routing
+- **Batch Processing**: Real-time processing UI with WebSocket updates
+- **Cost Analytics**: Usage tracking page with OpenRouter API cost monitoring
 - **Conversational CLI Interface**: Natural language interaction for sample discovery
 - **Multi-Agent Architecture**: Specialized agents for different tasks
 - **Intelligent YouTube Discovery**: Enhanced search with quality scoring
 - **Timestamp-Based Extraction**: Extract specific segments from longer videos
 - **Automated BPM Detection**: Analyzes and organizes samples by tempo
-- **Database Tracking**: Turso database for sample metadata
+- **Database Tracking**: PostgreSQL database for sample metadata
 - **Real-time Updates**: WebSocket support for live progress tracking
 
 ### Specialized Agents
@@ -38,16 +39,24 @@ This project uses Pydantic AI to create specialized agents that:
 
 ## 🛠️ Tech Stack
 
-- **Framework**: [Pydantic AI](https://github.com/pydantic/pydantic-ai)
-- **Database**: [Turso](https://turso.tech/) (SQLite at the edge)
+### Backend
+- **Framework**: FastAPI (REST API + WebSocket)
+- **Database**: PostgreSQL (production) / SQLite (local dev)
 - **AI Models**: Via [OpenRouter](https://openrouter.ai/)
-  - Gemma-2-27B (Conversational interface)
-  - Google Flash 2.0 (Quick analysis tasks)
-- **Audio Processing**: 
+  - Qwen3-7B (Fast & cheap vibe analysis)
+  - Qwen3-235B (Deep analysis)
+- **Audio Processing**:
+  - [librosa](https://librosa.org/) (Audio feature extraction)
   - [yt-dlp](https://github.com/yt-dlp/yt-dlp) (YouTube downloads)
-  - [librosa](https://librosa.org/) (Audio analysis)
-- **CLI**: Natural language interface with Rich formatting
-- **Language**: Python 3.11+
+- **Language**: Python 3.13+
+
+### Frontend
+- **Framework**: React 19
+- **Router**: React Router v7 (client-side routing)
+- **UI Library**: shadcn/ui + Tailwind CSS
+- **State Management**: React Query + Zustand
+- **Build Tool**: Vite
+- **Language**: TypeScript (strict mode)
 
 ## 📁 Project Structure
 
@@ -68,8 +77,8 @@ sp404mk2-sample-agent/
 
 ### Prerequisites
 
-- Python 3.11+
-- GitHub CLI (`gh`)
+- Python 3.13+
+- Node.js 20+
 - FFmpeg (for audio processing)
 
 ### Installation
@@ -128,16 +137,25 @@ gh auth login
 
 ## 📋 Usage
 
-### Web Interface
+### Web Interface (React SPA)
 
 ```bash
-# Access the web UI (Docker must be running)
-open http://localhost:8000
+# Production (served by FastAPI)
+open http://localhost:8100
+
+# Development (with Vite hot reload)
+cd react-app
+npm run dev
+open http://localhost:5173
 
 # Available pages:
-- /pages/samples.html    # Browse and analyze samples
-- /pages/batch.html      # Batch process audio files
-- /pages/kits.html       # Build SP-404 kits
+- /                      # Dashboard
+- /samples               # Browse and analyze samples
+- /batches               # Real-time batch processing
+- /kits                  # Build SP-404 kits
+- /collections           # Organize sample collections
+- /usage                 # API cost analytics
+- /settings              # User preferences
 ```
 
 ### Conversational Sample Discovery

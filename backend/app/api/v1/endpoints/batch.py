@@ -1,19 +1,17 @@
 """
 Batch processing endpoints
 """
-from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks, WebSocket, Request, Header, Form
-from fastapi.responses import HTMLResponse, FileResponse
+from typing import Optional
+from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks, WebSocket, Form
+from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
-import uuid
-from datetime import datetime
 from pathlib import Path
 
 from app.api.deps import get_db, get_current_user
 from app.models.user import User
 from app.schemas.batch import (
     BatchCreate, BatchStatus, BatchResponse,
-    BatchProgress, BatchListResponse
+    BatchListResponse
 )
 from app.services.batch_service import BatchService
 
@@ -152,71 +150,52 @@ async def batch_progress_websocket(
 # Public endpoints for testing (no auth required)
 @public_router.post("/")
 async def create_batch_public(
-    request: Request,
     background_tasks: BackgroundTasks,
     collection_path: str = Form(...),
     batch_size: int = Form(5),
     vibe_analysis: bool = Form(False),
     groove_analysis: bool = Form(False),
     era_detection: bool = Form(False),
-    db: AsyncSession = Depends(get_db),
-    hx_request: Optional[str] = Header(None)
+    db: AsyncSession = Depends(get_db)
 ):
     """Create a new batch processing job (PUBLIC - no auth)."""
     try:
         from app.schemas.batch import BatchCreate
-        
+
         # Create options dict from form data
         options = {
             "vibe_analysis": vibe_analysis,
             "groove_analysis": groove_analysis,
             "era_detection": era_detection
         }
-        
+
         # Create batch data
         batch_data = BatchCreate(
             collection_path=collection_path,
             batch_size=batch_size,
             options=options
         )
-        
+
         batch_service = BatchService(db)
-        
+
         # Use demo user ID 1
         batch = await batch_service.create_batch(
             user_id=1,
             collection_path=batch_data.collection_path,
             options=batch_data.options
         )
-        
+
         # Start processing in background
         background_tasks.add_task(
             batch_service.process_batch,
             batch_id=batch.id
         )
-        
-        # Return HTML response for HTMX
-        if hx_request:
-            return HTMLResponse(content=f"""
-            <div class="alert alert-success">
-                <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                <span>Batch processing started! Check the Active Processing section for progress.</span>
-            </div>
-            """)
-        
+
         return batch
     except Exception as e:
         import traceback
         traceback.print_exc()
-        
-        if hx_request:
-            return HTMLResponse(content=f"""
-            <div class="alert alert-error">
-                <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                <span>Error starting batch: {str(e)}</span>
-            </div>
-            """)
-        
+
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=str(e)
@@ -225,16 +204,14 @@ async def create_batch_public(
 
 @public_router.get("/")
 async def list_batches_public(
-    request: Request,
     page: int = 1,
     limit: int = 20,
     status: Optional[str] = None,
-    db: AsyncSession = Depends(get_db),
-    hx_request: Optional[str] = Header(None)
+    db: AsyncSession = Depends(get_db)
 ):
     """List batch processing jobs (PUBLIC - no auth)."""
     batch_service = BatchService(db)
-    
+
     # Convert string status to enum if provided
     status_enum = None
     if status:
@@ -242,28 +219,14 @@ async def list_batches_public(
             status_enum = BatchStatus(status)
         except ValueError:
             pass
-    
+
     batches = await batch_service.list_batches(
         user_id=1,  # Demo user
         page=page,
         limit=limit,
         status=status_enum
     )
-    
-    # Return HTML for HTMX requests
-    if hx_request:
-        # Return different templates based on status filter
-        if status == "processing":
-            return templates.TemplateResponse("partials/active-batches.html", {
-                "request": request,
-                "batches": batches.items if batches else []
-            })
-        else:
-            return templates.TemplateResponse("partials/batch-history.html", {
-                "request": request,
-                "batches": batches.items if batches else []
-            })
-    
+
     # Return JSON for API requests
     return batches
 
@@ -271,86 +234,58 @@ async def list_batches_public(
 @public_router.get("/{batch_id}")
 async def get_batch_public(
     batch_id: str,
-    request: Request,
-    db: AsyncSession = Depends(get_db),
-    hx_request: Optional[str] = Header(None)
+    db: AsyncSession = Depends(get_db)
 ):
     """Get batch processing status (PUBLIC - no auth)."""
     batch_service = BatchService(db)
-    
+
     batch = await batch_service.get_batch(
         batch_id=batch_id,
         user_id=1  # Demo user
     )
-    
+
     if not batch:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Batch not found"
         )
-    
-    # Return HTML for HTMX requests
-    if hx_request:
-        return templates.TemplateResponse("partials/batch-details.html", {
-            "request": request,
-            "batch": batch
-        })
-    
+
     return batch
 
 
 @public_router.post("/{batch_id}/import")
 async def import_batch_results(
     batch_id: str,
-    request: Request,
-    db: AsyncSession = Depends(get_db),
-    hx_request: Optional[str] = Header(None)
+    db: AsyncSession = Depends(get_db)
 ):
     """Import batch results into samples table."""
     try:
         batch_service = BatchService(db)
-        
+
         # Get batch
         batch = await batch_service.get_batch(
             batch_id=batch_id,
             user_id=1  # Demo user
         )
-        
+
         if not batch:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Batch not found"
             )
-        
+
         if batch.status != "completed":
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Batch processing not completed"
             )
-        
+
         # Import the results
         imported_count = await batch_service.import_results_to_samples(batch_id)
-        
-        # Return HTML for HTMX
-        if hx_request:
-            return HTMLResponse(content=f"""
-            <div class="alert alert-success">
-                <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                <span>Successfully imported {imported_count} samples! View them on the <a href="/pages/samples.html" class="link">Samples page</a>.</span>
-            </div>
-            """)
-        
-        return {"status": "success", "imported_count": imported_count}
-        
-    except Exception as e:
-        if hx_request:
-            return HTMLResponse(content=f"""
-            <div class="alert alert-error">
-                <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                <span>Error importing results: {str(e)}</span>
-            </div>
-            """)
 
+        return {"status": "success", "imported_count": imported_count}
+
+    except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=str(e)
@@ -360,9 +295,7 @@ async def import_batch_results(
 @public_router.post("/{batch_id}/cancel")
 async def cancel_batch_public(
     batch_id: str,
-    request: Request,
-    db: AsyncSession = Depends(get_db),
-    hx_request: Optional[str] = Header(None)
+    db: AsyncSession = Depends(get_db)
 ):
     """Cancel a running batch job (PUBLIC - no auth)."""
     try:
@@ -379,26 +312,9 @@ async def cancel_batch_public(
                 detail="Cannot cancel batch"
             )
 
-        # Return HTML for HTMX
-        if hx_request:
-            return HTMLResponse(content="""
-            <div class="alert alert-info">
-                <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                <span>Batch processing cancelled successfully.</span>
-            </div>
-            """)
-
         return {"message": "Batch cancelled successfully"}
 
     except Exception as e:
-        if hx_request:
-            return HTMLResponse(content=f"""
-            <div class="alert alert-error">
-                <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                <span>Error cancelling batch: {str(e)}</span>
-            </div>
-            """)
-
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=str(e)
@@ -408,10 +324,8 @@ async def cancel_batch_public(
 @public_router.post("/{batch_id}/retry")
 async def retry_batch_public(
     batch_id: str,
-    request: Request,
     background_tasks: BackgroundTasks,
-    db: AsyncSession = Depends(get_db),
-    hx_request: Optional[str] = Header(None)
+    db: AsyncSession = Depends(get_db)
 ):
     """Retry a failed batch job."""
     try:
@@ -449,26 +363,9 @@ async def retry_batch_public(
             batch_id=new_batch.id
         )
 
-        # Return HTML for HTMX
-        if hx_request:
-            return HTMLResponse(content=f"""
-            <div class="alert alert-success">
-                <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                <span>Batch retry started! New batch ID: {new_batch.id}</span>
-            </div>
-            """)
-
         return new_batch
 
     except Exception as e:
-        if hx_request:
-            return HTMLResponse(content=f"""
-            <div class="alert alert-error">
-                <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                <span>Error retrying batch: {str(e)}</span>
-            </div>
-            """)
-
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=str(e)

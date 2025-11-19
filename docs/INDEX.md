@@ -2,10 +2,41 @@
 
 Welcome to the SP404MK2 Sample Agent documentation! This index provides a comprehensive overview of all available documentation and guides you to the right resources based on your needs.
 
+## Open Source & Self-Hosting
+
+**This project is 100% open source and free to self-host!**
+
+This repository contains a complete, production-ready sample management system that you can run on your own infrastructure at zero cost (except minimal API usage). Everything you need for audio analysis, sample organization, and SP-404MK2 hardware integration is included.
+
+### What's Included (Free & Open Source)
+- Complete audio analysis pipeline (BPM, key, vibe detection)
+- AI-powered sample classification and organization
+- SP-404MK2 project builder and hardware export
+- Modern React 19 web interface
+- RESTful API with full documentation
+- Docker deployment with PostgreSQL
+- Batch processing and automation tools
+- Vector search and similarity matching
+
+### Getting Started
+- **Quick Start**: See [QUICKSTART.md](QUICKSTART.md) - running in 5 minutes
+- **Self-Hosting Guide**: See [SELF_HOSTING.md](../SELF_HOSTING.md) - complete deployment guide
+- **Contributing**: See [CONTRIBUTING.md](../CONTRIBUTING.md) - join the community
+
+### Future: Hosted SaaS Option (Separate Project)
+We're planning a hosted SaaS version with additional multi-user features like:
+- Team collaboration and sharing
+- Managed hosting (zero setup required)
+- Premium AI models and faster processing
+- Automatic backups and scaling
+
+**Important**: The SaaS version will be a separate private repository. This open-source repo will always remain free and feature-complete for individual users.
+
 ## 🚀 Getting Started
 
 - **[QUICKSTART.md](QUICKSTART.md)** - Get up and running in 5 minutes
-- **[TURSO_MCP_SETUP.md](TURSO_MCP_SETUP.md)** - Configure the Turso database integration
+- **[HTMX_TO_REACT_MIGRATION_SUMMARY.md](HTMX_TO_REACT_MIGRATION_SUMMARY.md)** - Complete migration details (React 19 SPA)
+- **[../react-app/DEPLOYMENT_GUIDE.md](../react-app/DEPLOYMENT_GUIDE.md)** - React deployment guide
 
 ## 📖 Core Features
 

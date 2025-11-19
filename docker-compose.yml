@@ -27,7 +27,7 @@ services:
     labels:
       - "com.orbstack.domain=postgres"
 
-  # FastAPI Backend Service
+  # FastAPI Backend + React Frontend Service
   backend:
     build:
       context: .
@@ -43,8 +43,12 @@ services:
     ports:
       - "${API_PORT:-8100}:8100"
     volumes:
+      # Development mode: mount source for hot reload (comment out for production)
       - ./backend:/app/backend:delegated
+      - ./react-app/dist:/app/react-app/dist:delegated
+      # Data volumes
       - ./samples:/app/samples:ro
+      - ./downloads:/app/downloads
       - backend-uploads:/app/backend/uploads
     depends_on:
       postgres:
@@ -54,12 +58,15 @@ services:
     command: uvicorn app.main:app --host 0.0.0.0 --port 8100 --reload
     labels:
       - "com.orbstack.domain=api"
+      - "com.orbstack.domain=app"
 
 volumes:
   postgres-data:
     driver: local
+    name: sp404-postgres-data
   backend-uploads:
     driver: local
+    name: sp404-uploads
 
 networks:
   sp404-network:

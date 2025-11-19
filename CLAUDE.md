@@ -1,9 +1,9 @@
 # SP404MK2 Sample Agent - Project Memory
 
-**Last Updated:** 2025-11-17
-**Status:** ✅ Production Ready - Complete Feature Set + Project Builder
+**Last Updated:** 2025-11-18
+**Status:** ✅ Production Ready - Pure React 19 SPA + Complete Feature Set
 **Coverage:** 150+ tests passing (99%+)
-**Phase:** Complete - All Features + TDD SP-404MK2 Project Builder
+**Phase:** Complete - React 19 Migration + SP-404MK2 Project Builder
 
 ---
 
@@ -16,8 +16,9 @@ AI-powered sample collection and organization system for Roland SP-404MK2 workfl
 - **AI-Powered Classification**: Genre, BPM, key, and style analysis
 - **Download Management**: Complete metadata tracking and review system
 - **SP-404MK2 Integration**: Hardware-compatible export system
-- **React Web Dashboard**: Modern React 19 frontend with real-time updates (Tailwind CSS + shadcn/ui)
+- **React 19 SPA**: Modern single-page application with client-side routing (shadcn/ui + Tailwind CSS)
 - **Project Builder**: Generate SP-404MK2 projects from sample kits (TDD implemented, 98/100 validation)
+- **Real-time Updates**: WebSocket integration for live batch processing and vibe analysis
 - **Rich CLI Interface**: Beautiful terminal output with tables and panels
 
 ---
@@ -26,17 +27,24 @@ AI-powered sample collection and organization system for Roland SP-404MK2 workfl
 
 ### Local Development
 ```bash
-# Install dependencies
+# Backend setup
 pip install greenlet
 
 # Initialize database (first time only)
 cd backend && ../venv/bin/python -m app.db.init_db && cd ..
 
-# Start server
+# Start backend server
 ./venv/bin/python backend/run.py
 
+# Frontend setup (separate terminal)
+cd react-app
+npm install
+npm run dev
+
 # Access Web UI
-open http://localhost:8100
+open http://localhost:5173  # Dev mode with Vite hot reload
+# OR
+open http://localhost:8100  # Production build served by FastAPI
 ```
 
 ### Docker
@@ -131,13 +139,20 @@ sp404mk2-sample-agent/
 │   ├── agents/            # AI agent implementations
 │   ├── tools/             # Tool implementations
 │   └── config.py         # Configuration
-├── backend/               # FastAPI web backend
+├── backend/               # FastAPI API backend
 │   ├── app/              # Application code
-│   ├── tests/            # Backend tests (83/85 passing)
+│   ├── tests/            # Backend tests (150+ passing)
 │   └── scripts/          # Batch processing scripts
-├── frontend/              # Web UI (HTMX + DaisyUI)
-│   ├── pages/            # UI pages
-│   └── tests/e2e/        # Playwright E2E tests
+├── react-app/             # React 19 frontend (PRIMARY UI)
+│   ├── src/              # React source code
+│   │   ├── components/  # React components
+│   │   ├── hooks/       # Custom React hooks
+│   │   ├── api/         # API client layer
+│   │   ├── pages/       # Page components
+│   │   └── types/       # TypeScript types
+│   ├── public/          # Static assets
+│   └── dist/            # Production build output
+├── frontend-legacy/       # Legacy HTMX UI (DEPRECATED)
 ├── scripts/               # Utility scripts
 │   └── batch_automation/ # Automated processing system
 ├── samples/               # Sample collections (6,000+ files)
@@ -177,17 +192,21 @@ python -m src.cli_download_manager stats
 - Rich CLI formatting with tables/panels
 - Download metadata tracking system
 - AI model upgrades (7B/235B parameters)
-- Complete test suite (83/85 tests passing - 97.6%)
+- Complete test suite (150+ tests passing - 99%+)
 - Review and rating system
-- **Web UI**: FastAPI backend with React 19 frontend (Tailwind CSS + shadcn/ui)
-- **Real-time Updates**: WebSocket vibe analysis with React Query cache management
-- **Docker Support**: Complete containerization
-- **Audio Features Service**: Real librosa-based audio analysis
-- **OpenRouter Service**: Unified API client with cost tracking
-- **User Preferences System**: Model selection and auto-analysis settings
+- **React 19 SPA**: Pure single-page application with client-side routing ✅
+- **Modern UI**: shadcn/ui component library + Tailwind CSS ✅
+- **TypeScript**: Strict mode with full type safety ✅
+- **New Pages**: BatchPage (real-time processing), UsagePage (cost analytics) ✅
+- **Real-time Updates**: WebSocket integration with React Query cache management ✅
+- **Docker Support**: Complete containerization ✅
+- **Audio Features Service**: Real librosa-based audio analysis ✅
+- **OpenRouter Service**: Unified API client with cost tracking ✅
+- **User Preferences System**: Model selection and auto-analysis settings ✅
 - **Hybrid Analysis Service**: Orchestrates Audio + AI + Preferences ✅
 - **Settings API**: REST endpoints with full React component integration ✅
 - **Settings UI**: Complete React component with form validation and real-time updates ✅
+- **HTMX Migration Complete**: Removed all server-side rendering (1,200+ lines removed) ✅
 - **SP-404MK2 Export**: Hardware-compatible audio conversion system ✅
   - 48kHz/16-bit WAV/AIFF conversion
   - Sample validation (duration, format)
@@ -280,24 +299,32 @@ python -m src.cli_download_manager stats
 
 ## 🛠 TECHNICAL NOTES
 
-### Dependencies
-- **OpenRouter API**: For AI model access
-- **yt-dlp**: YouTube download functionality
-- **Rich**: CLI formatting and display
-- **Pydantic**: Data validation and models
-- **Typer**: CLI interface framework
+### Backend Dependencies
 - **FastAPI**: Web API framework
 - **SQLAlchemy**: Async database ORM (requires greenlet>=3.2.0)
-- **HTMX**: Server-driven UI updates
-- **Alpine.js**: Minimal client interactivity
-- **DaisyUI**: Tailwind CSS components
+- **OpenRouter API**: For AI model access
 - **librosa**: Audio feature extraction
+- **yt-dlp**: YouTube download functionality
+- **Pydantic**: Data validation and models
+- **Rich**: CLI formatting and display
+- **Typer**: CLI interface framework
 - **tiktoken**: Token counting for cost estimation
+
+### Frontend Dependencies (React 19)
+- **React 19**: UI framework
+- **React Router v7**: Client-side routing
+- **shadcn/ui**: Component library
+- **Tailwind CSS**: Utility-first CSS
+- **React Query**: Server state management
+- **Zustand**: Client state management
+- **TypeScript**: Type safety (strict mode)
+- **Vite**: Build tool and dev server
 
 ### Requirements
 - **Python 3.13**: Requires `greenlet>=3.2.0` for SQLAlchemy async
+- **Node.js 20+**: Required for React development and builds
 - **Database Init**: Must run `app.db.init_db` before first use
-- **Environment**: `.env` file must have correct `DATABASE_URL`
+- **Environment**: `.env` file must have correct `DATABASE_URL` and `VITE_API_URL`
 
 ### Configuration
 - Models configurable via `src/config.py`
@@ -308,11 +335,17 @@ python -m src.cli_download_manager stats
 
 ### Testing
 ```bash
-# Run all tests
+# Backend tests
 pytest
 
-# Run with coverage
+# Backend with coverage
 pytest --cov=src --cov-report=html
+
+# Frontend tests
+cd react-app && npm test
+
+# E2E tests
+cd react-app && npm run test:e2e
 
 # Run in Docker
 make docker-test
@@ -373,6 +406,7 @@ All critical bugs have been resolved. See `docs/CHANGELOG.md` for fix history.
 
 ---
 
-*The project is now in a fully functional state with comprehensive web UI, powerful AI models, and production-ready architecture. Ready for production sample collection and SP-404MK2 integration workflows.*
+*The project is now in a fully functional state with pure React 19 SPA, powerful AI models, and production-ready architecture. Complete HTMX migration finished (1,200+ lines removed). Ready for production sample collection and SP-404MK2 integration workflows.*
 
 **For complete update history, see**: `docs/CHANGELOG.md`
+**For migration details, see**: `docs/HTMX_TO_REACT_MIGRATION_SUMMARY.md`

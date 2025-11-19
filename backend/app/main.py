@@ -4,7 +4,7 @@ FastAPI application entry point
 from fastapi import FastAPI, WebSocket, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from contextlib import asynccontextmanager
 import os
 
@@ -77,19 +77,14 @@ async def health_check():
 import os
 react_dist = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "react-app", "dist")
 if os.path.exists(react_dist):
-    # Mount static assets
+    # Mount static assets first
     assets_path = os.path.join(react_dist, "assets")
     if os.path.exists(assets_path):
         app.mount("/assets", StaticFiles(directory=assets_path), name="assets")
 
-    # Serve index.html for all other routes (React Router will handle routing)
-    @app.get("/{full_path:path}")
-    async def serve_react(full_path: str):
-        """Serve React app for all routes (SPA)."""
-        index_path = os.path.join(react_dist, "index.html")
-        if os.path.exists(index_path):
-            return FileResponse(index_path)
-        raise HTTPException(status_code=404, detail="React app not found")
+    # Mount entire dist folder for React app (will serve index.html for SPA routing)
+    # This needs to be LAST so API routes take precedence
+    # We'll add this after WebSocket routes
 
 
 # WebSocket endpoint
@@ -100,3 +95,34 @@ async def websocket_vibe_analysis(websocket: WebSocket, sample_id: int):
     async for db in get_db():
         await websocket_endpoint(websocket, sample_id, db)
         break
+
+
+# SPA fallback handler for React Router
+# Use exception handler to catch 404s from undefined routes and serve index.html
+from fastapi.exceptions import HTTPException as FastAPIHTTPException
+from starlette.exceptions import HTTPException as StarletteHTTPException
+
+@app.exception_handler(404)
+async def not_found_handler(request: Request, exc):
+    """
+    Handle 404 errors by serving React app index.html for client-side routing.
+    But preserve 404 for API routes (return JSON).
+    """
+    # If it's an API request, return JSON 404
+    if request.url.path.startswith("/api/") or request.url.path.startswith("/ws/"):
+        return JSONResponse(
+            status_code=404,
+            content={"detail": "Not found"}
+        )
+
+    # For all other routes, serve React app index.html (SPA routing)
+    if os.path.exists(react_dist):
+        index_path = os.path.join(react_dist, "index.html")
+        if os.path.exists(index_path):
+            return FileResponse(index_path)
+
+    # Fallback if index.html doesn't exist
+    return JSONResponse(
+        status_code=404,
+        content={"detail": "Not found"}
+    )
